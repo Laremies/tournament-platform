@@ -1,2 +1,3 @@
-# tournament-platform
-A service for hosting, participating and following tournaments
+# Tournament Service
+
+A service for hosting, participating, and following tournaments.
