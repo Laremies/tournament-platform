@@ -40,10 +40,13 @@ export default function TournamentFormModal() {
 
     //fetch auth data so button can be disabled if user is not logged in
     //TODO, FIX: the button in layout.tsx isn't rerendered when we login so it doesn't update automatically
+    //maybe something with onAuthStateChange
     useEffect(() => {
         const fetchUser = async () => {
             const { data } = await supabase.auth.getUser();
-            setUser(data.user);
+            if (data.user) {
+                setUser(data.user);
+            }
         };
 
         fetchUser();
@@ -66,7 +69,6 @@ export default function TournamentFormModal() {
             })
         }
     }, [state, toast]);
-
 
     //we can add client side validation later
     return (

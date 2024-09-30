@@ -16,20 +16,45 @@ export async function submitTournament(prevState: any, formData: FormData) {
         description: formData.get('description') as string,
         creator_id: userObject.data.user.id,
         max_player_count: parseInt(formData.get('maxPlayers') as string),
-
-
     }
 
     const { data: tournament, error } = await supabase.from('tournaments').insert([data]).select();
 
-    console.log(data)
     if (error || !tournament[0].id) {
         console.error(error)
         return { error: 'Failed to create tournament' }
     }
 
     const tournamentId = tournament[0].id;
-    revalidatePath('/')
-
+    revalidatePath('/') //TODO: change this to the query that lists own tournaments
     return { success: true, tournamentId }
+}
+
+export async function getTournamentById(id: string) {
+    const supabase = createClient()
+    const { data: tournament, error } = await supabase.from('tournaments').select('*').eq('id', id).single()
+
+    if (error) {
+        return { error: 'Tournament not found' }
+    }
+
+    return { tournament }
+}
+
+export async function getUserTournaments() {
+    const supabase = createClient()
+    const userObject = await supabase.auth.getUser();
+
+    if (userObject.data.user === null) {
+        return { error: 'You must be logged in to view your tournaments' }
+    }
+
+    const { data: tournaments, error } = await supabase.from('tournaments').select('*').eq('creator_id', userObject.data.user.id).order('created_at', { ascending: false });
+
+    if (error) {
+        console.error(error)
+        return { error: 'Failed to fetch tournaments' }
+    }
+
+    return { tournaments }
 }

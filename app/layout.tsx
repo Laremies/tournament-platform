@@ -6,9 +6,9 @@ import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
-import { Button } from "@/components/ui/button";
 import TournamentFormModal from "@/components/tournament-form-modal";
 import { Toaster } from "@/components/ui/toaster";
+import TournamentDropdownList from "@/components/tournament-dropdown-list";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -42,6 +42,7 @@ export default function RootLayout({
                     <Link href="/" className="hover:underline">
                       Home
                     </Link>
+                    <TournamentDropdownList />
                     <div className="flex items-center gap-2">
                     <TournamentFormModal />
                     </div>
