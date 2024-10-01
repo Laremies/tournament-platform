@@ -18,6 +18,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { User } from '@supabase/supabase-js';
+import { Checkbox } from "./ui/checkbox"
 
 const supabase = createClient()
 
@@ -36,7 +37,7 @@ export default function TournamentFormModal() {
     const { toast } = useToast()
     const [open, setOpen] = useState(false)
     const [state, formAction] = useFormState(submitTournament, null)
-    
+
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
@@ -51,8 +52,8 @@ export default function TournamentFormModal() {
             }
         };
         fetchUser();
-    }, []);    
-    
+    }, []);
+
 
     //when tournament is created, redirect to the tournament page and toast a success message
     useEffect(() => {
@@ -118,6 +119,12 @@ export default function TournamentFormModal() {
                                 min="1"
                                 className="col-span-3"
                             />
+                            
+                                <Label htmlFor="isPrivate" className="text-right">
+                                    Make private
+                                </Label>
+                                <Checkbox id="isPrivate" name="isPrivate" />
+                            
                         </div>
                         <div className="flex justify-end items-center">
                             <SubmitButton />

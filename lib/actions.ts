@@ -17,6 +17,7 @@ export async function submitTournament(prevState: any, formData: FormData) {
         description: formData.get('description') as string,
         creator_id: userObject.data.user.id,
         max_player_count: parseInt(formData.get('maxPlayers') as string),
+        private: formData.get('isPrivate') === 'on',
     }
 
     const { data: tournament, error } = await supabase.from('tournaments').insert([data]).select();
