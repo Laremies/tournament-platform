@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 
+//TODO: validation with zod mby?
 export async function submitTournament(prevState: any, formData: FormData) {
     const supabase = createClient()
     const userObject = await supabase.auth.getUser();
@@ -26,7 +27,7 @@ export async function submitTournament(prevState: any, formData: FormData) {
     }
 
     const tournamentId = tournament[0].id;
-    revalidatePath('/') //TODO: change this to the query that lists own tournaments
+    revalidatePath('/') 
     return { success: true, tournamentId }
 }
 

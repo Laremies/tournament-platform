@@ -17,6 +17,7 @@ import { submitTournament } from "@/lib/actions"
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { User } from '@supabase/supabase-js';
 
 const supabase = createClient()
 
@@ -35,12 +36,13 @@ export default function TournamentFormModal() {
     const { toast } = useToast()
     const [open, setOpen] = useState(false)
     const [state, formAction] = useFormState(submitTournament, null)
-    const [user, setUser] = useState(null);
+    
+    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     //fetch auth data so button can be disabled if user is not logged in
     //TODO, FIX: the button in layout.tsx isn't rerendered when we login so it doesn't update automatically
-    //maybe something with onAuthStateChange
+    //maybe something with onAuthStateChange or context
     useEffect(() => {
         const fetchUser = async () => {
             const { data } = await supabase.auth.getUser();
@@ -48,9 +50,9 @@ export default function TournamentFormModal() {
                 setUser(data.user);
             }
         };
-
         fetchUser();
-    }, []);
+    }, []);    
+    
 
     //when tournament is created, redirect to the tournament page and toast a success message
     useEffect(() => {
@@ -59,7 +61,7 @@ export default function TournamentFormModal() {
             router.push(`/tournaments/${state.tournamentId}`);
             toast({
                 title: "Tournament Created",
-                description: "Your tournament has been created successfully",
+                description: "New tournament has been created successfully",
             })
         }
         if (state?.error) {
