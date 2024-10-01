@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { get } from 'http';
 
 //TODO: validation with zod mby?
 export async function submitTournament(prevState: any, formData: FormData) {
@@ -59,4 +60,44 @@ export async function getUserTournaments() {
     }
 
     return { tournaments }
+}
+
+export async function joinTournament(tournamentId: string) {
+    const supabase = createClient()
+    const userObject = await supabase.auth.getUser();
+
+    if (userObject.data.user === null) {
+        console.log('You must be logged in to join a tournament')
+        return { error: 'You must be logged in to join a tournament' }
+    }
+
+    //check that the tournament exists
+    const { data: tournament, error } = await supabase.from('tournaments').select('*').eq('id', tournamentId).single()
+
+    if (error || !tournament) {
+        console.error(error)
+        return { error: 'Tournament not found' }
+    }
+
+    const { data: tournamentUser, error: playerError } = await supabase.from('tournamentUsers').insert([{ tournament_id: tournamentId, user_id: userObject.data.user.id }]).select()
+
+    if (playerError || !tournamentUser[0].id) {
+        console.error(playerError)
+        return { error: 'Failed to join tournament' }
+    }
+    revalidatePath(`/tournaments/${tournamentId}`)
+
+    return { success: true }
+}
+
+export async function getTournamentPlayers(tournamentId: string) { //need to provide tags?
+    const supabase = createClient()
+    const { data: tournamentUsers, error } = await supabase.from('tournamentUsers').select('*').eq('tournament_id', tournamentId) //TODO: add natural join with users table to get usernames and stuff
+
+    if (error) {
+        console.error(error)
+        return { error: 'Failed to fetch tournament players' }
+    }
+
+    return { tournamentUsers }
 }

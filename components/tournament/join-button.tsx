@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button"
 import { useToast } from '@/hooks/use-toast'  // Adjust the import based on your project structure
 import { User } from '@supabase/supabase-js'
 import { useRouter } from "next/navigation"
+import { joinTournament } from '@/lib/actions'
 
 
 
 interface JoinButtonProps {
     user: User | null;
+    tournamentId: string;
   }
 
-export function JoinButton({ user }: JoinButtonProps) {
+export function JoinButton({ user, tournamentId }: JoinButtonProps) {
     const router = useRouter();
   const [isJoining, setIsJoining] = useState(false)
   const { toast } = useToast()
@@ -21,21 +23,27 @@ export function JoinButton({ user }: JoinButtonProps) {
     setIsJoining(true)
 
     try {
-      const result = await new Promise<{ message: string }>((resolve) => { //make action, the action sould revalidate tournament data rerender everything
-        setTimeout(() => {
-          resolve({ message: 'Successfully joined the tournament!' });
-        }, 2000);
-      })
+      const {success, error} = await joinTournament(tournamentId)
 
-      // Display success toast message
-      toast({
-        title: "Success",
-        description: result.message,
-      })
-
+      // Display success toast message or error message
+      if (success) {
+        toast({
+          title: 'Success',
+          description: 'You have successfully joined the tournament',
+        })
+      }
+      if (error) {
+        toast({
+          title: 'Error',
+          description: error,
+        })
+      }
     } catch (error) {
-      // Handle error if needed
-    } finally {
+      toast({
+        title: 'Error',
+        description: 'Failed to join the tournament',
+      })
+    }finally {
       setIsJoining(false)
     }
   }
