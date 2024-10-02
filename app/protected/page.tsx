@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { getAuthUser } from '@/lib/actions';
 
 export default async function ProtectedPage() {
-  const user = getAuthUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return redirect('/sign-in');
