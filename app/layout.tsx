@@ -1,5 +1,4 @@
-import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
+import HeaderAuth from "@/components/header/header-auth";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import { GeistSans } from "geist/font/sans";
@@ -8,7 +7,7 @@ import Link from "next/link";
 import "./globals.css";
 import TournamentFormModal from "@/components/tournament-form-modal";
 import { Toaster } from "@/components/ui/toaster";
-import TournamentDropdownList from "@/components/tournament-dropdown-list";
+import TournamentDropdownList from "@/components/header/tournament-dropdown-list";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -16,8 +15,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Tournament Platform",
+  description: "A platform for creating and managing tournaments",
 };
 
 export default function RootLayout({
@@ -47,10 +46,10 @@ export default function RootLayout({
                     <TournamentFormModal />
                     </div>
                   </div>
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
+                  <HeaderAuth />
                 </div>
               </nav>
-              <div className="flex flex-col gap-20 max-w-5xl p-5">
+              <div className="flex flex-col gap-20 p-5">
                 {children}
               </div>
 

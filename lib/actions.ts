@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
-import { get } from 'http';
 
 //TODO: validation with zod mby?
 export async function submitTournament(prevState: any, formData: FormData) {
@@ -78,6 +77,7 @@ export async function joinTournament(tournamentId: string) {
         console.error(error)
         return { error: 'Tournament not found' }
     }
+    //somewhere here add a check if tournament.max_player_count > tournamentUsers.length
 
     const { data: tournamentUser, error: playerError } = await supabase.from('tournamentUsers').insert([{ tournament_id: tournamentId, user_id: userObject.data.user.id }]).select()
 
