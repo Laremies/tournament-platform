@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { Tournament } from '@/app/types/types';
 
 //TODO: validation with zod mby?
 export async function submitTournament(prevState: any, formData: FormData) {
@@ -40,7 +41,7 @@ export async function getTournamentById(id: string) {
         return { error: 'Tournament not found' }
     }
 
-    return { tournament }
+    return { tournament: tournament as Tournament }
 }
 
 export async function getUserTournaments() {
@@ -58,7 +59,7 @@ export async function getUserTournaments() {
         return { error: 'Failed to fetch tournaments' }
     }
 
-    return { tournaments }
+    return { tournaments: tournaments as Tournament[] }
 }
 
 export async function joinTournament(tournamentId: string) {
@@ -79,6 +80,7 @@ export async function joinTournament(tournamentId: string) {
     }
     //somewhere here add a check if tournament.max_player_count > tournamentUsers.length
 
+    //insert tournament-user mapping into the db
     const { data: tournamentUser, error: playerError } = await supabase.from('tournamentUsers').insert([{ tournament_id: tournamentId, user_id: userObject.data.user.id }]).select()
 
     if (playerError || !tournamentUser[0].id) {

@@ -43,7 +43,7 @@ export default function RootLayout({
                     </Link>
                     <TournamentDropdownList />
                     <div className="flex items-center gap-2">
-                    <TournamentFormModal />
+                      <TournamentFormModal />
                     </div>
                   </div>
                   <HeaderAuth />
@@ -53,9 +53,9 @@ export default function RootLayout({
                 {children}
               </div>
 
-                <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-5 mt-auto">
+              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-5 mt-auto">
                 <ThemeSwitcher />
-                </footer>
+              </footer>
             </div>
           </main>
           <Toaster />

@@ -50,6 +50,7 @@ export function JoinButton({ user, tournamentId }: JoinButtonProps) {
 
   const handleLoginRedirect = () => {
     // Redirect to login page
+    //TODO: should remember the page user was on before login and return to that page after login
     router.push('/sign-in')
   }
 
