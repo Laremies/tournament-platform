@@ -1,6 +1,5 @@
 import HeaderAuth from '@/components/header/header-auth';
 import { ThemeSwitcher } from '@/components/theme-switcher';
-import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import { robotoBlack } from '@/components/ui/fonts';
 import { ThemeProvider } from 'next-themes';
 import Link from 'next/link';
@@ -8,7 +7,7 @@ import './globals.css';
 import TournamentFormModal from '@/components/tournament-form-modal';
 import { Toaster } from '@/components/ui/toaster';
 import TournamentDropdownList from '@/components/header/tournament-dropdown-list';
-import { LucideTrophy, Trophy, TrophyIcon } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { getAuthUser } from '@/lib/actions';
 
 const defaultUrl = process.env.VERCEL_URL

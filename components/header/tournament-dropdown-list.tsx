@@ -9,3 +9,4 @@ export default async function TournamentDropdownList() {
   
   return <TournamentDropdown ownTournaments={ownTournaments} joinedTournaments={joinedTournaments} />
 }
+
