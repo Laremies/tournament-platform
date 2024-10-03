@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,13 +15,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { submitTournament } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Checkbox } from './ui/checkbox';
 import { User } from '@supabase/supabase-js';
 import { Zap } from 'lucide-react';
 
 interface TournamentFormModalProps {
   user: User | null;
+}
+
+interface Response {
+  success?: boolean;
+  tournamentId?: string;
+  error?: string;
 }
 
 function SubmitButton() {
@@ -39,29 +45,38 @@ export default function TournamentFormModal({
 }: TournamentFormModalProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, formAction] = useFormState(submitTournament, null);
+  const [response, setResponse] = useState<Response | null>(null);
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const formData = new FormData(event.currentTarget as HTMLFormElement);
+      const response = await submitTournament(formData);
+      setResponse({ success: true, tournamentId: response.tournamentId });
+    } catch (error) {
+      setResponse({ error: String(error) });
+    }
+  };
 
   const router = useRouter();
 
   //when tournament is created, redirect to the tournament page and toast a success message
   useEffect(() => {
-    if (state?.success) {
+    if (response?.success) {
       setOpen(false);
-      router.push(`/tournaments/${state.tournamentId}`);
+      router.push(`/tournaments/${response.tournamentId}`);
       toast({
         title: 'Tournament Created',
         description: 'New tournament has been created successfully',
       });
     }
-    if (state?.error) {
+    if (response?.error) {
       toast({
         title: 'Error',
-        description: state.error,
+        description: response.error,
       });
     }
-  }, [state, toast]);
-
-  router;
+  }, [router, response, toast]);
 
   //we can add client side validation later
   return (
@@ -78,7 +93,7 @@ export default function TournamentFormModal({
               <DialogTitle>Create Tournament</DialogTitle>
               <DialogDescription />
             </DialogHeader>
-            <form action={formAction} className="grid gap-4 py-4">
+            <form onSubmit={handleSubmit} className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Name

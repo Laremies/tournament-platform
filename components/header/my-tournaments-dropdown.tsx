@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,32 +10,32 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
 interface Tournament {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 interface TournamentDropdownProps {
-  tournaments: Tournament[]
+  tournaments: Tournament[];
 }
 
-export default function TournamentDropdown({ tournaments }: TournamentDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter()
+export default function TournamentDropdown({
+  tournaments,
+}: TournamentDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const handleTournamentClick = (tournamentId: string) => {
-    router.push(`/tournaments/${tournamentId}`)
-    setIsOpen(false)
-  }
+    router.push(`/tournaments/${tournamentId}`);
+    setIsOpen(false);
+  };
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          My Tournaments
-        </Button>
+        <Button variant="outline">My Tournaments</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>My Tournaments</DropdownMenuLabel>
@@ -53,5 +53,5 @@ export default function TournamentDropdown({ tournaments }: TournamentDropdownPr
         )}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
