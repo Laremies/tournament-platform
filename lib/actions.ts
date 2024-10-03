@@ -191,22 +191,33 @@ export async function getUserTournaments() {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
 
-  if (userObject.data.user === null) {
-    return { error: 'You must be logged in to view your tournaments' };
-  }
 
-  const { data: tournaments, error } = await supabase
-    .from('tournaments')
-    .select('*')
-    .eq('creator_id', userObject.data.user.id)
-    .order('created_at', { ascending: false });
+    if (userObject.data.user === null) {
+        return { error: 'You must be logged in to view your tournaments' }
+    }
+    //i remember hearing its good practice to keep the selected fields to a minimum with supabase queries (dont remember where i heard this)
+    //dont know if that breaks the tournament type usage, doesn't seem to
+    const { data: ownTournaments, error } = await supabase.from('tournaments').select('name, id').eq('creator_id', userObject.data.user.id).order('created_at', { ascending: false });
+    const { data: joined, error: joinedError } = await supabase
+        .from('tournamentUsers')
+        .select('tournaments(name, id)')
+        .eq('user_id', userObject.data.user.id);
+
+    if (joinedError) {
+    console.error(joinedError);
+    return { error: 'Failed to fetch joined tournaments' };
+  }
+    const joinedTournaments = joined.map((item: any) => item.tournaments);
+
 
   if (error) {
     console.error(error);
     return { error: 'Failed to fetch tournaments' };
   }
 
-  return { tournaments: tournaments as Tournament[] };
+
+    return { ownTournaments: ownTournaments as Tournament[], joinedTournaments: joinedTournaments as Tournament[] }
+
 }
 
 export async function joinTournament(tournamentId: string) {

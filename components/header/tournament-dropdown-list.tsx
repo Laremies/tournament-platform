@@ -1,11 +1,12 @@
-import { getUserTournaments } from '@/lib/actions';
-import TournamentDropdown from './my-tournaments-dropdown';
+import { getUserTournaments } from "@/lib/actions"
+import TournamentDropdown from "./my-tournaments-dropdown"
 
 export default async function TournamentDropdownList() {
-  const { tournaments } = await getUserTournaments();
-  if (!tournaments) {
-    return null;
+  const {ownTournaments, joinedTournaments} = await getUserTournaments()
+  if (!ownTournaments || !joinedTournaments) {
+    return null
   }
-
-  return <TournamentDropdown tournaments={tournaments} />;
+  
+  return <TournamentDropdown ownTournaments={ownTournaments} joinedTournaments={joinedTournaments} />
 }
+
