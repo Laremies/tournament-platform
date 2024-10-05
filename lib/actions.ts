@@ -8,6 +8,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
 
+interface UserJoinedTournament {
+  tournaments: { name: string; id: string }[];
+}
+
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
   const password = formData.get('password')?.toString();
@@ -211,8 +215,10 @@ export async function getUserTournaments() {
     console.error(joinedError);
     return { error: 'Failed to fetch joined tournaments' };
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const joinedTournaments = joined.map((item: any) => item.tournaments);
+
+  const joinedTournaments = (joined as UserJoinedTournament[]).flatMap(
+    (item) => item.tournaments
+  );
 
   if (error) {
     console.error(error);
