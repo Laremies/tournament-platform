@@ -8,7 +8,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
 
-interface UserJoinedTournament {
+interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
 }
 
@@ -216,7 +216,7 @@ export async function getUserTournaments() {
     return { error: 'Failed to fetch joined tournaments' };
   }
 
-  const joinedTournaments = (joined as UserJoinedTournament[]).flatMap(
+  const joinedTournaments = (joined as UserJoinedTournaments[]).flatMap(
     (item) => item.tournaments
   );
 
