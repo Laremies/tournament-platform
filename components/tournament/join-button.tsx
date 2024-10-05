@@ -20,28 +20,20 @@ export function JoinButton({ user, tournamentId }: JoinButtonProps) {
   const handleJoin = async () => {
     setIsJoining(true);
 
-    try {
-      const { success, error } = await joinTournament(tournamentId);
+    const { success, error } = await joinTournament(tournamentId);
 
-      // Display success toast message or error message
-      if (success) {
-        toast({
-          title: 'Success',
-          description: 'You have successfully joined the tournament',
-        });
-      }
-      if (error) {
-        toast({
-          title: 'Error',
-          description: error,
-        });
-      }
-    } catch (error) {
+    // Display success toast message or error message
+    if (success) {
+      toast({
+        title: 'Success',
+        description: 'You have successfully joined the tournament',
+      });
+    }
+    if (error) {
       toast({
         title: 'Error',
-        description: 'Failed to join the tournament',
+        description: error,
       });
-    } finally {
       setIsJoining(false);
     }
   };

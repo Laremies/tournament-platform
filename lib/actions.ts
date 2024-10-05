@@ -6,6 +6,11 @@ import { Tournament } from '@/app/types/types';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { generateSingleEliminationBracket } from './bracket-generators';
+
+interface UserJoinedTournaments {
+  tournaments: { name: string; id: string }[];
+}
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
@@ -191,33 +196,39 @@ export async function getUserTournaments() {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
 
+  if (userObject.data.user === null) {
+    return { error: 'You must be logged in to view your tournaments' };
+  }
+  //i remember hearing its good practice to keep the selected fields to a minimum with supabase queries (dont remember where i heard this)
+  //dont know if that breaks the tournament type usage, doesn't seem to
+  const { data: ownTournaments, error } = await supabase
+    .from('tournaments')
+    .select('name, id')
+    .eq('creator_id', userObject.data.user.id)
+    .order('created_at', { ascending: false });
+  const { data: joined, error: joinedError } = await supabase
+    .from('tournamentUsers')
+    .select('tournaments(name, id)')
+    .eq('user_id', userObject.data.user.id);
 
-    if (userObject.data.user === null) {
-        return { error: 'You must be logged in to view your tournaments' }
-    }
-    //i remember hearing its good practice to keep the selected fields to a minimum with supabase queries (dont remember where i heard this)
-    //dont know if that breaks the tournament type usage, doesn't seem to
-    const { data: ownTournaments, error } = await supabase.from('tournaments').select('name, id').eq('creator_id', userObject.data.user.id).order('created_at', { ascending: false });
-    const { data: joined, error: joinedError } = await supabase
-        .from('tournamentUsers')
-        .select('tournaments(name, id)')
-        .eq('user_id', userObject.data.user.id);
-
-    if (joinedError) {
+  if (joinedError) {
     console.error(joinedError);
     return { error: 'Failed to fetch joined tournaments' };
   }
-    const joinedTournaments = joined.map((item: any) => item.tournaments);
 
+  const joinedTournaments = (joined as UserJoinedTournaments[]).flatMap(
+    (item) => item.tournaments
+  );
 
   if (error) {
     console.error(error);
     return { error: 'Failed to fetch tournaments' };
   }
 
-
-    return { ownTournaments: ownTournaments as Tournament[], joinedTournaments: joinedTournaments as Tournament[] }
-
+  return {
+    ownTournaments: ownTournaments as Tournament[],
+    joinedTournaments: joinedTournaments as Tournament[],
+  };
 }
 
 export async function joinTournament(tournamentId: string) {
@@ -271,4 +282,26 @@ export async function getTournamentPlayers(tournamentId: string) {
   }
 
   return { tournamentUsers };
+}
+
+export async function startTournament(tournamentId: string) {
+  const supabase = createClient();
+  await supabase
+    .from('tournaments')
+    .update({ started: true })
+    .eq('id', tournamentId);
+
+  const { success, error } =
+    await generateSingleEliminationBracket(tournamentId);
+  if (error) {
+    return { error: error };
+  }
+  await supabase
+    .from('tournaments')
+    .update({ started: true })
+    .eq('id', tournamentId);
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: success, message: 'Tournament successfully started!' };
 }

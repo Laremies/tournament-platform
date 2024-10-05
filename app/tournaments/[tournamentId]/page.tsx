@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/server';
 import { MessageSquare, Info, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import StartTournamentButton from '@/components/tournament/start-tournament-button';
 
 interface Params {
   tournamentId: string;
@@ -48,6 +49,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
           </CardHeader>
           <CardContent>
             <p>bracket</p>
+            {!tournament?.started && (
+              <StartTournamentButton tournamentId={id} />
+            )}
           </CardContent>
         </Card>
         {/* Tournament Statistics and Participants */}
