@@ -8,3 +8,14 @@ export interface Tournament {
   started: boolean;
   finished: boolean;
 }
+
+export interface singleEliminationMatch {
+  id: string;
+  tournament_id: string;
+  round: number;
+  home_player_id?: string;
+  away_player_id?: string;
+  home_match_id?: string;
+  away_match_id?: string;
+  winner_id?: string;
+}

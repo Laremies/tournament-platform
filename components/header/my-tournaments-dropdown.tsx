@@ -10,10 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-
-} from "@/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
-
+} from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface Tournament {
   id: string;
@@ -21,14 +19,16 @@ interface Tournament {
 }
 
 interface TournamentDropdownProps {
-  ownTournaments: Tournament[]
-  joinedTournaments: Tournament[]
+  ownTournaments: Tournament[];
+  joinedTournaments: Tournament[];
 }
 
-export default function TournamentDropdown({ ownTournaments, joinedTournaments }: TournamentDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter()
-
+export default function TournamentDropdown({
+  ownTournaments,
+  joinedTournaments,
+}: TournamentDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
 
   const handleTournamentClick = (tournamentId: string) => {
     router.push(`/tournaments/${tournamentId}`);
@@ -42,14 +42,14 @@ export default function TournamentDropdown({ ownTournaments, joinedTournaments }
           key={tournament.id}
           onClick={() => handleTournamentClick(tournament.id)}
         >
-            {tournament.name}
+          {tournament.name}
         </DropdownMenuItem>
       ))}
       {tournaments.length === 0 && (
         <DropdownMenuItem disabled>No tournaments found</DropdownMenuItem>
       )}
     </div>
-  )
+  );
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -61,8 +61,12 @@ export default function TournamentDropdown({ ownTournaments, joinedTournaments }
         <DropdownMenuSeparator />
         <Tabs defaultValue="joined" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="joined" className='text-xs'>Joined</TabsTrigger>
-            <TabsTrigger value="owned" className='text-xs'>Owned</TabsTrigger>
+            <TabsTrigger value="joined" className="text-xs">
+              Joined
+            </TabsTrigger>
+            <TabsTrigger value="owned" className="text-xs">
+              Owned
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="joined">
             {renderTournamentList(joinedTournaments)}

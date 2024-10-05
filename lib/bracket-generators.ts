@@ -1,17 +1,11 @@
 'use server';
 import { createClient } from '@/utils/supabase/server';
+import { singleEliminationMatch } from '@/app/types/types';
 
-function shuffleArray(array: any[]): void {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-export const generateSingleEliminationBracket = async ( //generates the matchups for a single elimination bracket tournament
+export const generateSingleEliminationBracket = async (
+  //generates the matchups for a single elimination bracket tournament
   tournamentId: string
 ) => {
-    
   const supabase = createClient();
 
   const {
@@ -41,17 +35,16 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
     .select('*')
     .eq('tournament_id', tournamentId);
 
-
   if (!tournamentPlayers) {
     return {
       error: 'No players found for this tournament',
     };
   }
 
-  if(tournamentPlayers.length < 2) {
-      return {
-          error: 'Tournament must have at least 2 players to generate bracket'
-      }
+  if (tournamentPlayers.length < 2) {
+    return {
+      error: 'Tournament must have at least 2 players to generate bracket',
+    };
   }
 
   const numPlayers = tournamentPlayers.length;
@@ -62,10 +55,9 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
   //TODO: right now if there are 2^n+1 players, the extra player gets a spot straight in the finals
   //maybe rotate / randomize in between iterations / hows that gonna look with the visualization
 
-  // Create matches for the first round
-  let matches = [];
+  const matches = [];
   let currentRound = 1;
-  let currentPlayers = [...tournamentPlayers];
+  const currentPlayers = [...tournamentPlayers];
 
   // Create matches for the first round
   for (let i = 0; i < nextPowerOfTwo; i += 2) {
@@ -80,7 +72,7 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
         round: currentRound,
       });
     } else if (homePlayer) {
-      //uneven amount of matchups leads to extra player advancing automatically 
+      //uneven amount of matchups leads to extra player advancing automatically
       matches.push({
         tournament_id: tournamentId,
         home_player_id: homePlayer.id,
@@ -106,14 +98,16 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
     prevRoundMatches.push(...data);
   }
 
-    // Generate the rest of the rounds
-  while (prevRoundMatches.length > 1 || currentRound > 5) {
+  // Generate the rest of the rounds
+  while (
+    prevRoundMatches.length > 1 &&
+    currentRound < Math.log2(nextPowerOfTwo)
+  ) {
     currentRound++;
-    let nextRoundMatches = [];
+    const nextRoundMatches = [];
     for (let i = 0; i < prevRoundMatches.length; i += 2) {
-      const homeMatch : any = prevRoundMatches[i] || null;
-      const awayMatch : any = prevRoundMatches[i + 1] || null;
-
+      const homeMatch: singleEliminationMatch = prevRoundMatches[i] || null;
+      const awayMatch: singleEliminationMatch = prevRoundMatches[i + 1] || null;
 
       if (homeMatch && awayMatch) {
         nextRoundMatches.push({
@@ -131,7 +125,7 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
           tournament_id: tournamentId,
           home_matchup_id: homeMatch.id,
           away_matchup_id: null,
-          home_player_id : homeMatch.winner_id ? homeMatch.winner_id : null,
+          home_player_id: homeMatch.winner_id ? homeMatch.winner_id : null,
           winner_id: homeMatch.winner_id ? homeMatch.winner_id : null,
           round: currentRound,
         });
@@ -151,7 +145,13 @@ export const generateSingleEliminationBracket = async ( //generates the matchups
 
       prevRoundMatches.push(...data);
     }
-
   }
   return { success: true };
 };
+
+function shuffleArray(array: unknown[]): void {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}

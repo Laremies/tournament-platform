@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Checkbox } from './ui/checkbox';
 import { User } from '@supabase/supabase-js';
 import { Zap } from 'lucide-react';
+import { SubmitButton } from '@/components/submit-button';
 
 interface TournamentFormModalProps {
   user: User | null;
@@ -30,16 +30,6 @@ interface Response {
   error?: string;
 }
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? 'Submitting...' : 'Submit'}
-    </Button>
-  );
-}
-
 export default function TournamentFormModal({
   user,
 }: TournamentFormModalProps) {
@@ -49,9 +39,11 @@ export default function TournamentFormModal({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
     try {
       const formData = new FormData(event.currentTarget as HTMLFormElement);
       const response = await submitTournament(formData);
+
       setResponse({ success: true, tournamentId: response.tournamentId });
     } catch (error) {
       setResponse({ error: String(error) });
@@ -124,7 +116,7 @@ export default function TournamentFormModal({
                 <Checkbox id="isPrivate" name="isPrivate" />
               </div>
               <div className="flex justify-end items-center">
-                <SubmitButton />
+                <SubmitButton>Create</SubmitButton>
               </div>
             </form>
           </DialogContent>

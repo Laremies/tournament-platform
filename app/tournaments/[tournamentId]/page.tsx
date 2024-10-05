@@ -49,7 +49,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
           </CardHeader>
           <CardContent>
             <p>bracket</p>
-            <StartTournamentButton tournamentId={id} />
+            {!tournament?.started && (
+              <StartTournamentButton tournamentId={id} />
+            )}
           </CardContent>
         </Card>
         {/* Tournament Statistics and Participants */}
