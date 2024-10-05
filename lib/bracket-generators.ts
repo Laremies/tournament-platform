@@ -1,6 +1,6 @@
 'use server';
 import { createClient } from '@/utils/supabase/server';
-import { singleEliminationMatch } from '@/app/types/types';
+import { SingleEliminationMatch } from '@/app/types/types';
 
 export const generateSingleEliminationBracket = async (
   //generates the matchups for a single elimination bracket tournament
@@ -49,38 +49,34 @@ export const generateSingleEliminationBracket = async (
 
   const numPlayers = tournamentPlayers.length;
   const nextPowerOfTwo = Math.pow(2, Math.ceil(Math.log2(numPlayers)));
+  const numByes = nextPowerOfTwo - numPlayers;
 
   shuffleArray(tournamentPlayers);
   //TODO: wrap this in a try block? and delete all matches if error occurs
-  //TODO: right now if there are 2^n+1 players, the extra player gets a spot straight in the finals
-  //maybe rotate / randomize in between iterations / hows that gonna look with the visualization
 
-  const matches = [];
   let currentRound = 1;
-  const currentPlayers = [...tournamentPlayers];
+  const matches: SingleEliminationMatch[] = [];
 
-  // Create matches for the first round
-  for (let i = 0; i < nextPowerOfTwo; i += 2) {
-    const homePlayer = currentPlayers[i] || null;
-    const awayPlayer = currentPlayers[i + 1] || null;
+  //byes are players who get a free pass to the next round
+  for (let i = 0; i < numByes; i++) {
+    const homePlayer = tournamentPlayers[i] || null;
+    matches.push({
+      tournament_id: tournamentId,
+      home_player_id: homePlayer ? homePlayer.user_id : null,
+      round: currentRound,
+      winner_id: homePlayer ? homePlayer.user_id : null,
+    });
+  }
 
-    if (homePlayer && awayPlayer) {
-      matches.push({
-        tournament_id: tournamentId,
-        home_player_id: homePlayer.id,
-        away_player_id: awayPlayer.id,
-        round: currentRound,
-      });
-    } else if (homePlayer) {
-      //uneven amount of matchups leads to extra player advancing automatically
-      matches.push({
-        tournament_id: tournamentId,
-        home_player_id: homePlayer.id,
-        away_player_id: null,
-        winner_id: homePlayer.id,
-        round: currentRound,
-      });
-    }
+  for (let i = numByes; i < numPlayers; i += 2) {
+    const homePlayer = tournamentPlayers[i] || null;
+    const awayPlayer = tournamentPlayers[i + 1] || null;
+    matches.push({
+      tournament_id: tournamentId,
+      home_player_id: homePlayer ? homePlayer.user_id : null,
+      away_player_id: awayPlayer ? awayPlayer.user_id : null,
+      round: currentRound,
+    });
   }
 
   // Insert first round matches into the database and store their IDs
@@ -106,30 +102,18 @@ export const generateSingleEliminationBracket = async (
     currentRound++;
     const nextRoundMatches = [];
     for (let i = 0; i < prevRoundMatches.length; i += 2) {
-      const homeMatch: singleEliminationMatch = prevRoundMatches[i] || null;
-      const awayMatch: singleEliminationMatch = prevRoundMatches[i + 1] || null;
+      const homeMatch: SingleEliminationMatch = prevRoundMatches[i] || null;
+      const awayMatch: SingleEliminationMatch = prevRoundMatches[i + 1] || null;
 
-      if (homeMatch && awayMatch) {
-        nextRoundMatches.push({
-          tournament_id: tournamentId,
-          home_matchup_id: homeMatch.id,
-          away_matchup_id: awayMatch.id,
-          round: currentRound,
-          //if previous matchup had a winner, set them automatically as a player in the next match
-          home_player_id: homeMatch.winner_id ? homeMatch.winner_id : null,
-          away_player_id: awayMatch.winner_id ? awayMatch.winner_id : null,
-        });
-      } else if (homeMatch) {
-        //no away match, home player advances automatically
-        nextRoundMatches.push({
-          tournament_id: tournamentId,
-          home_matchup_id: homeMatch.id,
-          away_matchup_id: null,
-          home_player_id: homeMatch.winner_id ? homeMatch.winner_id : null,
-          winner_id: homeMatch.winner_id ? homeMatch.winner_id : null,
-          round: currentRound,
-        });
-      }
+      nextRoundMatches.push({
+        tournament_id: tournamentId,
+        home_matchup_id: homeMatch.id,
+        away_matchup_id: awayMatch.id,
+        round: currentRound,
+        //if previous matchup had a winner, set them automatically as a player in the next match
+        home_player_id: homeMatch.winner_id ? homeMatch.winner_id : null,
+        away_player_id: awayMatch.winner_id ? awayMatch.winner_id : null,
+      });
     }
     prevRoundMatches = [];
     for (const match of nextRoundMatches) {

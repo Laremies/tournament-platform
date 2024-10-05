@@ -9,8 +9,8 @@ export interface Tournament {
   finished: boolean;
 }
 
-export interface singleEliminationMatch {
-  id: string;
+export interface SingleEliminationMatch {
+  id?: string;
   tournament_id: string;
   round: number;
   home_player_id?: string;
