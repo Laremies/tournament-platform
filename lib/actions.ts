@@ -6,6 +6,7 @@ import { Tournament } from '@/app/types/types';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { generateSingleEliminationBracket } from './bracket-generators';
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
@@ -271,4 +272,16 @@ export async function getTournamentPlayers(tournamentId: string) {
   }
 
   return { tournamentUsers };
+}
+
+export async function startTournament(tournamentId: string) {
+
+  const { success, error} = await generateSingleEliminationBracket(tournamentId);
+  if (error) {
+    return { error: error };
+  }
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: success, message: 'Tournament successfully started!' }
 }
