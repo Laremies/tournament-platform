@@ -2,6 +2,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { SingleEliminationMatch } from '@/app/types/types';
 
+//DISCLAIMER! THIS CODE WILL BE REFACTORED AND REDONE IN THE FUTURE
 export const generateSingleEliminationBracket = async (
   //generates the matchups for a single elimination bracket tournament
   tournamentId: string
@@ -56,11 +57,12 @@ export const generateSingleEliminationBracket = async (
 
   let currentRound = 1;
   const matches: SingleEliminationMatch[] = [];
+  const byeMatches = [];
 
   //byes are players who get a free pass to the next round
   for (let i = 0; i < numByes; i++) {
     const homePlayer = tournamentPlayers[i] || null;
-    matches.push({
+    byeMatches.push({
       tournament_id: tournamentId,
       home_player_id: homePlayer ? homePlayer.user_id : null,
       round: currentRound,
@@ -79,7 +81,8 @@ export const generateSingleEliminationBracket = async (
     });
   }
 
-  // Insert first round matches into the database and store their IDs
+  // Insert first round matches into the database
+  //bye matches are not sent to the database
   let prevRoundMatches = [];
   for (const match of matches) {
     const { data, error } = await createClient()
@@ -93,28 +96,69 @@ export const generateSingleEliminationBracket = async (
 
     prevRoundMatches.push(...data);
   }
+  prevRoundMatches.push(...byeMatches);
+  shuffleArray(prevRoundMatches);
 
   // Generate the rest of the rounds
-  while (
-    prevRoundMatches.length > 1 &&
-    currentRound < Math.log2(nextPowerOfTwo)
-  ) {
-    currentRound++;
-    const nextRoundMatches = [];
-    for (let i = 0; i < prevRoundMatches.length; i += 2) {
-      const homeMatch: SingleEliminationMatch = prevRoundMatches[i] || null;
-      const awayMatch: SingleEliminationMatch = prevRoundMatches[i + 1] || null;
+ while (
+  prevRoundMatches.length > 1 &&
+  currentRound < Math.log2(nextPowerOfTwo)
+) {
+  currentRound++;
+  const nextRoundMatches = [];
 
+  for (let i = 0; i < prevRoundMatches.length; i += 2) {
+    const homeMatch: SingleEliminationMatch = prevRoundMatches[i] || null;
+    const awayMatch: SingleEliminationMatch = prevRoundMatches[i + 1] || null;
+
+    const isRound2 = currentRound === 2;
+    const homeMatchExists = homeMatch && homeMatch.id;
+    const awayMatchExists = awayMatch && awayMatch.id;
+
+    if (isRound2) {
+      if (!homeMatchExists && awayMatchExists) {
+        // Home match is a bye
+        nextRoundMatches.push({
+          tournament_id: tournamentId,
+          home_player_id: homeMatch.winner_id,
+          away_matchup_id: awayMatch.id,
+          round: currentRound,
+        });
+      } else if (!awayMatchExists && homeMatchExists) {
+        // Away match is a bye
+        nextRoundMatches.push({
+          tournament_id: tournamentId,
+          away_player_id: awayMatch.winner_id,
+          home_matchup_id: homeMatch.id,
+          round: currentRound,
+        });
+      } else if (!homeMatchExists && !awayMatchExists) {
+        // Both are bye matches
+        nextRoundMatches.push({
+          tournament_id: tournamentId,
+          home_player_id: homeMatch.winner_id,
+          away_player_id: awayMatch.winner_id,
+          round: currentRound,
+        });
+      } else {
+        // Both are regular matches
+        nextRoundMatches.push({
+          tournament_id: tournamentId,
+          home_matchup_id: homeMatch.id,
+          away_matchup_id: awayMatch.id,
+          round: currentRound,
+        });
+      }
+    } else {
+      // For rounds other than round 2
       nextRoundMatches.push({
         tournament_id: tournamentId,
         home_matchup_id: homeMatch.id,
         away_matchup_id: awayMatch.id,
         round: currentRound,
-        //if previous matchup had a winner, set them automatically as a player in the next match
-        home_player_id: homeMatch.winner_id ? homeMatch.winner_id : null,
-        away_player_id: awayMatch.winner_id ? awayMatch.winner_id : null,
       });
     }
+  }
     prevRoundMatches = [];
     for (const match of nextRoundMatches) {
       const { data, error } = await createClient()
