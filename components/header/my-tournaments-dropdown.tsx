@@ -13,14 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
-interface Tournament {
+interface DropdownTournament {
   id: string;
   name: string;
 }
 
 interface TournamentDropdownProps {
-  ownTournaments: Tournament[];
-  joinedTournaments: Tournament[];
+  ownTournaments: DropdownTournament[];
+  joinedTournaments: DropdownTournament[];
 }
 
 export default function TournamentDropdown({
@@ -35,7 +35,7 @@ export default function TournamentDropdown({
     setIsOpen(false);
   };
 
-  const renderTournamentList = (tournaments: Tournament[]) => (
+  const renderTournamentList = (tournaments: DropdownTournament[]) => (
     <div className="space-y-1">
       {tournaments.map((tournament) => (
         <DropdownMenuItem

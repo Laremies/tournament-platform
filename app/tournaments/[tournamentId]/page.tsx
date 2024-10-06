@@ -16,11 +16,14 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   if (!id) {
     return <p>No tournament ID provided</p>;
   }
+
   const { tournament, error } = await getTournamentById(id);
   if (error) {
     return <p>{error}</p>;
   }
+
   const { data } = await createClient().auth.getUser();
+
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
 
   //check if user is aprticipating, if not show join button (data && data.user && data.user.id goofy af iknow)

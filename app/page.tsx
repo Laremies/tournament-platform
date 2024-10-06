@@ -1,6 +1,6 @@
 import {
   HowItWorksSection,
-  PopularTournaments,
+  TournamentsSection,
   SignUpButton,
 } from '@/components/ui/landing-pages';
 
@@ -21,7 +21,7 @@ export default async function Page() {
       </section>
 
       <HowItWorksSection />
-      <PopularTournaments />
+      <TournamentsSection title="Popular Tournaments" />
 
       <section className="w-full py-20">
         <div className="container mx-auto px-4 text-center">
