@@ -2,9 +2,13 @@ import {
   HowItWorksSection,
   TournamentsSection,
   SignUpButton,
+  BrowseTournamentsButton,
 } from '@/components/ui/landing-pages';
+import { getMostPopularTournaments } from '@/lib/actions';
 
 export default async function Page() {
+  const { popularTournaments } = await getMostPopularTournaments();
+
   return (
     <main className="w-full">
       <section className="w-full bg-gradient-to-b from-background to-muted py-20 text-center">
@@ -21,7 +25,11 @@ export default async function Page() {
       </section>
 
       <HowItWorksSection />
-      <TournamentsSection title="Popular Tournaments" />
+      <TournamentsSection
+        title="Popular Tournaments"
+        tournaments={popularTournaments}
+        button={<BrowseTournamentsButton />}
+      />
 
       <section className="w-full py-20">
         <div className="container mx-auto px-4 text-center">

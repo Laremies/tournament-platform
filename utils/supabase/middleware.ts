@@ -49,5 +49,13 @@ export const updateSession = async (request: NextRequest) => {
     return NextResponse.redirect(new URL('/sign-in', request.url));
   }
 
+  if (request.nextUrl.pathname.includes('/tournaments/')) {
+    //wtf
+    const tournamentId =
+      request.nextUrl.pathname.match(/\/tournaments\/(.*)/)?.[1];
+
+    await supabase.rpc('increment_views', { t_id: tournamentId });
+  }
+
   return response;
 };

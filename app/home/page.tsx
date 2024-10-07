@@ -2,10 +2,14 @@ import {
   BrowseTournamentsButton,
   TournamentsSection,
 } from '@/components/ui/landing-pages';
-import { getAllUserCurrentTournaments } from '@/lib/actions';
+import {
+  getAllUserCurrentTournaments,
+  getMostPopularTournaments,
+} from '@/lib/actions';
 
 export default async function Page() {
   const { tournaments } = await getAllUserCurrentTournaments();
+  const { popularTournaments } = await getMostPopularTournaments();
 
   return (
     <main className="w-full">
@@ -27,6 +31,7 @@ export default async function Page() {
 
       <TournamentsSection
         title="Popular Tournaments"
+        tournaments={popularTournaments}
         button={<BrowseTournamentsButton />}
       />
     </main>
