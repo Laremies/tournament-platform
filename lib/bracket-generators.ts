@@ -100,48 +100,57 @@ export const generateSingleEliminationBracket = async (
   shuffleArray(prevRoundMatches);
 
   // Generate the rest of the rounds
- while (
-  prevRoundMatches.length > 1 &&
-  currentRound < Math.log2(nextPowerOfTwo)
-) {
-  currentRound++;
-  const nextRoundMatches = [];
+  while (
+    prevRoundMatches.length > 1 &&
+    currentRound < Math.log2(nextPowerOfTwo)
+  ) {
+    currentRound++;
+    const nextRoundMatches = [];
 
-  for (let i = 0; i < prevRoundMatches.length; i += 2) {
-    const homeMatch: SingleEliminationMatch = prevRoundMatches[i] || null;
-    const awayMatch: SingleEliminationMatch = prevRoundMatches[i + 1] || null;
+    for (let i = 0; i < prevRoundMatches.length; i += 2) {
+      const homeMatch: SingleEliminationMatch = prevRoundMatches[i] || null;
+      const awayMatch: SingleEliminationMatch = prevRoundMatches[i + 1] || null;
 
-    const isRound2 = currentRound === 2;
-    const homeMatchExists = homeMatch && homeMatch.id;
-    const awayMatchExists = awayMatch && awayMatch.id;
+      const isRound2 = currentRound === 2;
+      const homeMatchExists = homeMatch && homeMatch.id;
+      const awayMatchExists = awayMatch && awayMatch.id;
 
-    if (isRound2) {
-      if (!homeMatchExists && awayMatchExists) {
-        // Home match is a bye
-        nextRoundMatches.push({
-          tournament_id: tournamentId,
-          home_player_id: homeMatch.winner_id,
-          away_matchup_id: awayMatch.id,
-          round: currentRound,
-        });
-      } else if (!awayMatchExists && homeMatchExists) {
-        // Away match is a bye
-        nextRoundMatches.push({
-          tournament_id: tournamentId,
-          away_player_id: awayMatch.winner_id,
-          home_matchup_id: homeMatch.id,
-          round: currentRound,
-        });
-      } else if (!homeMatchExists && !awayMatchExists) {
-        // Both are bye matches
-        nextRoundMatches.push({
-          tournament_id: tournamentId,
-          home_player_id: homeMatch.winner_id,
-          away_player_id: awayMatch.winner_id,
-          round: currentRound,
-        });
+      if (isRound2) {
+        if (!homeMatchExists && awayMatchExists) {
+          // Home match is a bye
+          nextRoundMatches.push({
+            tournament_id: tournamentId,
+            home_player_id: homeMatch.winner_id,
+            away_matchup_id: awayMatch.id,
+            round: currentRound,
+          });
+        } else if (!awayMatchExists && homeMatchExists) {
+          // Away match is a bye
+          nextRoundMatches.push({
+            tournament_id: tournamentId,
+            away_player_id: awayMatch.winner_id,
+            home_matchup_id: homeMatch.id,
+            round: currentRound,
+          });
+        } else if (!homeMatchExists && !awayMatchExists) {
+          // Both are bye matches
+          nextRoundMatches.push({
+            tournament_id: tournamentId,
+            home_player_id: homeMatch.winner_id,
+            away_player_id: awayMatch.winner_id,
+            round: currentRound,
+          });
+        } else {
+          // Both are regular matches
+          nextRoundMatches.push({
+            tournament_id: tournamentId,
+            home_matchup_id: homeMatch.id,
+            away_matchup_id: awayMatch.id,
+            round: currentRound,
+          });
+        }
       } else {
-        // Both are regular matches
+        // For rounds other than round 2
         nextRoundMatches.push({
           tournament_id: tournamentId,
           home_matchup_id: homeMatch.id,
@@ -149,16 +158,7 @@ export const generateSingleEliminationBracket = async (
           round: currentRound,
         });
       }
-    } else {
-      // For rounds other than round 2
-      nextRoundMatches.push({
-        tournament_id: tournamentId,
-        home_matchup_id: homeMatch.id,
-        away_matchup_id: awayMatch.id,
-        round: currentRound,
-      });
     }
-  }
     prevRoundMatches = [];
     for (const match of nextRoundMatches) {
       const { data, error } = await createClient()

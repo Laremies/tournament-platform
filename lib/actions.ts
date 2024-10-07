@@ -297,7 +297,6 @@ export async function joinTournament(tournamentId: string) {
     return { error: 'Failed to join tournament' };
   }
 
-
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };

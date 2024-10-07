@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -24,36 +24,19 @@ interface TournamentFormModalProps {
   user: User | null;
 }
 
-interface Response {
-  success?: boolean;
-  tournamentId?: string;
-  error?: string;
-}
-
 export default function TournamentFormModal({
   user,
 }: TournamentFormModalProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [response, setResponse] = useState<Response | null>(null);
+  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    try {
-      const formData = new FormData(event.currentTarget as HTMLFormElement);
-      const response = await submitTournament(formData);
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
+    const response = await submitTournament(formData);
 
-      setResponse({ success: true, tournamentId: response.tournamentId });
-    } catch (error) {
-      setResponse({ error: String(error) });
-    }
-  };
-
-  const router = useRouter();
-
-  //when tournament is created, redirect to the tournament page and toast a success message
-  useEffect(() => {
     if (response?.success) {
       setOpen(false);
       router.push(`/tournaments/${response.tournamentId}`);
@@ -68,7 +51,7 @@ export default function TournamentFormModal({
         description: response.error,
       });
     }
-  }, [router, response, toast]);
+  };
 
   //we can add client side validation later
   return (
