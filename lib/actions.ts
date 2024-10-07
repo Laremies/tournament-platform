@@ -297,6 +297,17 @@ export async function joinTournament(tournamentId: string) {
     return { error: 'Failed to join tournament' };
   }
 
+  // Increment player count in the tournaments table
+  const { error: updateError } = await supabase
+    .from('tournaments')
+    .update({ player_count: tournament.player_count + 1 })
+    .eq('id', tournamentId);
+
+  if (updateError) {
+    console.error(updateError);
+    return { error: 'Failed to update player count' };
+  }
+
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };
@@ -327,11 +338,6 @@ export async function getTournamentPlayerCount(tournamentId: string) {
 
 export async function startTournament(tournamentId: string) {
   const supabase = createClient();
-
-  await supabase
-    .from('tournaments')
-    .update({ started: true })
-    .eq('id', tournamentId);
 
   const { success, error } =
     await generateSingleEliminationBracket(tournamentId);
