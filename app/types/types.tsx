@@ -7,7 +7,7 @@ export interface Tournament {
   private: boolean;
   started: boolean;
   finished: boolean;
-  playerCount: number;
+  player_count: number;
 }
 
 export interface SingleEliminationMatch {

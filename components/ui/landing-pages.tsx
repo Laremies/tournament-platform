@@ -85,7 +85,7 @@ const TournamentsSection: React.FC<TournamentsSectionProps> = ({
               id={tournament.id}
               name={tournament.name}
               description={tournament.description}
-              players={tournament.playerCount}
+              players={tournament.player_count}
             />
           ))
         ) : (

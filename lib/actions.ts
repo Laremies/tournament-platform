@@ -284,9 +284,15 @@ export async function joinTournament(tournamentId: string) {
     console.error(error);
     return { error: 'Tournament not found' };
   }
-  //somewhere here add a check if tournament.max_player_count > tournamentUsers.length
 
-  //insert tournament-user mapping into the db
+  if (tournament.started) {
+    return { error: 'Tournament has already started' };
+  }
+
+  if (tournament.max_player_count && tournament.player_count >= tournament.max_player_count) {
+    return { error: 'Tournament is full' };
+  }
+
   const { data: tournamentUser, error: playerError } = await supabase
     .from('tournamentUsers')
     .insert([{ tournament_id: tournamentId, user_id: userObject.data.user.id }])
@@ -297,6 +303,15 @@ export async function joinTournament(tournamentId: string) {
     return { error: 'Failed to join tournament' };
   }
 
+  const { error: updateError } = await supabase
+    .from('tournaments')
+    .update({ player_count: tournament.player_count + 1 })
+    .eq('id', tournamentId);
+
+  if (updateError) {
+    console.error(updateError);
+    return { error: 'Failed to update player count' };
+  }
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };
@@ -341,4 +356,19 @@ export async function startTournament(tournamentId: string) {
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: success, message: 'Tournament successfully started!' };
+}
+
+export async function getMostPopularTournaments() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.rpc('get_most_popular_tournaments', {
+    limit_count: 6,
+  });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch popular tournaments' };
+  }
+
+  return { popularTournaments: data as Tournament[] };
 }
