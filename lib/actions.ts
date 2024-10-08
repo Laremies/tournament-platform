@@ -14,6 +14,7 @@ interface UserJoinedTournaments {
 
 export const signUpAction = async (formData: FormData) => {
   const supabase = createClient();
+  const username = formData.get('username')?.toString();
   const email = formData.get('email')?.toString();
   const password = formData.get('password')?.toString();
   const origin = headers().get('origin');
@@ -26,6 +27,7 @@ export const signUpAction = async (formData: FormData) => {
     email,
     password,
     options: {
+      data: { username },
       emailRedirectTo: `${origin}/auth/callback`,
     },
   });
@@ -323,8 +325,8 @@ export async function getTournamentPlayers(tournamentId: string) {
   //need to provide tags?
   const { data: tournamentUsers, error } = await supabase
     .from('tournamentUsers')
-    .select('*')
-    .eq('tournament_id', tournamentId); //TODO: add natural join with users table to get usernames and stuff
+    .select('*, users(username)')
+    .eq('tournament_id', tournamentId);
 
   if (error) {
     console.error(error);
