@@ -289,7 +289,7 @@ export async function joinTournament(tournamentId: string) {
     return { error: 'Tournament has already started' };
   }
 
-  if (tournament.player_count >= tournament.max_player_count) {
+  if (tournament.max_player_count && tournament.player_count >= tournament.max_player_count) {
     return { error: 'Tournament is full' };
   }
 
