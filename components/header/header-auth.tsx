@@ -5,11 +5,19 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { createClient } from '@/utils/supabase/server';
 import { LogIn, LogOut } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default async function AuthButton() {
+  const supabase = createClient();
   const {
     data: { user },
-  } = await createClient().auth.getUser();
+  } = await supabase.auth.getUser();
+
+  const { data: username } = await supabase
+    .from('users')
+    .select('username')
+    .eq('id', user?.id)
+    .single();
 
   if (!hasEnvVars) {
     return (
@@ -52,7 +60,13 @@ export default async function AuthButton() {
   }
   return user ? (
     <div className="flex items-center gap-4">
-      Hey, {user.email}!
+      <Avatar>
+        <AvatarImage src={''} alt={''} />{' '}
+        {/* placeholder until avatars implemented */}
+        <AvatarFallback>
+          {username?.username[0].charAt(0).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
       <form action={signOutAction}>
         <Button type="submit" variant={'outline'}>
           <LogOut className="mr-2 h-4 w-4" />
