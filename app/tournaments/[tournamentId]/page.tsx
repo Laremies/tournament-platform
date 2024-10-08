@@ -112,9 +112,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                             src={participant.avatar}
                             alt={participant.name}
                           />
-                          <AvatarFallback></AvatarFallback>
+                            <AvatarFallback>{participant.users.username.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{participant.id}</span>
+                        <span className="font-medium">{participant.users.username}</span>
                       </div>
                     ))}
                 </div>

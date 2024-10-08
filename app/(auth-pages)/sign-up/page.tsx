@@ -32,6 +32,16 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
           </div>
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                name="username"
+                type="username"
+                minLength={3}
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -41,6 +51,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                 required
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
