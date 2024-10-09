@@ -1,10 +1,10 @@
-import clsx from 'clsx';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from '../ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -25,19 +25,23 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{name}</CardTitle>
+        <CardTitle className="line-clamp-1">{name}</CardTitle>
         <CardDescription>{players} Players</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className={clsx('mb-2', !description && 'text-muted-foreground')}>
+        <p
+          className={`line-clamp-3 ${description ? '' : 'text-muted-foreground'}`}
+        >
           {description || 'Tournament has no description.'}
         </p>
+      </CardContent>
+      <CardFooter className="mt-auto pt-6">
         <Link href={`/tournaments/${id}`}>
           <Button variant="outline" size="sm">
             View Tournament
           </Button>
         </Link>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 };

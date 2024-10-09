@@ -1,8 +1,12 @@
 import { JoinButton } from '@/components/tournament/join-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getTournamentById, getTournamentPlayers } from '@/lib/actions';
+import {
+  getTournamentById,
+  getTournamentPlayers,
+  getUsername,
+} from '@/lib/actions';
 import { createClient } from '@/utils/supabase/server';
-import { MessageSquare, Info, Users } from 'lucide-react';
+import { Info, Users, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StartTournamentButton from '@/components/tournament/start-tournament-button';
@@ -33,7 +37,13 @@ const TournamentPage = async ({ params }: { params: Params }) => {
     data.user.id &&
     tournamentPlayers &&
     tournamentPlayers.some((player) => player.user_id === data.user.id);
-  //const isUserCreator = data && data.user && data.user.id === tournament?.creator_id
+
+  const isUserCreator =
+    data && data.user && data.user.id === tournament?.creator_id;
+
+  const { username: creatorUsername } = await getUsername(
+    tournament?.creator_id
+  );
 
   //made mostly by v0
   return (
@@ -51,8 +61,10 @@ const TournamentPage = async ({ params }: { params: Params }) => {
             <CardTitle>Bracket</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>bracket</p>
-            {!tournament?.started && (
+            <p className="text-muted-foreground">
+              The bracket will be generated once the tournament starts.
+            </p>
+            {!tournament?.started && isUserCreator && (
               <StartTournamentButton tournamentId={id} />
             )}
           </CardContent>
@@ -84,8 +96,8 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 </span>
               </div>
               <div className="flex items-center">
-                <MessageSquare className="mr-2 h-4 w-4 text-primary" />
-                <span>test</span>
+                <Crown className="mr-2 h-4 w-4 text-primary" />
+                <span>Creator: {creatorUsername}</span>
               </div>
               {!isUserParticipant && (
                 <JoinButton user={data.user} tournamentId={id} />
