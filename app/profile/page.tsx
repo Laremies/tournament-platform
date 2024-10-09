@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Progress from "@/components/ui/progress";
@@ -9,18 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { createClient } from '@/utils/supabase/server';
 
 import {
-    getTournamentById,
-    getTournamentPlayers,
     getUsername,
 } from '@/lib/actions'
 
 import {
-    BrowseTournamentsButton,
-    TournamentsSection,
-} from '@/components/ui/landing-pages';
-import {
     getAllUserCurrentTournaments,
-    getMostPopularTournaments,
 } from '@/lib/actions';
 export default async function Component() {
     const {
@@ -30,18 +22,12 @@ export default async function Component() {
     const test1 = await getUsername(user?.id);
 
     const { tournaments } = await getAllUserCurrentTournaments();
-    // const tournaments = null
-    console.log(tournaments)
 
 
     return (
         <div className="container mx-auto p-4">
             <div className="flex items-center space-x-4 mb-6">
 
-                {/* <Avatar className="w-16 h-16">
-                    <AvatarImage src="/placeholder.svg" alt="@nguyentritin211@gmail.com" />
-                    <AvatarFallback>T</AvatarFallback>
-                </Avatar> */}
                 <Avatar className="w-16 h-16">
                     <AvatarImage src={''} alt={''} />{' '}
                     <AvatarFallback>{test1.username.charAt(0).toUpperCase()}</AvatarFallback>
@@ -64,18 +50,6 @@ export default async function Component() {
                         </TabsList>
                         <ScrollArea className="h-[355px] rounded-md  mt-2">
                             <TabsContent value="current">
-                                {/* <Card className="mt-4">
-                                    <CardHeader>
-                                        <CardTitle>City League Championship</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>Round: Group Stage</p>
-                                        <p>Next match: July 20, 2023</p>
-                                    </CardContent>
-
-                                </Card> */}
-
-
                                 <div className="space-y-4">
                                     {tournaments != null ? (
                                         tournaments.map((tournament) => (
