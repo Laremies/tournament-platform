@@ -5,17 +5,13 @@ import Progress from '@/components/ui/progress';
 import { CalendarDays, Trophy, Swords } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { createClient } from '@/utils/supabase/server';
-
-import { getUsername } from '@/lib/actions';
+import { getUsername, getAuthUser } from '@/lib/actions';
 
 import { getAllUserCurrentTournaments } from '@/lib/actions';
 export default async function Component() {
-  const {
-    data: { user },
-  } = await createClient().auth.getUser();
+  const user = await getAuthUser();
 
-  const test1 = await getUsername(user?.id);
+  const usernames = await getUsername(user?.id);
 
   const { tournaments } = await getAllUserCurrentTournaments();
 
@@ -25,11 +21,11 @@ export default async function Component() {
         <Avatar className="w-16 h-16">
           <AvatarImage src={''} alt={''} />{' '}
           <AvatarFallback>
-            {test1.username.charAt(0).toUpperCase()}
+            {usernames.username.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-2xl font-bold">{test1.username}</h1>
+          <h1 className="text-2xl font-bold">{usernames.username}</h1>
           <p className="text-gray-500">
             @{user ? user.email : 'guest@example.com'}
           </p>
@@ -54,7 +50,6 @@ export default async function Component() {
                           <CardTitle>{tournament.name}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          {/* <p>Round: {tournament.round || "Not specified"}</p> */}
                           <p>Players: {tournament.player_count}</p>
                           <p>Round: Group Stage</p>
                           <p>Next match: July 20, 2023</p>
