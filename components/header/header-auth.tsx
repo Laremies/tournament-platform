@@ -1,4 +1,4 @@
-import { getUsername, signOutAction } from '@/lib/actions';
+import { getUsername, signOutAction, profile } from '@/lib/actions';
 import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
@@ -54,13 +54,16 @@ export default async function AuthButton() {
       </>
     );
   }
+
   return user ? (
     <div className="flex items-center gap-4">
-      <Avatar>
-        <AvatarImage src={''} alt={''} />{' '}
-        {/* placeholder until avatars implemented */}
-        <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
-      </Avatar>
+      <a href="/profile" >
+        <Avatar>
+          <AvatarImage src={''} alt={''} />{' '}
+          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+      </a>
+
       <form action={signOutAction}>
         <Button type="submit" variant={'outline'}>
           <LogOut className="mr-2 h-4 w-4" />
