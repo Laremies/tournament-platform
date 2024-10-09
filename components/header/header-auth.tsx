@@ -1,4 +1,4 @@
-import { signOutAction } from '@/lib/actions';
+import { getUsername, signOutAction } from '@/lib/actions';
 import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
@@ -13,11 +13,7 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: username } = await supabase
-    .from('users')
-    .select('username')
-    .eq('id', user?.id)
-    .single();
+  const { username } = await getUsername(user?.id);
 
   if (!hasEnvVars) {
     return (
@@ -63,9 +59,7 @@ export default async function AuthButton() {
       <Avatar>
         <AvatarImage src={''} alt={''} />{' '}
         {/* placeholder until avatars implemented */}
-        <AvatarFallback>
-          {username?.username[0].charAt(0).toUpperCase()}
-        </AvatarFallback>
+        <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
       </Avatar>
       <form action={signOutAction}>
         <Button type="submit" variant={'outline'}>

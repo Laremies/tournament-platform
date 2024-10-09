@@ -377,3 +377,15 @@ export async function getMostPopularTournaments() {
 
   return { popularTournaments: data as Tournament[] };
 }
+
+export async function getUsername(userId: string | undefined) {
+  const supabase = createClient();
+
+  const { data } = await supabase
+    .from('users')
+    .select('username')
+    .eq('id', userId)
+    .single();
+
+  return { username: data?.username as string };
+}
