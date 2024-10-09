@@ -57,7 +57,7 @@ export default async function AuthButton() {
 
   return user ? (
     <div className="flex items-center gap-4">
-      <a href="/profile" >
+      <a href="/profile">
         <Avatar>
           <AvatarImage src={''} alt={''} />{' '}
           <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
