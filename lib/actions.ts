@@ -389,3 +389,51 @@ export async function getUsername(userId: string | undefined) {
 
   return { username: data?.username as string };
 }
+
+export async function getPublicMessages(tournamentId: string) {
+const supabase = createClient();
+  const { data, error } = await supabase
+    .from('publicMessages')
+    .select('*, users(username)')
+    .eq('tournament_id', tournamentId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public messages' };
+  }
+
+  return { messages: data };
+}
+
+export async function submitNewPublicMessage(formData: FormData, tournamentId: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const participants = await getTournamentPlayers(tournamentId);
+  if (!userObject.data.user || !participants.tournamentUsers || !participants.tournamentUsers.some((player) => player.user_id === userObject.data.user?.id)) {
+    console.log('You must be a participant in the tournament to send a message');
+    return { error: 'You must be a participant in the tournament to send a message' };
+  }
+
+
+  const data = {
+    message: formData.get('message') as string,
+    tournament_id: tournamentId,
+    user_id: userObject.data.user.id as string,
+  };
+
+  const { error } = await supabase.from('publicMessages').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send message' };
+  }
+
+  return { success: true };
+}
