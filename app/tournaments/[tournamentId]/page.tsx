@@ -144,7 +144,13 @@ const TournamentPage = async ({ params }: { params: Params }) => {
             </CardHeader>
             <CardContent>
               <div>
-                <ChatComponent tournamentId={id} />
+                {isUserParticipant ? (
+                  <ChatComponent tournamentId={id} />
+                ) : (
+                  <p className="text-muted-foreground">
+                    You must be a participant to chat
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

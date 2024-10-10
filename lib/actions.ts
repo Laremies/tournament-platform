@@ -391,7 +391,7 @@ export async function getUsername(userId: string | undefined) {
 }
 
 export async function getPublicMessages(tournamentId: string) {
-const supabase = createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('publicMessages')
     .select('*, users(username)')
@@ -406,7 +406,10 @@ const supabase = createClient();
   return { messages: data };
 }
 
-export async function submitNewPublicMessage(formData: FormData, tournamentId: string) {
+export async function submitNewPublicMessage(
+  formData: FormData,
+  tournamentId: string
+) {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
 
@@ -416,11 +419,20 @@ export async function submitNewPublicMessage(formData: FormData, tournamentId: s
   }
 
   const participants = await getTournamentPlayers(tournamentId);
-  if (!userObject.data.user || !participants.tournamentUsers || !participants.tournamentUsers.some((player) => player.user_id === userObject.data.user?.id)) {
-    console.log('You must be a participant in the tournament to send a message');
-    return { error: 'You must be a participant in the tournament to send a message' };
+  if (
+    !userObject.data.user ||
+    !participants.tournamentUsers ||
+    !participants.tournamentUsers.some(
+      (player) => player.user_id === userObject.data.user?.id
+    )
+  ) {
+    console.log(
+      'You must be a participant in the tournament to send a message'
+    );
+    return {
+      error: 'You must be a participant in the tournament to send a message',
+    };
   }
-
 
   const data = {
     message: formData.get('message') as string,
