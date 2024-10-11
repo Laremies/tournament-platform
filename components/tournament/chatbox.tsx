@@ -32,13 +32,31 @@ export function ChatBox({
   const [messages, setMessages] = useState<PublicMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const { toast } = useToast();
 
-  //subscribe to new messages
   useEffect(() => {
     setMessages(initMessages);
-    supabase
+  }, [initMessages]);
+
+  //TODO: still a small bug where if someone sends a message quickly after reloading the page, the websocket connection is not established yet and the message is not shown
+  useEffect(() => {
+    //handle new server message
+    const handleNewMessage = async (message: PublicMessage) => {
+      if (message.tournament_id === tournamentId) {
+        const user = await getUsername(message.user_id);
+        const newMessage: PublicMessage = {
+          ...message,
+          users: {
+            username: user.username,
+          },
+        };
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      }
+    };
+    //subscribe to new messages
+    const channel = supabase
       .channel('public:publicMessages')
       .on(
         'postgres_changes',
@@ -49,23 +67,10 @@ export function ChatBox({
       )
       .subscribe();
 
-    //TODO no clue how to fix the warning here, every change breaks the chat subscription from working
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  //messages from the server
-  const handleNewMessage = async (message: PublicMessage) => {
-    if (message.tournament_id === tournamentId) {
-      const user = await getUsername(message.user_id);
-      const newMessage: PublicMessage = {
-        ...message,
-        users: {
-          username: user.username,
-        },
-      };
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-    }
-  };
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase, tournamentId]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -76,8 +81,12 @@ export function ChatBox({
     }
   }, [messages]);
 
+  //send new message
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     const formData = new FormData(event.currentTarget as HTMLFormElement);
     const { success, error } = await submitNewPublicMessage(
       formData,
@@ -92,6 +101,7 @@ export function ChatBox({
         description: error,
       });
     }
+    setIsSubmitting(false);
   };
 
   return (
@@ -122,8 +132,8 @@ export function ChatBox({
           onChange={(e) => setNewMessage(e.target.value)}
           className="flex-grow"
         />
-        <Button type="submit" className="ml-2">
-          Send
+        <Button type="submit" className="ml-2" disabled={isSubmitting}>
+          {isSubmitting ? 'Sending...' : 'Send'}
         </Button>
       </form>
     </div>
