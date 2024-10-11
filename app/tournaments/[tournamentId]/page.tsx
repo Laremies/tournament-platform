@@ -10,6 +10,7 @@ import { Info, Users, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StartTournamentButton from '@/components/tournament/start-tournament-button';
+import ChatComponent from '@/components/tournament/chat-component';
 
 interface Params {
   tournamentId: string;
@@ -104,7 +105,6 @@ const TournamentPage = async ({ params }: { params: Params }) => {
               )}
             </CardContent>
           </Card>
-
           {/* Participants List */}
           <Card>
             <CardHeader>
@@ -135,6 +135,23 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                     ))}
                 </div>
               </ScrollArea>
+            </CardContent>
+          </Card>
+          {/*chatbox*/}
+          <Card>
+            <CardHeader>
+              <CardTitle>Chat</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                {isUserParticipant ? (
+                  <ChatComponent tournamentId={id} />
+                ) : (
+                  <p className="text-muted-foreground">
+                    You must be a participant to chat
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
