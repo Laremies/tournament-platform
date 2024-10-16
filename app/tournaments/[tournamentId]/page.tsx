@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   getTournamentById,
   getTournamentPlayers,
+  getUserAccessRequest,
   getUsername,
 } from '@/lib/actions';
 import { createClient } from '@/utils/supabase/server';
@@ -11,6 +12,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StartTournamentButton from '@/components/tournament/start-tournament-button';
 import ChatComponent from '@/components/tournament/chat-component';
+import PrivateTournamentView from '@/components/tournament/private-tournament-view';
+import AccessRequestStatus from '@/components/tournament/access-request-status';
+import AccessRequests from '@/components/tournament/access-requests';
 
 interface Params {
   tournamentId: string;
@@ -46,7 +50,28 @@ const TournamentPage = async ({ params }: { params: Params }) => {
     tournament?.creator_id
   );
 
-  //made mostly by v0
+  // Check if the tournament is private
+  if (tournament?.private && !isUserParticipant && !isUserCreator) {
+    //participants and creators dont need to be checked
+    //non logged in user doesn't have to fetch the accessrequest data
+    if (!data || !data.user) {
+      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+    }
+    // Check if the user has a pending or accepted access request
+    const { accessRequest, error } = await getUserAccessRequest(id);
+    if (error) {
+      return <p>{error}</p>;
+    }
+    if (accessRequest && accessRequest.status === 'accepted') {
+      // User has access, do nothing
+    } else if (accessRequest) {
+      // User has a pending or rejected access request
+      return <AccessRequestStatus status={accessRequest.status} />;
+    } else {
+      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+    }
+  }
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="text-center space-y-2">
@@ -72,6 +97,10 @@ const TournamentPage = async ({ params }: { params: Params }) => {
         </Card>
         {/* Tournament Statistics and Participants */}
         <div className="space-y-6">
+          {/* Access Requests */}
+          {isUserCreator && tournament.private && !tournament.started && (
+            <AccessRequests tournamentId={id} />
+          )}
           {/* Tournament Statistics */}
           <Card>
             <CardHeader>
@@ -144,7 +173,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
             </CardHeader>
             <CardContent>
               <div>
-                {isUserParticipant ? (
+                {isUserParticipant || isUserCreator ? (
                   <ChatComponent tournamentId={id} />
                 ) : (
                   <p className="text-muted-foreground">
