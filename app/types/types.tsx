@@ -20,3 +20,13 @@ export interface SingleEliminationMatch {
   away_match_id?: string;
   winner_id?: string;
 }
+
+export interface TournamentPlayer {
+  id: string;
+  tournament_id: string;
+  role: string;
+  user_id: string;
+  users: {
+    username: string;
+  };
+}

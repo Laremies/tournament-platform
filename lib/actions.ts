@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
-import { Tournament } from '@/app/types/types';
+import { Tournament, TournamentPlayer } from '@/app/types/types';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -336,7 +336,7 @@ export async function getTournamentPlayers(tournamentId: string) {
     return { error: 'Failed to fetch tournament players' };
   }
 
-  return { tournamentUsers };
+  return { tournamentUsers: tournamentUsers as TournamentPlayer[] };
 }
 
 export async function getTournamentPlayerCount(tournamentId: string) {
@@ -536,4 +536,24 @@ export async function rejectAccessRequest(requestId: string){
   }
 
   return { success: true };
+}
+
+export async function kickPlayer(tournamentId: string, id: string){
+  const supabase = createClient();
+
+  //TODO: kicking a player could also change their role so that they can't join back
+  //we however dont yet have a role check in the join tournament function
+  //lot more cases to consider when tournament is ongoing
+  //this function simply removes the mapping between the user and the tournament
+
+  const { error } = await supabase.from('tournamentUsers').delete().eq('id', id);
+
+  if (error) {
+    console.error(error);
+    return { error: error.message };
+  }
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: true };
+  
 }
