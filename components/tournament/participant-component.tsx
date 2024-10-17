@@ -94,7 +94,7 @@ export const Participant: React.FC<ParticipantProps> = ({
           {isCreator && ( //owner has the ability to kick people
             <DropdownMenuItem onSelect={() => setIsKickDialogOpen(true)}>
               <UserRoundX className="mr-2 h-4 w-4" />
-              <span>Remove Participant</span>
+              <span>Kick Participant</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -104,8 +104,8 @@ export const Participant: React.FC<ParticipantProps> = ({
           <DialogHeader>
             <DialogTitle>Remove participant</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove {participant.users.username} from
-              participating in the tournament?
+              Are you sure you want to kick {participant.users.username} from
+              the tournament?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

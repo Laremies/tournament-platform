@@ -419,7 +419,7 @@ export async function submitNewPublicMessage(
   }
 
   const participants = await getTournamentPlayers(tournamentId);
-  
+
   //todo check if user is creator of tournament
   //rn creator can't send messages if not participating
 
@@ -460,7 +460,8 @@ export async function getAccessRequests(tournamentId: string) {
   const { data, error } = await supabase
     .from('accessRequests')
     .select('*, users(*)')
-    .eq('tournament_id', tournamentId).eq('status', 'pending');
+    .eq('tournament_id', tournamentId)
+    .eq('status', 'pending');
 
   if (error) {
     console.error(error);
@@ -474,7 +475,11 @@ export async function getUserAccessRequest(tournamentId: string) {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
 
-  const {data, error} = await supabase.from('accessRequests').select('*').eq('tournament_id', tournamentId).eq('user_id', userObject.data.user?.id);
+  const { data, error } = await supabase
+    .from('accessRequests')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .eq('user_id', userObject.data.user?.id);
 
   if (error) {
     console.error(error);
@@ -484,7 +489,7 @@ export async function getUserAccessRequest(tournamentId: string) {
   return { accessRequest: data[0] };
 }
 
-export async function submitAccessRequest(tournamentId: string){
+export async function submitAccessRequest(tournamentId: string) {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
 
@@ -510,25 +515,29 @@ export async function submitAccessRequest(tournamentId: string){
   return { success: true };
 }
 
-export async function acceptAccessRequest(requestId: string){
+export async function acceptAccessRequest(requestId: string) {
   const supabase = createClient();
 
-  const { error } = await supabase.from('accessRequests').update({status: 'accepted'}).eq('id', requestId);
+  const { error } = await supabase
+    .from('accessRequests')
+    .update({ status: 'accepted' })
+    .eq('id', requestId);
 
   if (error) {
     console.error(error);
     return { error: 'Failed to accept access request' };
   }
 
-  
-
   return { success: true };
 }
 
-export async function rejectAccessRequest(requestId: string){
+export async function rejectAccessRequest(requestId: string) {
   const supabase = createClient();
 
-  const { error } = await supabase.from('accessRequests').update({status: 'rejected'}).eq('id', requestId);
+  const { error } = await supabase
+    .from('accessRequests')
+    .update({ status: 'rejected' })
+    .eq('id', requestId);
 
   if (error) {
     console.error(error);
@@ -538,7 +547,7 @@ export async function rejectAccessRequest(requestId: string){
   return { success: true };
 }
 
-export async function kickPlayer(tournamentId: string, id: string){
+export async function kickPlayer(tournamentId: string, id: string) {
   const supabase = createClient();
 
   //TODO: kicking a player could also change their role so that they can't join back
@@ -546,7 +555,10 @@ export async function kickPlayer(tournamentId: string, id: string){
   //lot more cases to consider when tournament is ongoing
   //this function simply removes the mapping between the user and the tournament
 
-  const { error } = await supabase.from('tournamentUsers').delete().eq('id', id);
+  const { error } = await supabase
+    .from('tournamentUsers')
+    .delete()
+    .eq('id', id);
 
   if (error) {
     console.error(error);
@@ -555,5 +567,4 @@ export async function kickPlayer(tournamentId: string, id: string){
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };
-  
 }
