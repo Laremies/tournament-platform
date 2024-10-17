@@ -13,7 +13,7 @@ export default function AccessRequestStatus({
   return (
     <Alert
       variant={status === 'pending' ? 'default' : 'destructive'}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-md mx-auto my-10"
     >
       {status === 'pending' ? (
         <Clock className="h-4 w-4" />

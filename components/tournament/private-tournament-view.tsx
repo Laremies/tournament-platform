@@ -54,7 +54,7 @@ export default function PrivateTournamentView({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto my-10">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
           <LockIcon className="w-6 h-6" />

@@ -98,7 +98,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
         {/* Tournament Statistics and Participants */}
         <div className="space-y-6">
           {/* Access Requests */}
-          {isUserCreator && tournament.private && !tournament.started && (
+          {isUserCreator && tournament.private && (
             <AccessRequests tournamentId={id} />
           )}
           {/* Tournament Statistics */}
