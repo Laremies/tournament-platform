@@ -31,8 +31,8 @@ export function ChatBox({
 
   const [messages, setMessages] = useState<PublicMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
 
@@ -72,13 +72,24 @@ export function ChatBox({
     };
   }, [supabase, tournamentId]);
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        block: 'start',
-        behavior: 'smooth',
-      });
+  //replaced scrollintoview with this, because it was causing the page to jump
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      ) as HTMLDivElement;
+      if (scrollElement) {
+        scrollElement.style.scrollBehavior = 'smooth';
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+        setTimeout(() => {
+          scrollElement.style.scrollBehavior = 'auto';
+        }, 1000);
+      }
     }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
 
   //send new message
@@ -106,7 +117,7 @@ export function ChatBox({
 
   return (
     <div>
-      <ScrollArea className="h-[160px] pr-4">
+      <ScrollArea ref={scrollAreaRef} className="h-[160px] pr-4">
         {messages.map((message) => (
           <div key={message.id}>
             <p>
@@ -117,7 +128,7 @@ export function ChatBox({
             </p>
           </div>
         ))}
-        <div ref={messagesEndRef} style={{ height: 0 }} />
+        <div style={{ height: 0 }} />
       </ScrollArea>
       <form
         onSubmit={handleSubmit}
