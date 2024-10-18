@@ -6,18 +6,18 @@ import { getTournamentMatches } from '@/lib/actions';
 
 interface BracketProps {
   tournament: Tournament;
-  isUserCreator: boolean;
+  isUserCreator?: boolean | null;
 }
 
 export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
   const { matches } = await getTournamentMatches(tournament.id);
 
   return (
-    <Card className="lg:col-span-2  bg-gradient-to-b from-background to-muted w-full max-w-7xl">
+    <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted">
       <CardHeader>
         <CardTitle>Bracket</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-1">
         {tournament?.started && !tournament?.finished ? (
           <div>
             {matches && matches.length > 0 ? (

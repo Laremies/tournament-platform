@@ -5,43 +5,36 @@ import { MatchNode } from './single-elimination-bracket';
 
 export interface MatchCardClientProps {
   match: MatchNode;
-  homePlayerUsername?: string;
-  awayPlayerUsername?: string;
 }
 
-export const MatchCardClient: React.FC<MatchCardClientProps> = ({
-  match,
-  homePlayerUsername,
-  awayPlayerUsername,
-}) => {
+export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
   if (match.match.winner_id) {
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">
           <span className="text-xs text-gray-500">
-            {homePlayerUsername} advances automatically
+            {match.match.home_player_id == match.match.winner_id
+              ? match.match.homePlayerUsername
+              : match.match.awayPlayerUsername}{' '}
+            advances automatically
           </span>
         </CardContent>
       </Card>
     );
   }
   return (
-    <Card className="w-[200px] ">
+    <Card className="w-[200px]">
       <CardContent className="pt-6 space-y-4">
-        <p>
-          {homePlayerUsername
-            ? homePlayerUsername
-            : match.children[0]
-              ? `Winner of Match ${match.children[0].matchNumber}`
-              : 'TBD'}
+        <p className="hover:text-blue-500 transition-colors duration-200 overflow-hidden">
+          {match.match.homePlayerUsername
+            ? match.match.homePlayerUsername
+            : 'TBD'}
         </p>
         <Separator />
-        <p>
-          {awayPlayerUsername
-            ? awayPlayerUsername
-            : match.children[1]
-              ? `Winner of Match ${match.children[1].matchNumber}`
-              : 'TBD'}
+        <p className="hover:text-blue-500 transition-colors duration-200 overflow-hidden">
+          {match.match.awayPlayerUsername
+            ? match.match.awayPlayerUsername
+            : 'TBD'}
         </p>
       </CardContent>
     </Card>
