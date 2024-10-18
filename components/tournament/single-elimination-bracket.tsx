@@ -1,9 +1,9 @@
 import { SingleEliminationMatch } from '@/app/types/types';
 import { getUsername } from '@/lib/actions';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { useMemo } from 'react';
+import { MatchCardClient } from './match-card';
 
-interface MatchNode {
+export interface MatchNode {
   match: SingleEliminationMatch;
   matchNumber: number;
   children: MatchNode[];
@@ -23,6 +23,92 @@ const generateSingleEliminationBracket = (
 
     const match = matchMap.get(matchId);
     if (!match) return null;
+
+    //spagu taas sry
+    if (match.round === 2 && match.home_player_id && match.away_player_id) {
+      //both players are bye
+      return {
+        match,
+        matchNumber: matchNumber--,
+        children: [
+          {
+            match: {
+              id: 'bye',
+              tournament_id: match.tournament_id,
+              home_player_id: match.home_player_id,
+              away_player_id: match.home_player_id,
+              winner_id: match.home_player_id,
+              home_matchup_id: undefined,
+              away_matchup_id: undefined,
+              round: 1,
+            },
+            matchNumber: matchNumber--,
+            children: [],
+          },
+          {
+            match: {
+              id: 'bye',
+              tournament_id: match.tournament_id,
+              home_player_id: match.away_player_id,
+              away_player_id: match.away_player_id,
+              winner_id: match.away_player_id,
+              home_matchup_id: undefined,
+              away_matchup_id: undefined,
+              round: 1,
+            },
+            matchNumber: matchNumber--,
+            children: [],
+          },
+        ],
+      };
+    }
+
+    if (match.round === 2 && match.home_player_id) {
+      //has a bye player at home
+      return {
+        match,
+        matchNumber: matchNumber--,
+        children: [
+          {
+            match: {
+              id: 'bye',
+              home_player_id: match.home_player_id,
+              away_player_id: match.home_player_id,
+              winner_id: match.home_player_id,
+              home_matchup_id: undefined,
+              away_matchup_id: undefined,
+              round: 1,
+            },
+            matchNumber: matchNumber--,
+            children: [],
+          },
+          buildTree(match.away_matchup_id),
+        ].filter((child): child is MatchNode => child !== null),
+      };
+    }
+    if (match.round === 2 && match.away_player_id) {
+      //has a bye player at away
+      return {
+        match,
+        matchNumber: matchNumber--,
+        children: [
+          buildTree(match.home_matchup_id),
+          {
+            match: {
+              id: 'bye',
+              home_player_id: match.away_player_id,
+              away_player_id: match.away_player_id,
+              winner_id: match.away_player_id,
+              home_matchup_id: undefined,
+              away_matchup_id: undefined,
+              round: 1,
+            },
+            matchNumber: matchNumber--,
+            children: [],
+          },
+        ].filter((child): child is MatchNode => child !== null),
+      };
+    }
 
     return {
       match,
@@ -51,24 +137,39 @@ const SingleEliminationBracket: React.FC<{
 
   return (
     <div className="flex flex-col items-center">
-      <Matches node={bracketStructure} />
+      <Matches node={bracketStructure} isFirstRow={true} />
     </div>
   );
 };
 
-const Matches: React.FC<{ node: MatchNode }> = ({ node }) => {
+const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean }> = ({
+  node,
+  isFirstRow,
+}) => {
   if (node.children.length === 0) {
     return (
-      <div className="flex items-start justify-end my-[10px] relative">
-        <MatchCard match={node} />
-        <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
-      </div>
+      <>
+        {isFirstRow && (
+          <div className="absolute text-center font-bold -mt-4 left-1/2 transform -translate-x-1/2">
+            Round {node.match.round}
+          </div>
+        )}
+        <div className="flex items-start justify-end my-[10px] relative">
+          <MatchCard match={node} />
+          <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
+        </div>
+      </>
     );
   } else {
     return (
       <div className="flex flex-row-reverse">
-        <div className="relative ml-[50px] flex items-center ">
-          <MatchCard match={node} />
+        <div className="relative ml-[50px] flex flex-col items-center justify-center">
+          <div className="absolute text-center font-bold -mt-40">
+            Round {node.match.round} {/* replace with more descriptive name */}
+          </div>
+          <div className="flex-grow flex items-center justify-center">
+            <MatchCard match={node} />
+          </div>
           <div className="absolute w-[25px] h-[2px] left-0 top-1/2 bg-white -translate-x-full"></div>
         </div>
         <div className="flex flex-col justify-center">
@@ -78,7 +179,7 @@ const Matches: React.FC<{ node: MatchNode }> = ({ node }) => {
               className="flex items-start justify-end my-[10px] relative"
             >
               <div className="flex flex-row-reverse">
-                <Matches node={child} />
+                <Matches node={child} isFirstRow={index === 0} />
               </div>
               <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
               <div
@@ -97,30 +198,13 @@ const MatchCard: React.FC<{ match: MatchNode }> = async ({ match }) => {
   const awayPlayer = await getUsername(match.match.away_player_id);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Match {match.matchNumber}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div>
-          <p>
-            {homePlayer.username
-              ? homePlayer.username
-              : match.children[0]
-                ? `Winner of Match ${match.children[0].matchNumber}`
-                : 'TBD'}
-          </p>
-          <p>VS</p>
-          <p>
-            {awayPlayer.username
-              ? awayPlayer.username
-              : match.children[1]
-                ? `Winner of Match ${match.children[1].matchNumber}`
-                : 'TBD'}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+      <MatchCardClient
+        match={match}
+        homePlayerUsername={homePlayer.username}
+        awayPlayerUsername={awayPlayer.username}
+      />
+    </>
   );
 };
 

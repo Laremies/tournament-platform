@@ -2,7 +2,6 @@ import { JoinButton } from '@/components/tournament/join-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   getTournamentById,
-  getTournamentMatches,
   getTournamentPlayers,
   getUsername,
 } from '@/lib/actions';
@@ -10,9 +9,9 @@ import { createClient } from '@/utils/supabase/server';
 import { Info, Users, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import StartTournamentButton from '@/components/tournament/start-tournament-button';
 import ChatComponent from '@/components/tournament/chat-component';
-import SingleEliminationBracket from '@/components/tournament/single-elimination-bracket';
+
+import { Bracket } from '@/components/tournament/bracket';
 
 interface Params {
   tournamentId: string;
@@ -30,7 +29,6 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   }
 
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
-  const { matches } = await getTournamentMatches(id);
 
   const { data } = await createClient().auth.getUser();
   //check if user is aprticipating, if not show join button (data && data.user && data.user.id goofy af iknow)
@@ -59,31 +57,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Tournament Bracket */}
-        <Card className="lg:col-span-2  bg-gradient-to-b from-background to-muted">
-          <CardHeader>
-            <CardTitle>Bracket</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {tournament?.started && !tournament?.finished ? (
-              <div>
-                {matches && matches.length > 0 ? (
-                  <SingleEliminationBracket matches={matches} />
-                ) : (
-                  <p className="text-muted-foreground">
-                    The bracket will be generated once the tournament starts.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">
-                The bracket will be generated once the tournament starts.
-              </p>
-            )}
-            {!tournament?.started && isUserCreator && (
-              <StartTournamentButton tournamentId={id} />
-            )}
-          </CardContent>
-        </Card>
+        {tournament && isUserCreator && (
+          <Bracket tournament={tournament} isUserCreator={isUserCreator} />
+        )}
         {/* Tournament Statistics and Participants */}
         <div className="space-y-6">
           {/* Tournament Statistics */}
