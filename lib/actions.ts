@@ -449,3 +449,19 @@ export async function submitNewPublicMessage(
 
   return { success: true };
 }
+
+export async function getTournamentMatches(tournamentId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch tournament matches' };
+  }
+
+  return { matches: data };
+}

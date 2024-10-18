@@ -57,7 +57,7 @@ export const generateSingleEliminationBracket = async (
 
   let currentRound = 1;
   const matches: SingleEliminationMatch[] = [];
-  const byeMatches = [];
+  const byeMatches: SingleEliminationMatch[] = [];
 
   //byes are players who get a free pass to the next round
   for (let i = 0; i < numByes; i++) {
