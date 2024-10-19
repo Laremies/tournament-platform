@@ -8,7 +8,7 @@ export interface MatchCardClientProps {
 }
 
 export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
-  if (match.match.winner_id) {
+  if (match.match.winner_id && match.match.round === 1) {
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">

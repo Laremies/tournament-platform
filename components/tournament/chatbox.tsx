@@ -31,8 +31,10 @@ export function ChatBox({
 
   const [messages, setMessages] = useState<PublicMessage[]>([]);
   const [newMessage, setNewMessage] = useState<string>('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [disableChat, setDisableChat] = useState<boolean>(true);
+  const [firstMessageReceived, setFirstMessageReceived] = useState(false);
 
   const { toast } = useToast();
 
@@ -40,7 +42,8 @@ export function ChatBox({
     setMessages(initMessages);
   }, [initMessages]);
 
-  //TODO: still a small bug where if someone sends a message quickly after reloading the page, the websocket connection is not established yet and the message is not shown
+  //DONE: still a small bug where if someone sends a message quickly after reloading the page, the websocket connection is not established yet and the message is not shown
+  //--seems like supabase team is still working on it, found hacky fix from https://github.com/supabase/realtime/issues/282
   useEffect(() => {
     //handle new server message
     const handleNewMessage = async (message: PublicMessage) => {
@@ -65,20 +68,45 @@ export function ChatBox({
           handleNewMessage(payload.new as PublicMessage);
         }
       )
-      .subscribe();
+      .subscribe((state) => {
+        console.log('channel state', state);
+      });
+
+    //disable chat until websocket connection is established --from https://github.com/supabase/realtime/issues/282
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    channel.on('system' as any, {} as any, (payload: any) => {
+      if (payload.extension === 'postgres_changes' && payload.status === 'ok') {
+        if (firstMessageReceived) {
+          setDisableChat(false);
+        } else {
+          setFirstMessageReceived(true);
+        }
+      }
+    });
 
     return () => {
       channel.unsubscribe();
     };
-  }, [supabase, tournamentId]);
+  }, [supabase, tournamentId, firstMessageReceived]);
+
+  //replaced scrollintoview with this, because it was causing the page to jump
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      ) as HTMLDivElement;
+      if (scrollElement) {
+        scrollElement.style.scrollBehavior = 'smooth';
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+        setTimeout(() => {
+          scrollElement.style.scrollBehavior = 'auto';
+        }, 1000);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        block: 'start',
-        behavior: 'smooth',
-      });
-    }
+    scrollToBottom();
   }, [messages]);
 
   //send new message
@@ -106,7 +134,7 @@ export function ChatBox({
 
   return (
     <div>
-      <ScrollArea className="h-[160px] pr-4">
+      <ScrollArea ref={scrollAreaRef} className="h-[160px] pr-4">
         {messages.map((message) => (
           <div key={message.id}>
             <p>
@@ -117,7 +145,7 @@ export function ChatBox({
             </p>
           </div>
         ))}
-        <div ref={messagesEndRef} style={{ height: 0 }} />
+        <div style={{ height: 0 }} />
       </ScrollArea>
       <form
         onSubmit={handleSubmit}
@@ -128,6 +156,7 @@ export function ChatBox({
           id="message"
           name="message"
           placeholder="Type your message..."
+          disabled={disableChat}
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           className="flex-grow"
