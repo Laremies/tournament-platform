@@ -26,7 +26,7 @@ export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
           {tournament.description}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0 h-full flex flex-col">
+      <CardContent className="p-0 h-full flex flex-col max-h-screen">
         {tournament?.started && !tournament?.finished ? (
           <>
             {matches && matches.length > 0 ? (
