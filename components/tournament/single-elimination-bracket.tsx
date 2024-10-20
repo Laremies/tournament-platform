@@ -3,6 +3,7 @@ import { SingleEliminationMatch } from '@/app/types/types';
 import { useMemo } from 'react';
 import { MatchCard } from './match-card';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { Button } from '../ui/button';
 
 export interface MatchNode {
   match: SingleEliminationMatch;
@@ -145,35 +146,34 @@ const SingleEliminationBracket: React.FC<{
   }
 
   return (
-    <div className="overflow-hidden w-full max-h-[800px]">
-      <TransformWrapper
-        initialScale={0.8}
-        initialPositionX={0}
-        initialPositionY={0}
-        minPositionX={-1000}
-        maxPositionX={1000}
-        minPositionY={-1000}
-        maxPositionY={1000}
-        limitToBounds={false}
-        minScale={0.5} // Minimum zoom level
-        maxScale={3} // Maximum zoom level
-        panning={{ velocityDisabled: true }}
-        wheel={{ step: 0.01 }} // Zoom step on mouse wheel
-      >
-        {({ resetTransform }) => (
-          <>
-            <div className="tools">
-              <button onClick={() => resetTransform()}>Reset view</button>
-            </div>
-            <TransformComponent>
-              <div className="relative overflow-hidden mr-80 mb-80 pr-80 pb-20">
-                <Matches node={bracketStructure} isFirstRow={true} />
-              </div>
-            </TransformComponent>
-          </>
-        )}
-      </TransformWrapper>
-    </div>
+    <TransformWrapper
+      limitToBounds={false}
+      minScale={0.5} // Minimum zoom level
+      panning={{ velocityDisabled: true }}
+    >
+      {({ resetTransform }) => (
+        <>
+          <div className="tools border-b-2 pl-6 pb-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => resetTransform()}
+            >
+              Reset view
+            </Button>
+          </div>
+          <TransformComponent
+            wrapperStyle={{
+              width: '100%',
+              height: '100%',
+            }}
+            contentStyle={{ width: '100%', height: '100%', padding: '1.5rem' }}
+          >
+            <Matches node={bracketStructure} isFirstRow={true} />
+          </TransformComponent>
+        </>
+      )}
+    </TransformWrapper>
   );
 };
 

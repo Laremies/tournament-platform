@@ -1,5 +1,11 @@
 import { Tournament } from '@/app/types/types';
-import { CardHeader, CardTitle, CardContent, Card } from '../ui/card';
+import {
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Card,
+  CardDescription,
+} from '../ui/card';
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
 import { getTournamentMatches } from '@/lib/actions';
@@ -13,13 +19,16 @@ export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
   const { matches } = await getTournamentMatches(tournament.id);
 
   return (
-    <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted">
+    <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted flex flex-col">
       <CardHeader>
-        <CardTitle>Bracket</CardTitle>
+        <CardTitle>{tournament.name}</CardTitle>
+        <CardDescription className="max-w-prose">
+          {tournament.description}
+        </CardDescription>
       </CardHeader>
-      <CardContent className="p-1">
+      <CardContent className="p-0 h-full flex flex-col">
         {tournament?.started && !tournament?.finished ? (
-          <div>
+          <>
             {matches && matches.length > 0 ? (
               <SingleEliminationBracket matches={matches} />
             ) : (
@@ -27,7 +36,7 @@ export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
                 The bracket will be generated once the tournament starts.
               </p>
             )}
-          </div>
+          </>
         ) : (
           <p className="text-muted-foreground">
             The bracket will be generated once the tournament starts.

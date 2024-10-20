@@ -12,26 +12,26 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">
-          <span className="text-xs text-gray-500">
+          <p className="text-pretty text-muted-foreground">
             {match.match.home_player_id == match.match.winner_id
               ? match.match.homePlayerUsername
               : match.match.awayPlayerUsername}{' '}
             advances automatically
-          </span>
+          </p>
         </CardContent>
       </Card>
     );
   }
   return (
-    <Card className="w-[200px]">
+    <Card className="w-[200px] hover:text-blue-600 duration-200">
       <CardContent className="pt-6 space-y-4">
-        <p className="hover:text-blue-500 transition-colors duration-200 overflow-hidden">
+        <p className="overflow-hidden text-ellipsis">
           {match.match.homePlayerUsername
             ? match.match.homePlayerUsername
             : 'TBD'}
         </p>
         <Separator />
-        <p className="hover:text-blue-500 transition-colors duration-200 overflow-hidden">
+        <p className="overflow-hidden text-ellipsis">
           {match.match.awayPlayerUsername
             ? match.match.awayPlayerUsername
             : 'TBD'}

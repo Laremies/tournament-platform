@@ -72,13 +72,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-4 space-y-6 w-full">
-      <div className="text-center space-y-2">
-        <h1 className="text-4xl font-bold">{tournament?.name}</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          {tournament?.description}
-        </p>
-      </div>
+    <div className="mx-auto p-4 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-[3fr,1fr,1.5fr] gap-6">
         {/* Tournament Bracket */}
         {tournament && (
@@ -101,7 +95,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <span>
                   Tournament Status:{' '}
                   {tournament?.finished
-                    ? 'tournament ended'
+                    ? 'Tournament ended'
                     : tournament?.started
                       ? 'Ongoing'
                       : 'Waiting for players'}
