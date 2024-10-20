@@ -11,13 +11,15 @@ export interface Tournament {
 }
 
 export interface SingleEliminationMatch {
+  homePlayerUsername?: string;
+  awayPlayerUsername?: string;
   id?: string;
   tournament_id: string;
   round: number;
   home_player_id?: string;
   away_player_id?: string;
-  home_match_id?: string;
-  away_match_id?: string;
+  home_matchup_id?: string;
+  away_matchup_id?: string;
   winner_id?: string;
 }
 

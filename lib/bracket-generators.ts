@@ -42,9 +42,9 @@ export const generateSingleEliminationBracket = async (
     };
   }
 
-  if (tournamentPlayers.length < 2) {
+  if (tournamentPlayers.length < 3) {
     return {
-      error: 'Tournament must have at least 2 players to generate bracket',
+      error: 'Tournament must have at least 3 players to generate bracket',
     };
   }
 
@@ -57,7 +57,7 @@ export const generateSingleEliminationBracket = async (
 
   let currentRound = 1;
   const matches: SingleEliminationMatch[] = [];
-  const byeMatches = [];
+  const byeMatches: SingleEliminationMatch[] = [];
 
   //byes are players who get a free pass to the next round
   for (let i = 0; i < numByes; i++) {

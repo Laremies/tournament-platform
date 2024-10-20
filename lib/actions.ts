@@ -454,6 +454,40 @@ export async function submitNewPublicMessage(
   return { success: true };
 }
 
+export async function getTournamentMatches(tournamentId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId);
+  if (!data) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+
+  const matchPromises = data.map(async (match) => {
+    const [awayPlayer, homePlayer] = await Promise.all([
+      getUsername(match.away_player_id),
+      getUsername(match.home_player_id),
+    ]);
+
+    return {
+      ...match,
+      awayPlayerUsername: awayPlayer.username,
+      homePlayerUsername: homePlayer.username,
+    };
+  });
+
+  const matches = await Promise.all(matchPromises);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch tournament matches' };
+  }
+
+  return { matches: matches };
+}
 export async function getAccessRequests(tournamentId: string) {
   const supabase = createClient();
 
