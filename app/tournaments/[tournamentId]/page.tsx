@@ -123,6 +123,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
               tournamentPlayers={tournamentPlayers}
               creator={isUserCreator}
               tournament={tournament}
+              user={data.user}
             />
           )}
           {/*chatbox*/}
