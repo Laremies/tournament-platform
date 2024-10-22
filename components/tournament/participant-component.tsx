@@ -81,7 +81,7 @@ export const Participant: React.FC<ParticipantProps> = ({
           {participant.users.username.charAt(0).toUpperCase()}
         </AvatarFallback>
         {present && (
-          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-white dark:ring-black z-10" />
+          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-10" />
         )}
       </Avatar>
 
