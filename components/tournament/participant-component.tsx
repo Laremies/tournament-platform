@@ -70,7 +70,7 @@ export const Participant: React.FC<ParticipantProps> = ({
   return (
     <div
       key={participant.id}
-      className="flex items-center p-2 rounded-lg  transition-colors"
+      className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
     >
       <Avatar className="relative overflow-visible">
         {/* <AvatarImage
@@ -81,7 +81,7 @@ export const Participant: React.FC<ParticipantProps> = ({
           {participant.users.username.charAt(0).toUpperCase()}
         </AvatarFallback>
         {present && (
-          <span className="absolute bottom-0 right-0 block h-2 w-2 rounded-full bg-green-500 ring-2 ring-white z-10" />
+          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-white dark:ring-black z-10" />
         )}
       </Avatar>
 
