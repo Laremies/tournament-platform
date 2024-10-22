@@ -22,17 +22,22 @@ import { User, MessageSquare, AlertCircle, UserRoundX } from 'lucide-react';
 import { Tournament, TournamentPlayer } from '@/app/types/types';
 import { toast } from '@/hooks/use-toast';
 import { kickPlayer } from '@/lib/actions';
+import { User as UserType } from '@supabase/supabase-js';
 
 interface ParticipantProps {
   participant: TournamentPlayer;
   isCreator?: boolean | null;
   tournament: Tournament;
+  present: boolean;
+  user: UserType | null;
 }
 
 export const Participant: React.FC<ParticipantProps> = ({
   participant,
   isCreator,
   tournament,
+  present,
+  user,
 }) => {
   const [isKickDialogOpen, setIsKickDialogOpen] = useState(false);
 
@@ -65,9 +70,9 @@ export const Participant: React.FC<ParticipantProps> = ({
   return (
     <div
       key={participant.id}
-      className="flex items-center p-2 rounded-lg  transition-colors"
+      className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
     >
-      <Avatar>
+      <Avatar className="relative overflow-visible">
         {/* <AvatarImage
           src={participant.users.avatarUrl}
           alt={participant.users.username}
@@ -75,7 +80,11 @@ export const Participant: React.FC<ParticipantProps> = ({
         <AvatarFallback>
           {participant.users.username.charAt(0).toUpperCase()}
         </AvatarFallback>
+        {present && (
+          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-10" />
+        )}
       </Avatar>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <span className="font-medium cursor-pointer ml-2">
@@ -87,10 +96,12 @@ export const Participant: React.FC<ParticipantProps> = ({
             <User className="mr-2 h-4 w-4" />
             <span>Show Profile</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleSendMessage()}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            <span>Send Message</span>
-          </DropdownMenuItem>
+          {user && (
+            <DropdownMenuItem onSelect={() => handleSendMessage()}>
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span>Send Message</span>
+            </DropdownMenuItem>
+          )}
           {isCreator && ( //owner has the ability to kick people
             <DropdownMenuItem onSelect={() => setIsKickDialogOpen(true)}>
               <UserRoundX className="mr-2 h-4 w-4" />
