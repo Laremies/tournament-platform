@@ -1,21 +1,27 @@
-'use client';
+import { useState } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Separator } from '../ui/separator';
 import { MatchNode } from './single-elimination-bracket';
+import { Button } from '../ui/button';
+import { MatchModal } from './match-modal';
 
 export interface MatchCardClientProps {
   match: MatchNode;
 }
 
 export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
-  if (match.match.winner_id && match.match.round === 1) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const actualMatch = match.match;
+
+  if (actualMatch.winner_id && actualMatch.round === 1) {
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">
           <p className="text-pretty text-muted-foreground">
-            {match.match.home_player_id == match.match.winner_id
-              ? match.match.homePlayerUsername
-              : match.match.awayPlayerUsername}{' '}
+            {actualMatch.home_player_id == actualMatch.winner_id
+              ? actualMatch.homePlayerUsername
+              : actualMatch.awayPlayerUsername}{' '}
             advances automatically
           </p>
         </CardContent>
@@ -23,20 +29,29 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
     );
   }
   return (
-    <Card className="w-[200px] hover:text-blue-600 duration-200">
+    <Card
+      className="w-[200px] relative overflow-hidden group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <CardContent className="pt-6 space-y-4">
         <p className="overflow-hidden text-ellipsis">
-          {match.match.homePlayerUsername
-            ? match.match.homePlayerUsername
+          {actualMatch.homePlayerUsername
+            ? actualMatch.homePlayerUsername
             : 'TBD'}
         </p>
         <Separator />
         <p className="overflow-hidden text-ellipsis">
-          {match.match.awayPlayerUsername
-            ? match.match.awayPlayerUsername
+          {actualMatch.awayPlayerUsername
+            ? actualMatch.awayPlayerUsername
             : 'TBD'}
         </p>
       </CardContent>
+      <div className="absolute inset-0 bg-blue-600 bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+        {isHovered && (
+          <MatchModal match={actualMatch} />
+        )}
+      </div>
     </Card>
   );
 };

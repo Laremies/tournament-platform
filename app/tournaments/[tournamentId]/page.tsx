@@ -1,12 +1,12 @@
 import { JoinButton } from '@/components/tournament/join-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  getAuthUser,
   getTournamentById,
   getTournamentPlayers,
   getUserAccessRequest,
   getUsername,
 } from '@/lib/actions';
-import { createClient } from '@/utils/supabase/server';
 import { Info, Users, Crown } from 'lucide-react';
 import ChatComponent from '@/components/tournament/chat-component';
 import PrivateTournamentView from '@/components/tournament/private-tournament-view';
@@ -33,17 +33,14 @@ const TournamentPage = async ({ params }: { params: Params }) => {
 
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
 
-  const { data } = await createClient().auth.getUser();
+  const user = await getAuthUser();
   //check if user is aprticipating, if not show join button (data && data.user && data.user.id goofy af iknow)
   const isUserParticipant =
-    data &&
-    data.user &&
-    data.user.id &&
+    user &&
     tournamentPlayers &&
-    tournamentPlayers.some((player) => player.user_id === data.user.id);
+    tournamentPlayers.some((player) => player.user_id === user.id);
 
-  const isUserCreator =
-    data && data.user && data.user.id === tournament?.creator_id;
+  const isUserCreator = user && user.id === tournament?.creator_id;
 
   const { username: creatorUsername } = await getUsername(
     tournament?.creator_id
@@ -53,8 +50,8 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   if (tournament?.private && !isUserParticipant && !isUserCreator) {
     //participants and creators dont need to be checked
     //non logged in user doesn't have to fetch the accessrequest data
-    if (!data || !data.user) {
-      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+    if (!user) {
+      return <PrivateTournamentView tournament={tournament} user={user} />;
     }
     // Check if the user has a pending or accepted access request
     const { accessRequest, error } = await getUserAccessRequest(id);
@@ -67,7 +64,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
       // User has a pending or rejected access request
       return <AccessRequestStatus status={accessRequest.status} />;
     } else {
-      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+      return <PrivateTournamentView tournament={tournament} user={user} />;
     }
   }
 
@@ -113,7 +110,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <span>Creator: {creatorUsername}</span>
               </div>
               {!isUserParticipant && (
-                <JoinButton user={data.user} tournamentId={id} />
+                <JoinButton user={user} tournamentId={id} />
               )}
             </CardContent>
           </Card>
@@ -123,7 +120,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
               tournamentPlayers={tournamentPlayers}
               creator={isUserCreator}
               tournament={tournament}
-              user={data.user}
+              user={user}
             />
           )}
           {/*chatbox*/}

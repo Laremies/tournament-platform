@@ -16,9 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
 import { User, MessageSquare, AlertCircle, UserRoundX } from 'lucide-react';
-
 import { Tournament, TournamentPlayer } from '@/app/types/types';
 import { toast } from '@/hooks/use-toast';
 import { kickPlayer } from '@/lib/actions';
@@ -44,6 +42,8 @@ export const Participant: React.FC<ParticipantProps> = ({
   const handleShowProfile = () => {
     //TODO: redirect to user profile
     //router.push(`/profiles/${participant.users.id}`);
+    // OR
+    //<Link href={`/profiles/${participant.users.id}`}></Link>
   };
 
   const handleSendMessage = () => {
