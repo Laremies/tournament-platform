@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
-import { Tournament } from '@/app/types/types';
+import { Tournament, TournamentPlayer } from '@/app/types/types';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -336,7 +336,7 @@ export async function getTournamentPlayers(tournamentId: string) {
     return { error: 'Failed to fetch tournament players' };
   }
 
-  return { tournamentUsers };
+  return { tournamentUsers: tournamentUsers as TournamentPlayer[] };
 }
 
 export async function getTournamentPlayerCount(tournamentId: string) {
@@ -388,4 +388,217 @@ export async function getUsername(userId: string | undefined) {
     .single();
 
   return { username: data?.username as string };
+}
+
+export async function getPublicMessages(tournamentId: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('publicMessages')
+    .select('*, users(username)')
+    .eq('tournament_id', tournamentId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public messages' };
+  }
+
+  return { messages: data };
+}
+
+export async function submitNewPublicMessage(
+  formData: FormData,
+  tournamentId: string
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const participants = await getTournamentPlayers(tournamentId);
+
+  //todo check if user is creator of tournament
+  //rn creator can't send messages if not participating
+
+  if (
+    !userObject.data.user ||
+    !participants.tournamentUsers ||
+    !participants.tournamentUsers.some(
+      (player) => player.user_id === userObject.data.user?.id
+    )
+  ) {
+    console.log(
+      'You must be a participant in the tournament to send a message'
+    );
+    return {
+      error: 'You must be a participant in the tournament to send a message',
+    };
+  }
+
+  const data = {
+    message: formData.get('message') as string,
+    tournament_id: tournamentId,
+    user_id: userObject.data.user.id as string,
+  };
+
+  const { error } = await supabase.from('publicMessages').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send message' };
+  }
+
+  return { success: true };
+}
+
+export async function getTournamentMatches(tournamentId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId);
+  if (!data) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+
+  const matchPromises = data.map(async (match) => {
+    const [awayPlayer, homePlayer] = await Promise.all([
+      getUsername(match.away_player_id),
+      getUsername(match.home_player_id),
+    ]);
+
+    return {
+      ...match,
+      awayPlayerUsername: awayPlayer.username,
+      homePlayerUsername: homePlayer.username,
+    };
+  });
+
+  const matches = await Promise.all(matchPromises);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch tournament matches' };
+  }
+
+  return { matches: matches };
+}
+export async function getAccessRequests(tournamentId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('accessRequests')
+    .select('*, users(*)')
+    .eq('tournament_id', tournamentId)
+    .eq('status', 'pending');
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch access requests' };
+  }
+
+  return { accessRequests: data };
+}
+
+export async function getUserAccessRequest(tournamentId: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from('accessRequests')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .eq('user_id', userObject.data.user?.id);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch access request' };
+  }
+
+  return { accessRequest: data[0] };
+}
+
+export async function submitAccessRequest(tournamentId: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to request access');
+    return { error: 'You must be logged in to request access' };
+  }
+
+  const data = {
+    tournament_id: tournamentId,
+    user_id: userObject.data.user.id as string,
+  };
+
+  const { error } = await supabase.from('accessRequests').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to request access' };
+  }
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: true };
+}
+
+export async function acceptAccessRequest(requestId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('accessRequests')
+    .update({ status: 'accepted' })
+    .eq('id', requestId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to accept access request' };
+  }
+
+  return { success: true };
+}
+
+export async function rejectAccessRequest(requestId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('accessRequests')
+    .update({ status: 'rejected' })
+    .eq('id', requestId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to reject access request' };
+  }
+
+  return { success: true };
+}
+
+export async function kickPlayer(tournamentId: string, id: string) {
+  const supabase = createClient();
+
+  //TODO: kicking a player could also change their role so that they can't join back
+  //we however dont yet have a role check in the join tournament function
+  //lot more cases to consider when tournament is ongoing
+  //this function simply removes the mapping between the user and the tournament
+
+  const { error } = await supabase
+    .from('tournamentUsers')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error(error);
+    return { error: error.message };
+  }
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: true };
 }
