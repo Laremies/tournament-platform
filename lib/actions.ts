@@ -581,7 +581,7 @@ export async function rejectAccessRequest(requestId: string) {
   return { success: true };
 }
 
-export async function kickPlayer(tournamentId: string, id: string) {
+export async function kickPlayer(tournamentId: string, userId: string) {
   const supabase = createClient();
 
   //TODO: kicking a player could also change their role so that they can't join back
@@ -592,12 +592,30 @@ export async function kickPlayer(tournamentId: string, id: string) {
   const { error } = await supabase
     .from('tournamentUsers')
     .delete()
-    .eq('id', id);
+    .eq('user_id', userId);
 
-  if (error) {
+  const { data: tournament, error: tournamentError } = await supabase
+    .from('tournaments')
+    .select('player_count')
+    .eq('id', tournamentId)
+    .single();
+
+  if (error || tournamentError) {
     console.error(error);
-    return { error: error.message };
+    console.error(tournamentError);
+    return { error: 'Error kicking player' };
   }
+
+  const { error: playerCountError } = await supabase
+    .from('tournaments')
+    .update({ player_count: Number(tournament.player_count) - 1 })
+    .eq('id', tournamentId);
+
+  if (playerCountError) {
+    console.error(playerCountError);
+    return { error: 'Error updating player count' };
+  }
+
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };

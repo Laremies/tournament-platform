@@ -96,9 +96,12 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
             tournamentPlayers.map((participant) => (
               <Participant
                 key={participant.id}
-                participant={participant}
+                participant={{
+                  userId: participant.user_id,
+                  username: participant.users.username,
+                }}
                 isCreator={creator}
-                tournament={tournament}
+                tournamentId={tournament.id}
                 present={presentUserIds.includes(participant.user_id)}
                 user={user}
               />
