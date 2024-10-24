@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { MatchCard } from './match-card';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Button } from '../ui/button';
+import { User } from '@supabase/supabase-js';
 
 export interface MatchNode {
   match: SingleEliminationMatch;
@@ -135,7 +136,8 @@ const generateSingleEliminationBracket = (
 
 const SingleEliminationBracket: React.FC<{
   matches: SingleEliminationMatch[];
-}> = ({ matches }) => {
+  user: User | null;
+}> = ({ matches, user }) => {
   const bracketStructure = useMemo(
     () => generateSingleEliminationBracket(matches),
     [matches]
@@ -169,7 +171,7 @@ const SingleEliminationBracket: React.FC<{
             }}
             contentStyle={{ width: '100%', height: '100%', padding: '1.5rem' }}
           >
-            <Matches node={bracketStructure} isFirstRow={true} />
+            <Matches node={bracketStructure} isFirstRow={true} user={user} />
           </TransformComponent>
         </>
       )}
@@ -177,9 +179,10 @@ const SingleEliminationBracket: React.FC<{
   );
 };
 
-const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean }> = ({
+const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean, user: User | null; }> = ({
   node,
   isFirstRow,
+  user
 }) => {
   if (node.children.length === 0) {
     return (
@@ -190,7 +193,7 @@ const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean }> = ({
           </div>
         )}
         <div className="flex items-start justify-end my-[10px] relative">
-          <MatchCard match={node} />
+          <MatchCard match={node} user={user} />
           <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
         </div>
       </>
@@ -203,7 +206,7 @@ const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean }> = ({
             Round {node.match.round} {/* replace with more descriptive name */}
           </div>
           <div className="flex-grow flex items-center justify-center">
-            <MatchCard match={node} />
+            <MatchCard match={node} user={user}/>
           </div>
           <div className="absolute w-[25px] h-[2px] left-0 top-1/2 bg-white -translate-x-full"></div>
         </div>
@@ -214,7 +217,7 @@ const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean }> = ({
               className="flex items-start justify-end my-[10px] relative"
             >
               <div className="flex flex-row-reverse">
-                <Matches node={child} isFirstRow={index === 0} />
+                <Matches node={child} isFirstRow={index === 0} user={user} />
               </div>
               <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
               <div

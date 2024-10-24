@@ -1,18 +1,20 @@
-import { useState } from 'react';
 import { Card, CardContent } from '../ui/card';
 import { Separator } from '../ui/separator';
 import { MatchNode } from './single-elimination-bracket';
-import { Button } from '../ui/button';
 import { MatchModal } from './match-modal';
+import { User } from '@supabase/supabase-js';
 
 export interface MatchCardClientProps {
   match: MatchNode;
+  user: User | null;
 }
 
-export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
+export const MatchCard: React.FC<MatchCardClientProps> = ({ match, user }) => {
   const actualMatch = match.match;
+  const userIsPlayer =
+    user &&
+    (user.id === actualMatch.home_player_id ||
+      user.id === actualMatch.away_player_id);
 
   if (actualMatch.winner_id && actualMatch.round === 1) {
     return (
@@ -29,11 +31,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
     );
   }
   return (
-    <Card
-      className="w-[200px] relative overflow-hidden group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+    <Card className="w-[200px] relative overflow-hidden group">
       <CardContent className="pt-6 space-y-4">
         <p className="overflow-hidden text-ellipsis">
           {actualMatch.homePlayerUsername
@@ -47,11 +45,11 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match }) => {
             : 'TBD'}
         </p>
       </CardContent>
-      <div className="absolute inset-0 bg-blue-600 bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
-        {isHovered && (
-          <MatchModal match={actualMatch} />
-        )}
-      </div>
+      {userIsPlayer && (
+        <div className="absolute inset-0 bg-purple-600 bg-opacity-0 hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center border-4 border-purple-600">
+          <MatchModal match={actualMatch} user={user} />
+        </div>
+      )}
     </Card>
   );
 };

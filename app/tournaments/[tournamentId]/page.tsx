@@ -73,7 +73,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
       <div className="grid grid-cols-1 lg:grid-cols-[3fr,1fr,1.5fr] gap-6">
         {/* Tournament Bracket */}
         {tournament && (
-          <Bracket tournament={tournament} isUserCreator={isUserCreator} />
+          <Bracket tournament={tournament} user={user} />
         )}
         {/* Tournament Statistics and Participants */}
         <div className="space-y-6">
