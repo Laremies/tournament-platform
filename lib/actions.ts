@@ -620,3 +620,55 @@ export async function kickPlayer(tournamentId: string, userId: string) {
 
   return { success: true };
 }
+
+export async function submitMatchResult(
+  tournamentId: string,
+  matchId: string,
+  winnerId: string
+) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('singleEliminationMatches')
+    .update({ winner_id: winnerId })
+    .eq('id', matchId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to submit match result' };
+  }
+
+  const { data: nextMatchData, error: nextMatchError } = await supabase
+    .from('singleEliminationMatches')
+    .select('id, home_matchup_id, away_matchup_id')
+    .or(`home_matchup_id.eq.${matchId}, away_matchup_id.eq.${matchId}`)
+    .single();
+
+  if (nextMatchError) {
+    console.error(nextMatchError);
+    return { error: 'Failed to find the next match for the winner' };
+  }
+  
+  if (nextMatchData) {
+    const nextMatchId = nextMatchData.id;
+    const updateColumn =
+      nextMatchData.home_matchup_id === matchId
+        ? 'home_player_id'
+        : 'away_player_id';
+
+    // Update the next match with the winner
+    const { error: nextMatchUpdateError } = await supabase
+      .from('singleEliminationMatches')
+      .update({ [updateColumn]: winnerId })
+      .eq('id', nextMatchId);
+
+    if (nextMatchUpdateError) {
+      console.error(nextMatchUpdateError);
+      return { error: 'Failed to update the next match' };
+    }
+  }
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+
+  return { success: true };
+}

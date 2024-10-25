@@ -7,12 +7,14 @@ import {
   DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { SingleEliminationMatch } from '@/app/types/types';
 import { User } from '@supabase/supabase-js';
 import { Participant } from './participant-component';
+import { useToast } from '@/hooks/use-toast';
+import clsx from 'clsx';
+import { submitMatchResult } from '@/lib/actions';
 
 interface MatchModalProps {
   match: SingleEliminationMatch;
@@ -21,9 +23,38 @@ interface MatchModalProps {
 
 export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
   const [open, setOpen] = useState(false);
+  const [winner, setWinner] = useState<string | undefined>(match.winner_id);
+  const { toast } = useToast();
 
-  const homePlayer = { userId: match.home_player_id || 'tbd', username: match.homePlayerUsername || 'TBD' };
-  const awayPlayer = { userId: match.away_player_id || 'tbd', username: match.awayPlayerUsername || 'TBD' };
+  const homePlayer = {
+    userId: match.home_player_id || 'tbd',
+    username: match.homePlayerUsername || 'TBD',
+  };
+  const awayPlayer = {
+    userId: match.away_player_id || 'tbd',
+    username: match.awayPlayerUsername || 'TBD',
+  };
+
+  const handleSetWinner = async (winnerId: string) => {
+    if (match.id) {
+      try {
+        await submitMatchResult(match.tournament_id, match.id, winnerId);
+        setWinner(winnerId);
+
+        toast({
+          title: 'Winner set',
+          description: `The winner has been set to ${winnerId === homePlayer.userId ? homePlayer.username : awayPlayer.username}.`,
+        });
+
+        setOpen(false);
+      } catch (error) {
+        toast({
+          title: 'Failed to set winner',
+          description: `An error occurred while setting the winner: ${error}`,
+        });
+      }
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -32,42 +63,74 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
           variant="outline"
           className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         >
-          Match Details
+          Match Results
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Match Details</DialogTitle>
-          <DialogDescription>View the details of this match</DialogDescription>
+          <DialogTitle>Match Results</DialogTitle>
+          <DialogDescription>
+            {winner
+              ? 'Winner has already been set. Contact the creator in case of disputes.'
+              : 'Set match winner'}
+          </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-between">
+        <div className="flex flex-col">
+          <div className="flex justify-around">
             <div>
-              <Label>Home Player</Label>
-              <Participant
-                participant={homePlayer}
-                user={user}
-                tournamentId={match.tournament_id}
-                present={false}
-              />
+              <div
+                className={clsx(
+                  winner === homePlayer.userId &&
+                    'text-green-600 font-semibold',
+                  winner &&
+                    winner !== homePlayer.userId &&
+                    'text-muted-foreground'
+                )}
+              >
+                <Label>Home Player</Label>
+                <Participant
+                  participant={homePlayer}
+                  user={user}
+                  tournamentId={match.tournament_id}
+                  present={false}
+                />
+              </div>
+              <Button
+                onClick={() => handleSetWinner(homePlayer.userId)}
+                variant="outline"
+                disabled={!!winner}
+                className="mt-2"
+              >
+                Set as Winner
+              </Button>
             </div>
             <div>
-              <Label>Away Player</Label>
-              <Participant
-                participant={awayPlayer}
-                user={user}
-                tournamentId={match.tournament_id}
-                present={false}
-              />
+              <div
+                className={clsx(
+                  winner === awayPlayer.userId &&
+                    'text-green-600 font-semibold',
+                  winner &&
+                    winner !== awayPlayer.userId &&
+                    'text-muted-foreground'
+                )}
+              >
+                <Label>Away Player</Label>
+                <Participant
+                  participant={awayPlayer}
+                  user={user}
+                  tournamentId={match.tournament_id}
+                  present={false}
+                />
+              </div>
+              <Button
+                onClick={() => handleSetWinner(awayPlayer.userId)}
+                variant="outline"
+                disabled={!!winner}
+                className="mt-2"
+              >
+                Set as Winner
+              </Button>
             </div>
-          </div>
-          <div>
-            <Label>Match Date</Label>
-            <Input type="date" value={'match.match.match_date'} disabled />
-          </div>
-          <div>
-            <Label>Match Time</Label>
-            <Input type="time" value={'match.match.match_time'} disabled />
           </div>
         </div>
       </DialogContent>
