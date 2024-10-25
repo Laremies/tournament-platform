@@ -592,7 +592,7 @@ export async function kickPlayer(tournamentId: string, userId: string) {
   const { error } = await supabase
     .from('tournamentUsers')
     .delete()
-    .eq('user_id', userId);
+    .eq('user_id', userId).eq('tournament_id', tournamentId);
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')
