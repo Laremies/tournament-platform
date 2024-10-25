@@ -16,7 +16,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match, user }) => {
     (user.id === actualMatch.home_player_id ||
       user.id === actualMatch.away_player_id);
 
-  if (actualMatch.winner_id && actualMatch.round === 1) {
+  if (actualMatch.winner_id && actualMatch.round === 1 && actualMatch.id?.includes('bye')) {
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">

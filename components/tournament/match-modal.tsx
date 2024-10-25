@@ -35,6 +35,8 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
     username: match.awayPlayerUsername || 'TBD',
   };
 
+  const matchHasBothPlayers = homePlayer.userId !== 'tbd' && awayPlayer.userId !== 'tbd';
+
   const handleSetWinner = async (winnerId: string) => {
     if (match.id) {
       try {
@@ -70,9 +72,11 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
         <DialogHeader>
           <DialogTitle>Match Results</DialogTitle>
           <DialogDescription>
-            {winner
-              ? 'Winner has already been set. Contact the creator in case of disputes.'
-              : 'Set match winner'}
+            {!matchHasBothPlayers
+              ? "Both players must be present to set the winner."
+              : winner
+              ? 'The winner has already been set. Please contact the organizer for any disputes.'
+              : 'Please select the winner of the match.'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col">
@@ -98,7 +102,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
               <Button
                 onClick={() => handleSetWinner(homePlayer.userId)}
                 variant="outline"
-                disabled={!!winner}
+                disabled={!!winner || !matchHasBothPlayers}
                 className="mt-2"
               >
                 Set as Winner
@@ -125,7 +129,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
               <Button
                 onClick={() => handleSetWinner(awayPlayer.userId)}
                 variant="outline"
-                disabled={!!winner}
+                disabled={!!winner || !matchHasBothPlayers}
                 className="mt-2"
               >
                 Set as Winner
