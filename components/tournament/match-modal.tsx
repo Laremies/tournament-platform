@@ -35,7 +35,8 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
     username: match.awayPlayerUsername || 'TBD',
   };
 
-  const matchHasBothPlayers = homePlayer.userId !== 'tbd' && awayPlayer.userId !== 'tbd';
+  const matchHasBothPlayers =
+    homePlayer.userId !== 'tbd' && awayPlayer.userId !== 'tbd';
 
   const handleSetWinner = async (winnerId: string) => {
     if (match.id) {
@@ -73,10 +74,10 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
           <DialogTitle>Match Results</DialogTitle>
           <DialogDescription>
             {!matchHasBothPlayers
-              ? "Both players must be present to set the winner."
+              ? 'Both players must be present to set the winner.'
               : winner
-              ? 'The winner has already been set. Please contact the organizer for any disputes.'
-              : 'Please select the winner of the match.'}
+                ? 'The winner has already been set. Please contact the organizer for any disputes.'
+                : 'Please select the winner of the match.'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col">

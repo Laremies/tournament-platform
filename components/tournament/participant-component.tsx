@@ -52,7 +52,10 @@ export const Participant: React.FC<ParticipantProps> = ({
   const handleKickPlayer = async () => {
     // Implement kick player logic
     setIsKickDialogOpen(false);
-    const { success, error } = await kickPlayer(tournamentId, participant.userId);
+    const { success, error } = await kickPlayer(
+      tournamentId,
+      participant.userId
+    );
     if (success) {
       toast({
         title: 'Player Kicked',
@@ -129,11 +132,7 @@ export const Participant: React.FC<ParticipantProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              onClick={() => setIsKickDialogOpen(false)}
-            >
-              Cancel
-            </Button>
+            <Button onClick={() => setIsKickDialogOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={() => handleKickPlayer()}>
               <AlertCircle className="mr-2 h-4 w-4" />
               Kick Player

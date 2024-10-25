@@ -28,7 +28,13 @@ const generateSingleEliminationBracket = (
     if (!match) return null;
 
     //spagu taas sry
-    if (match.round === 2 && match.home_player_id && match.away_player_id) {
+    if (
+      match.round === 2 &&
+      match.home_player_id &&
+      match.away_player_id &&
+      !match.home_matchup_id &&
+      !match.away_matchup_id
+    ) {
       //both players are bye
       return {
         match,
@@ -70,7 +76,7 @@ const generateSingleEliminationBracket = (
       };
     }
 
-    if (match.round === 2 && match.home_player_id) {
+    if (match.round === 2 && match.home_player_id && !match.home_matchup_id) {
       //has a bye player at home
       return {
         match,
@@ -95,7 +101,7 @@ const generateSingleEliminationBracket = (
         ].filter((child): child is MatchNode => child !== null),
       };
     }
-    if (match.round === 2 && match.away_player_id) {
+    if (match.round === 2 && match.away_player_id && !match.away_matchup_id) {
       //has a bye player at away
       return {
         match,
@@ -179,11 +185,11 @@ const SingleEliminationBracket: React.FC<{
   );
 };
 
-const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean, user: User | null; }> = ({
-  node,
-  isFirstRow,
-  user
-}) => {
+const Matches: React.FC<{
+  node: MatchNode;
+  isFirstRow: boolean;
+  user: User | null;
+}> = ({ node, isFirstRow, user }) => {
   if (node.children.length === 0) {
     return (
       <>
@@ -206,7 +212,7 @@ const Matches: React.FC<{ node: MatchNode; isFirstRow: boolean, user: User | nul
             Round {node.match.round} {/* replace with more descriptive name */}
           </div>
           <div className="flex-grow flex items-center justify-center">
-            <MatchCard match={node} user={user}/>
+            <MatchCard match={node} user={user} />
           </div>
           <div className="absolute w-[25px] h-[2px] left-0 top-1/2 bg-white -translate-x-full"></div>
         </div>

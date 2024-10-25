@@ -592,7 +592,8 @@ export async function kickPlayer(tournamentId: string, userId: string) {
   const { error } = await supabase
     .from('tournamentUsers')
     .delete()
-    .eq('user_id', userId).eq('tournament_id', tournamentId);
+    .eq('user_id', userId)
+    .eq('tournament_id', tournamentId);
 
   const { data: tournament, error: tournamentError } = await supabase
     .from('tournaments')
@@ -648,7 +649,7 @@ export async function submitMatchResult(
     console.error(nextMatchError);
     return { error: 'Failed to find the next match for the winner' };
   }
-  
+
   if (nextMatchData) {
     const nextMatchId = nextMatchData.id;
     const updateColumn =
