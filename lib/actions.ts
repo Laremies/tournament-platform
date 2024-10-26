@@ -686,10 +686,10 @@ export async function getDirectMessages(receiver_id: string) {
   const { data, error } = await supabase
     .from('directMessages')
     .select('*')
-    .or(`and(sender_id.eq.${receiver_id},receiver_id.eq.${userObject.data.user.id}),and(sender_id.eq.${userObject.data.user.id},receiver_id.eq.${receiver_id})`)
+    .or(
+      `and(sender_id.eq.${receiver_id},receiver_id.eq.${userObject.data.user.id}),and(sender_id.eq.${userObject.data.user.id},receiver_id.eq.${receiver_id})`
+    )
     .order('created_at', { ascending: true });
-
-    
 
   if (error) {
     console.error(error);

@@ -35,7 +35,8 @@ export function PrivateChatbox({
 
   useEffect(() => {
     const handleNewMessage = async (message: DirectMessage) => {
-      //RLS should make it so that only the receiver and sender can see the message
+      //RLS should make it so that only the receiver or sender can see the message
+      //left to check if user has receiverId's chat open
       if (message.sender_id === receiverId || message.sender_id === user.id) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
@@ -56,6 +57,9 @@ export function PrivateChatbox({
     };
   }, [receiverId, supabase, user.id]);
 
+  //todo: sending new message should probably send a notifcation of some kind to the receiver
+  //else they have no clue they have a new message
+  //TODO: get presense status of receiver and send notification if not present
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!input) return;

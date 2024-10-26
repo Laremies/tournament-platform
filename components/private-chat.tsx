@@ -57,7 +57,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
                 className={`w-2 h-2 rounded-full ${false ? 'bg-green-400' : 'bg-gray-400'}`}
               />
               <span className="text-xs font-medium">
-                {false ? 'Online' : 'Offline'}
+                {false ? 'Viewing Now' : 'Away'}
               </span>
             </>
           )}
@@ -75,11 +75,13 @@ export const PrivateChat = ({ user }: { user: User }) => {
         </Button>
       </CardHeader>
 
-      <PrivateChatbox
-        initialMessages={messages}
-        receiverId={receiverId}
-        user={user}
-      />
+      {receiverId && (
+        <PrivateChatbox
+          initialMessages={messages}
+          receiverId={receiverId}
+          user={user}
+        />
+      )}
     </Card>
   );
 };
