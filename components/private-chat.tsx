@@ -8,6 +8,7 @@ import { X } from 'lucide-react';
 import { Button } from './ui/button';
 import { PrivateChatbox } from './private-chatbox';
 import { User } from '@supabase/supabase-js';
+import { Separator } from './ui/separator';
 
 export interface DirectMessage {
   id: string;
@@ -70,10 +71,11 @@ export const PrivateChat = ({ user }: { user: User }) => {
             setChatOpen(false);
           }}
         >
-          <X className="h-4 w-4" />
+          <X className="h-6 w-6 text-black dark:text-white" />
           <span className="sr-only">Close</span>
         </Button>
       </CardHeader>
+      <Separator />
 
       {receiverId && (
         <PrivateChatbox

@@ -36,11 +36,11 @@ export function PrivateChatbox({
   useEffect(() => {
     const handleNewMessage = async (message: DirectMessage) => {
       //RLS should make it so that only the receiver or sender can see the message
-      //left to check if user has receiverId's chat open
       if (message.sender_id === receiverId || message.sender_id === user.id) {
         setMessages((prevMessages) => [...prevMessages, message]);
       }
     };
+    //havent here fixed the update not showing if subscribing to websocket not established
     const channel = supabase
       .channel('public:directMessages')
       .on(
@@ -97,23 +97,61 @@ export function PrivateChatbox({
   }, [messages]);
 
   return (
-    <CardContent>
-      <ScrollArea ref={scrollAreaRef} className="h-[300px] pr-4">
-        {messages &&
-          messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex gap-3 mb-4 ${
-                message.receiver_id === receiverId
-                  ? 'justify-end'
-                  : 'justify-start'
-              }`}
-            >
-              {message.message}
-            </div>
-          ))}
-      </ScrollArea>
-      <CardFooter className="mt-auto p-1">
+    <>
+      <CardContent className="pb-1">
+        <ScrollArea ref={scrollAreaRef} className="h-[300px] pr-4 pt-2">
+          {messages &&
+            messages.map((message, index) => {
+              //show timestamp if message is the newest or if the difference between the current message and the previous message is greater than 5 minutes
+              const isNewestMessage = index === messages.length - 1;
+              const showTimestamp =
+                isNewestMessage ||
+                index === 0 ||
+                new Date(message.created_at).getTime() -
+                  new Date(messages[index - 1].created_at).getTime() >
+                  5 * 60 * 1000; // 5 minutes in milliseconds
+
+              return (
+                <div
+                  key={index}
+                  className={`flex gap-3 mb-3 ${
+                    message.receiver_id === receiverId
+                      ? 'justify-end'
+                      : 'justify-start'
+                  }`}
+                >
+                  <div className="flex flex-col">
+                    <div
+                      className={`px-3 py-2 rounded-lg ${
+                        message.receiver_id === receiverId
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                      style={{ wordBreak: 'break-word', fontSize: '0.90rem' }}
+                    >
+                      {message.message}
+                    </div>
+                    {showTimestamp && (
+                      <span
+                        className={`text-xs mt-1 ${
+                          message.receiver_id === receiverId
+                            ? 'text-muted-foreground self-end'
+                            : 'text-muted-foreground self-start'
+                        }`}
+                      >
+                        {new Date(message.created_at).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+        </ScrollArea>
+      </CardContent>
+      <CardFooter className="mt-auto p-3">
         <form onSubmit={handleSubmit} className="flex w-full gap-2">
           <Input
             type="text"
@@ -136,6 +174,6 @@ export function PrivateChatbox({
           </Button>
         </form>
       </CardFooter>
-    </CardContent>
+    </>
   );
 }
