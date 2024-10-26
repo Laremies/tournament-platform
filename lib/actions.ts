@@ -673,3 +673,56 @@ export async function submitMatchResult(
 
   return { success: true };
 }
+
+export async function getDirectMessages(receiver_id: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to view your messages');
+    return { error: 'You must be logged in to view your messages' };
+  }
+
+  const { data, error } = await supabase
+    .from('directMessages')
+    .select('*')
+    .or(`and(sender_id.eq.${receiver_id},receiver_id.eq.${userObject.data.user.id}),and(sender_id.eq.${userObject.data.user.id},receiver_id.eq.${receiver_id})`)
+    .order('created_at', { ascending: true });
+
+    
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch direct messages' };
+  }
+
+  return { messages: data };
+}
+
+export async function submitNewDirectMessage(
+  formData: FormData,
+  receiver_id: string
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const data = {
+    message: formData.get('message') as string,
+    sender_id: userObject.data.user.id as string,
+    receiver_id: receiver_id,
+  };
+
+  const { error } = await supabase.from('directMessages').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send message' };
+  }
+
+  return { success: true };
+}
