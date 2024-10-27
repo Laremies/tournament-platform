@@ -377,6 +377,42 @@ export async function getMostPopularTournaments() {
 
   return { popularTournaments: data as Tournament[] };
 }
+export async function getMediaNAme() {
+  const supabase = createClient();
+  const user = await getAuthUser();
+  const userid = user?.id;
+
+  // Fetch the list of media for the user
+  const { data, error } = await supabase.storage.from('profiles').list(userid + '/');
+
+  // Handle potential error in fetching data
+  if (error) {
+    console.error('Error fetching media list:', error);
+    return null; // Return null in case of error
+  }
+
+  // Return the name of the first media file or null if none exists
+  return data.length > 0 ? data[0].name : null;
+}
+
+
+export async function getMediaURL(name: string | null) {
+  if (name == '.emptyFolderPlaceholder') {
+    console.warn('No media name provided; cannot fetch URL.');
+
+    return null; // or handle as needed
+  }
+  const supabase = createClient()
+  const user = await getAuthUser()
+  const userid = user?.id
+  if (name == null) {
+    console.warn('No media name provided; cannot fetch URL.');
+    const { data } = await supabase.storage.from('profiles').getPublicUrl(userid + '/')
+    return data.publicUrl as string // or handle as needed
+  }
+  const { data } = await supabase.storage.from('profiles').getPublicUrl(userid + '/' + name)
+  return data.publicUrl as string
+}
 
 export async function getUsername(userId: string | undefined) {
   const supabase = createClient();

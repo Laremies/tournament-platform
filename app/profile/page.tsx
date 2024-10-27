@@ -4,26 +4,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Progress from '@/components/ui/progress';
 import { CalendarDays, Trophy, Swords } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-import { getUsername, getAuthUser } from '@/lib/actions';
+import Avatar2 from '@/app/profile/UploadImage';
+import { getUsername, getAuthUser, getMediaNAme, getMediaURL } from '@/lib/actions';
+import React from 'react';
 
 import { getAllUserCurrentTournaments } from '@/lib/actions';
 export default async function Component() {
   const user = await getAuthUser();
 
   const usernames = await getUsername(user?.id);
-
+  const MediaName = await getMediaNAme()
+  const avatar_url = await getMediaURL(MediaName);
   const { tournaments } = await getAllUserCurrentTournaments();
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
-        <Avatar className="w-16 h-16">
-          <AvatarImage src={''} alt={''} />{' '}
-          <AvatarFallback>
-            {usernames.username.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+
+        <Avatar2
+          uid={user?.id ?? null}
+          url={avatar_url}
+          size={150}
+          usernames={usernames}
+        />
         <div>
           <h1 className="text-2xl font-bold">{usernames.username}</h1>
           <p className="text-gray-500">
