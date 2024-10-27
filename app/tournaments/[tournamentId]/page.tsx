@@ -27,8 +27,8 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   }
 
   const { tournament, error } = await getTournamentById(id);
-  if (error) {
-    return <p>{error}</p>;
+  if (error || !tournament) {
+    return <p>{error || 'Error loading tournament.'}</p>;
   }
 
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
@@ -40,14 +40,14 @@ const TournamentPage = async ({ params }: { params: Params }) => {
     tournamentPlayers &&
     tournamentPlayers.some((player) => player.user_id === user.id);
 
-  const isUserCreator = user && user.id === tournament?.creator_id;
+  const isUserCreator = user && user.id === tournament.creator_id;
 
   const { username: creatorUsername } = await getUsername(
-    tournament?.creator_id
+    tournament.creator_id
   );
 
   // Check if the tournament is private
-  if (tournament?.private && !isUserParticipant && !isUserCreator) {
+  if (tournament.private && !isUserParticipant && !isUserCreator) {
     //participants and creators dont need to be checked
     //non logged in user doesn't have to fetch the accessrequest data
     if (!user) {
@@ -89,9 +89,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <Info className="mr-2 h-4 w-4 text-primary" />
                 <span>
                   Tournament Status:{' '}
-                  {tournament?.finished
+                  {tournament.finished
                     ? 'Tournament ended'
-                    : tournament?.started
+                    : tournament.started
                       ? 'Ongoing'
                       : 'Waiting for players'}
                 </span>
@@ -100,14 +100,14 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <Users className="mr-2 h-4 w-4 text-primary" />
                 <span>
                   Max player amount:{' '}
-                  {tournament?.max_player_count || 'Unlimited'}
+                  {tournament.max_player_count || 'Unlimited'}
                 </span>
               </div>
               <div className="flex items-center">
                 <Crown className="mr-2 h-4 w-4 text-primary" />
                 <span>Creator: {creatorUsername}</span>
               </div>
-              {!isUserParticipant && (
+              {!isUserParticipant && !tournament.started && (
                 <JoinButton user={user} tournamentId={id} />
               )}
             </CardContent>

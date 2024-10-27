@@ -3,6 +3,7 @@ import { Separator } from '../ui/separator';
 import { MatchNode } from './single-elimination-bracket';
 import { MatchModal } from './match-modal';
 import { User } from '@supabase/supabase-js';
+import clsx from 'clsx';
 
 export interface MatchCardClientProps {
   match: MatchNode;
@@ -37,13 +38,33 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match, user }) => {
   return (
     <Card className="w-[200px] relative overflow-hidden group">
       <CardContent className="pt-6 space-y-4">
-        <p className="overflow-hidden text-ellipsis">
+        <p
+          className={clsx('overflow-hidden text-ellipsis', {
+            'text-green-600':
+              actualMatch.winner_id &&
+              actualMatch.home_player_id === actualMatch.winner_id,
+            'text-red-600 text-opacity-75':
+              actualMatch.winner_id &&
+              actualMatch.home_player_id !== actualMatch.winner_id,
+            'text-muted-foreground': !actualMatch.home_player_id,
+          })}
+        >
           {actualMatch.homePlayerUsername
             ? actualMatch.homePlayerUsername
             : 'TBD'}
         </p>
         <Separator />
-        <p className="overflow-hidden text-ellipsis">
+        <p
+          className={clsx('overflow-hidden text-ellipsis', {
+            'text-green-600':
+              actualMatch.winner_id &&
+              actualMatch.away_player_id === actualMatch.winner_id,
+            'text-red-600 text-opacity-75':
+              actualMatch.winner_id &&
+              actualMatch.away_player_id !== actualMatch.winner_id,
+            'text-muted-foreground': !actualMatch.away_player_id,
+          })}
+        >
           {actualMatch.awayPlayerUsername
             ? actualMatch.awayPlayerUsername
             : 'TBD'}

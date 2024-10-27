@@ -20,6 +20,7 @@ import { User, MessageSquare, AlertCircle, UserRoundX } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { kickPlayer } from '@/lib/actions';
 import { User as UserType } from '@supabase/supabase-js';
+import clsx from 'clsx';
 
 interface ParticipantProps {
   participant: { userId: string; username: string };
@@ -89,38 +90,45 @@ export const Participant: React.FC<ParticipantProps> = ({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span className="font-medium cursor-pointer ml-2">
+          <span
+            className={clsx('font-medium ml-2', {
+              'cursor-pointer': participant.userId !== 'tbd',
+              'cursor-not-allowed': participant.userId === 'tbd',
+            })}
+          >
             {participant.username}
           </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onSelect={() => handleShowProfile()}
-            className="cursor-pointer"
-          >
-            <User className="mr-2 h-4 w-4" />
-            <span>Show Profile</span>
-          </DropdownMenuItem>
-          {user && user.id !== participant.userId && (
+        {participant.userId !== 'tbd' && (
+          <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onSelect={() => handleSendMessage()}
+              onSelect={() => handleShowProfile()}
               className="cursor-pointer"
             >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              <span>Send Message</span>
+              <User className="mr-2 h-4 w-4" />
+              <span>Show Profile</span>
             </DropdownMenuItem>
-          )}
-          {isCreator &&
-            user?.id !== participant.userId && ( //owner has the ability to kick people
+            {user && user.id !== participant.userId && (
               <DropdownMenuItem
-                onSelect={() => setIsKickDialogOpen(true)}
+                onSelect={() => handleSendMessage()}
                 className="cursor-pointer"
               >
-                <UserRoundX className="mr-2 h-4 w-4" />
-                <span>Kick Participant</span>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>Send Message</span>
               </DropdownMenuItem>
             )}
-        </DropdownMenuContent>
+            {isCreator &&
+              user?.id !== participant.userId && ( //owner has the ability to kick people
+                <DropdownMenuItem
+                  onSelect={() => setIsKickDialogOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <UserRoundX className="mr-2 h-4 w-4" />
+                  <span>Kick Participant</span>
+                </DropdownMenuItem>
+              )}
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
       <Dialog open={isKickDialogOpen} onOpenChange={setIsKickDialogOpen}>
         <DialogContent>

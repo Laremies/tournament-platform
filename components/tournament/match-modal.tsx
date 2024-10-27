@@ -84,13 +84,13 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
           <div className="flex justify-around">
             <div>
               <div
-                className={clsx(
-                  winner === homePlayer.userId &&
-                    'text-green-600 font-semibold',
-                  winner &&
-                    winner !== homePlayer.userId &&
-                    'text-muted-foreground'
-                )}
+                className={clsx({
+                  'text-green-600 font-semibold':
+                    winner && winner === homePlayer.userId,
+                  'text-red-600 text-opacity-75':
+                    winner && winner !== homePlayer.userId,
+                  'text-muted-foreground': !homePlayer.userId,
+                })}
               >
                 <Label>Home Player</Label>
                 <Participant
@@ -111,13 +111,13 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
             </div>
             <div>
               <div
-                className={clsx(
-                  winner === awayPlayer.userId &&
-                    'text-green-600 font-semibold',
-                  winner &&
-                    winner !== awayPlayer.userId &&
-                    'text-muted-foreground'
-                )}
+                className={clsx({
+                  'text-green-600 font-semibold':
+                    winner && winner === awayPlayer.userId,
+                  'text-red-600 text-opacity-75':
+                    winner && winner !== awayPlayer.userId,
+                  'text-muted-foreground': !awayPlayer.userId,
+                })}
               >
                 <Label>Away Player</Label>
                 <Participant
