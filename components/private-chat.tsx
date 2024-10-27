@@ -108,7 +108,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
   if (!chatOpen) return null;
 
   return (
-    <Card className="w-[400px]   mx-auto relative fixed bottom-0 right-0">
+    <Card className="w-[400px] mx-auto fixed bottom-0 right-0">
       <CardHeader className="flex flex-row items-center justify-between p-4 ">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{username}</h2>

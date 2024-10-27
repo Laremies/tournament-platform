@@ -169,7 +169,8 @@ export function PrivateChatbox({
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className=" w-full"
+            className="w-full"
+            autoComplete="off"
           />
           <Button type="submit" disabled={isLoading}>
             {isLoading ? (
