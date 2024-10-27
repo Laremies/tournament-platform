@@ -16,18 +16,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
 import { User, MessageSquare, AlertCircle, UserRoundX } from 'lucide-react';
-
-import { Tournament, TournamentPlayer } from '@/app/types/types';
 import { toast } from '@/hooks/use-toast';
 import { kickPlayer } from '@/lib/actions';
 import { User as UserType } from '@supabase/supabase-js';
+import clsx from 'clsx';
 
 interface ParticipantProps {
-  participant: TournamentPlayer;
+  participant: { userId: string; username: string };
   isCreator?: boolean | null;
-  tournament: Tournament;
+  tournamentId: string;
   present: boolean;
   user: UserType | null;
 }
@@ -35,7 +33,7 @@ interface ParticipantProps {
 export const Participant: React.FC<ParticipantProps> = ({
   participant,
   isCreator,
-  tournament,
+  tournamentId,
   present,
   user,
 }) => {
@@ -43,7 +41,9 @@ export const Participant: React.FC<ParticipantProps> = ({
 
   const handleShowProfile = () => {
     //TODO: redirect to user profile
-    //router.push(`/profiles/${participant.users.id}`);
+    //router.push(`/profiles/${participant.id}`);
+    // OR
+    //<Link href={`/profiles/${participant.id}`}></Link>
   };
 
   const handleSendMessage = () => {
@@ -53,11 +53,14 @@ export const Participant: React.FC<ParticipantProps> = ({
   const handleKickPlayer = async () => {
     // Implement kick player logic
     setIsKickDialogOpen(false);
-    const { success, error } = await kickPlayer(tournament.id, participant.id);
+    const { success, error } = await kickPlayer(
+      tournamentId,
+      participant.userId
+    );
     if (success) {
       toast({
         title: 'Player Kicked',
-        description: `Kicked ${participant.users.username} from the game.`,
+        description: `Kicked ${participant.username} from the game.`,
       });
     } else {
       toast({
@@ -69,7 +72,7 @@ export const Participant: React.FC<ParticipantProps> = ({
 
   return (
     <div
-      key={participant.id}
+      key={participant.userId}
       className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
     >
       <Avatar className="relative overflow-visible">
@@ -78,7 +81,7 @@ export const Participant: React.FC<ParticipantProps> = ({
           alt={participant.users.username}
         /> */}
         <AvatarFallback>
-          {participant.users.username.charAt(0).toUpperCase()}
+          {participant.username.charAt(0).toUpperCase()}
         </AvatarFallback>
         {present && (
           <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-10" />
@@ -87,45 +90,57 @@ export const Participant: React.FC<ParticipantProps> = ({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span className="font-medium cursor-pointer ml-2">
-            {participant.users.username}
+          <span
+            className={clsx('font-medium ml-2', {
+              'cursor-pointer': participant.userId !== 'tbd',
+              'cursor-not-allowed': participant.userId === 'tbd',
+            })}
+          >
+            {participant.username}
           </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => handleShowProfile()}>
-            <User className="mr-2 h-4 w-4" />
-            <span>Show Profile</span>
-          </DropdownMenuItem>
-          {user && (
-            <DropdownMenuItem onSelect={() => handleSendMessage()}>
-              <MessageSquare className="mr-2 h-4 w-4" />
-              <span>Send Message</span>
+        {participant.userId !== 'tbd' && (
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onSelect={() => handleShowProfile()}
+              className="cursor-pointer"
+            >
+              <User className="mr-2 h-4 w-4" />
+              <span>Show Profile</span>
             </DropdownMenuItem>
-          )}
-          {isCreator && ( //owner has the ability to kick people
-            <DropdownMenuItem onSelect={() => setIsKickDialogOpen(true)}>
-              <UserRoundX className="mr-2 h-4 w-4" />
-              <span>Kick Participant</span>
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
+            {user && user.id !== participant.userId && (
+              <DropdownMenuItem
+                onSelect={() => handleSendMessage()}
+                className="cursor-pointer"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>Send Message</span>
+              </DropdownMenuItem>
+            )}
+            {isCreator &&
+              user?.id !== participant.userId && ( //owner has the ability to kick people
+                <DropdownMenuItem
+                  onSelect={() => setIsKickDialogOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <UserRoundX className="mr-2 h-4 w-4" />
+                  <span>Kick Participant</span>
+                </DropdownMenuItem>
+              )}
+          </DropdownMenuContent>
+        )}
       </DropdownMenu>
       <Dialog open={isKickDialogOpen} onOpenChange={setIsKickDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Remove participant</DialogTitle>
             <DialogDescription>
-              Are you sure you want to kick {participant.users.username} from
-              the tournament?
+              Are you sure you want to kick {participant.username} from the
+              tournament?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsKickDialogOpen(false)}
-            >
-              Cancel
-            </Button>
+            <Button onClick={() => setIsKickDialogOpen(false)}>Cancel</Button>
             <Button variant="destructive" onClick={() => handleKickPlayer()}>
               <AlertCircle className="mr-2 h-4 w-4" />
               Kick Player
