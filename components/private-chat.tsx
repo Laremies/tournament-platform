@@ -86,6 +86,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
   }, [supabase, receiverId, user?.id, chatOpen]);
 
   useEffect(() => {
+    if (!chatOpen) return;
     const fetchData = async () => {
       if (receiverId) {
         setUsername('');
@@ -102,7 +103,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
     };
 
     fetchData();
-  }, [receiverId]);
+  }, [receiverId, chatOpen]);
 
   if (!chatOpen) return null;
 

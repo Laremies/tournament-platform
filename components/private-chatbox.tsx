@@ -30,7 +30,7 @@ export function PrivateChatbox({
   present,
 }: PrivateChatboxProps) {
   const supabase = createClient();
-  const [messages, setMessages] = useState<DirectMessage[]>([]);
+  const [messages, setMessages] = useState<DirectMessage[]>(initialMessages);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
