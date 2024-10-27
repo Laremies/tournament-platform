@@ -140,6 +140,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
 
       {receiverId && (
         <PrivateChatbox
+          present={presentUserIds.includes(receiverId)}
           initialMessages={messages}
           receiverId={receiverId}
           user={user}

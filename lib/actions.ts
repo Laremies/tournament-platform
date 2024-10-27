@@ -726,3 +726,59 @@ export async function submitNewDirectMessage(
 
   return { success: true };
 }
+
+export async function getUserNotifications(user_id: string) {
+  const supabase = createClient();
+
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', user_id)
+    .eq('read', false);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch notifications' };
+  }
+
+  const notificationsWithUsernames = await Promise.all(
+    notifications.map(async (notification) => {
+      if (notification.type === 'new_message') {
+        const { username } = await getUsername(notification.related_id);
+        return { ...notification, username };
+      }
+      return notification;
+    })
+  );
+
+  return { notifications: notificationsWithUsernames };
+}
+
+export async function sendNewMessageNotification(
+  receiver_id: string,
+  formData: FormData
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const data = {
+    type: 'new_message',
+    user_id: receiver_id,
+    related_id: userObject.data.user.id,
+    message: formData.get('message') as string,
+  };
+
+  const { error } = await supabase.from('notifications').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send notification' };
+  }
+
+  return { success: true };
+}

@@ -6,7 +6,10 @@ import { CardContent, CardFooter } from './ui/card';
 import { Send } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { submitNewDirectMessage } from '@/lib/actions';
+import {
+  sendNewMessageNotification,
+  submitNewDirectMessage,
+} from '@/lib/actions';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 
@@ -17,12 +20,14 @@ interface PrivateChatboxProps {
   initialMessages: DirectMessage[];
   receiverId: string;
   user: User;
+  present: boolean;
 }
 
 export function PrivateChatbox({
   initialMessages,
   receiverId,
   user,
+  present,
 }: PrivateChatboxProps) {
   const supabase = createClient();
   const [messages, setMessages] = useState<DirectMessage[]>([]);
@@ -71,6 +76,10 @@ export function PrivateChatbox({
     );
     if (success) {
       setInput('');
+      //if receiver is not present, send a notification
+      if (!present) {
+        await sendNewMessageNotification(receiverId, formData);
+      }
     }
     if (error) {
       //TODO: handle error
