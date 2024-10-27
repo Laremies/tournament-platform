@@ -7,6 +7,7 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
+import { Notification } from '@/components/header/notifications-server';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
@@ -778,6 +779,43 @@ export async function sendNewMessageNotification(
   if (error) {
     console.error(error);
     return { error: 'Failed to send notification' };
+  }
+
+  return { success: true };
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('id', notificationId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to mark notification as read' };
+  }
+
+  return { success: true };
+}
+
+export async function markAllNotificationsAsRead(
+  notifications: Notification[]
+) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true })
+    .in(
+      'id',
+      notifications.map((notification) => notification.id)
+    );
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to mark notifications as read' };
   }
 
   return { success: true };

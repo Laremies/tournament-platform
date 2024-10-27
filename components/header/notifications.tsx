@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { useChat } from '@/utils/context/ChatContext';
+import { markAllNotificationsAsRead } from '@/lib/actions';
 
 //TODO: add realtime to notifications
 export function Notifications({
@@ -19,6 +20,12 @@ export function Notifications({
   initNotifications: Notification[];
 }) {
   const [notifications, setNotifications] = useState(initNotifications);
+
+  const handleMarkAllAsRead = async () => {
+    if (notifications.length === 0) return;
+    setNotifications([]);
+    await markAllNotificationsAsRead(notifications);
+  };
 
   return (
     <>
@@ -44,7 +51,7 @@ export function Notifications({
                   size="sm"
                   variant={'ghost'}
                   className="text-xs"
-                  onClick={() => setNotifications([])} //TODO: also update notification.read to true in db
+                  onClick={handleMarkAllAsRead} //TODO: also update notification.read to true in db
                 >
                   Clear All
                 </Button>
@@ -107,17 +114,19 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
       setReceiverId(notification.related_id);
     }
   };
-  console.log(notification);
 
   return (
-    <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black">
+    <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black z-20">
       <CardContent className="pt-1 pr-2 pb-0 pl-1">
         <div className="flex items-start">
           <div className="flex-1 ">
-            <p className="text-sm font-medium leading-none">
-              New message from {notification.username}
+            <p className="text-sm font-medium leading-none line-clamp-">
+              New message from{' '}
+              <span className="font-bold text-blue-500">
+                {notification.username}
+              </span>
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground line-clamp-2">
               {notification.message}
             </p>
             <div className="flex items-center justify-between ">
