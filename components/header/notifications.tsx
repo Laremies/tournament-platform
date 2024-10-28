@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Notification } from './notifications-server';
-import { Bell, ChevronRight, MessageSquare } from 'lucide-react';
+import { Bell, ChevronRight, MessageSquare, X } from 'lucide-react';
 import {
   Popover,
   PopoverTrigger,
@@ -11,7 +11,9 @@ import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { useChat } from '@/utils/context/ChatContext';
-import { markAllNotificationsAsRead } from '@/lib/actions';
+import { getUsername, markAllNotificationsAsRead } from '@/lib/actions';
+import { createClient } from '@/utils/supabase/client';
+import { AnimatePresence, motion } from 'framer-motion';
 
 //TODO: add realtime to notifications
 export function Notifications({
@@ -19,7 +21,45 @@ export function Notifications({
 }: {
   initNotifications: Notification[];
 }) {
+  const supabase = createClient();
+
   const [notifications, setNotifications] = useState(initNotifications);
+  const [showNewNotification, setShowNewNotification] = useState(false);
+  const [newNotification, setNewNotification] = useState<Notification>();
+
+  useEffect(() => {
+    const handleNewNotification = async (newNotification: Notification) => {
+      if (newNotification.type === 'new_message') {
+        const { username } = await getUsername(newNotification.related_id);
+        newNotification.username = username;
+        setNotifications((prevNotifications) => [
+          newNotification,
+          ...prevNotifications,
+        ]);
+        setNewNotification(newNotification);
+        setShowNewNotification(true);
+        setTimeout(() => {
+          setShowNewNotification(false);
+        }, 4000);
+      }
+    };
+    //TODO: handle different notification types here
+
+    const channel = supabase
+      .channel('public:notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        (payload) => {
+          handleNewNotification(payload.new as Notification);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleMarkAllAsRead = async () => {
     if (notifications.length === 0) return;
@@ -29,6 +69,35 @@ export function Notifications({
 
   return (
     <>
+      <div className="fixed top-16 right-4">
+        {showNewNotification && newNotification && (
+          <AnimatePresence>
+            <motion.div
+              key={newNotification.id}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-primary text-primary-foreground rounded-lg shadow-lg p-4 max-w-sm w-full"
+            >
+              <div className="flex items-start">
+                <div className="flex-1 mr-2">
+                  {newNotification.type === 'new_message' && ( //different message for different notification types
+                    <p className="text-sm">
+                      {'New message from ' + newNotification.username}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowNewNotification(false)}
+                  className="flex-shrink-0 text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  aria-label="Close notification"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="ghost" size="icon" className="relative rounded-full">
@@ -38,7 +107,7 @@ export function Notifications({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-1">
+        <PopoverContent className="w-80 p-1 animate-slide-in">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-sm font-semibold">Notifications</p>
@@ -61,7 +130,7 @@ export function Notifications({
               </div>
             ) : (
               notifications.map((notification) => (
-                <div key={notification.id}>
+                <div key={notification.id} className="animate-fade-in">
                   {notification.type === 'new_message' && (
                     <NewMessageNotification notification={notification} />
                   )}
