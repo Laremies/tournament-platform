@@ -7,6 +7,8 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
+import { Notification } from '@/components/header/notifications-server';
+import { RecentChat } from '@/components/header/recentChats';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
@@ -672,4 +674,223 @@ export async function submitMatchResult(
   revalidatePath(`/tournaments/${tournamentId}`);
 
   return { success: true };
+}
+
+export async function getDirectMessages(receiver_id: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to view your messages');
+    return { error: 'You must be logged in to view your messages' };
+  }
+
+  const { data, error } = await supabase
+    .from('directMessages')
+    .select('*')
+    .or(
+      `and(sender_id.eq.${receiver_id},receiver_id.eq.${userObject.data.user.id}),and(sender_id.eq.${userObject.data.user.id},receiver_id.eq.${receiver_id})`
+    )
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch direct messages' };
+  }
+
+  return { messages: data };
+}
+
+export async function submitNewDirectMessage(
+  formData: FormData,
+  receiver_id: string
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const data = {
+    message: formData.get('message') as string,
+    sender_id: userObject.data.user.id as string,
+    receiver_id: receiver_id,
+  };
+
+  const { error } = await supabase.from('directMessages').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send message' };
+  }
+
+  return { success: true };
+}
+
+export async function getUserNotifications(user_id: string) {
+  const supabase = createClient();
+
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', user_id)
+    .eq('read', false);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch notifications' };
+  }
+
+  const notificationsWithUsernames = await Promise.all(
+    notifications.map(async (notification) => {
+      if (notification.type === 'new_message') {
+        const { username } = await getUsername(notification.related_id);
+        return { ...notification, username };
+      }
+      return notification;
+    })
+  );
+
+  return { notifications: notificationsWithUsernames };
+}
+
+export async function sendNewMessageNotification(
+  receiver_id: string,
+  formData: FormData
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to send a message');
+    return { error: 'You must be logged in to send a message' };
+  }
+
+  const data = {
+    type: 'new_message',
+    user_id: receiver_id,
+    related_id: userObject.data.user.id,
+    message: formData.get('message') as string,
+  };
+
+  const { error } = await supabase.from('notifications').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to send notification' };
+  }
+
+  return { success: true };
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('id', notificationId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to mark notification as read' };
+  }
+
+  return { success: true };
+}
+
+export async function markAllNotificationsAsRead(
+  notifications: Notification[]
+) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('notifications')
+    .update({ read: true })
+    .in(
+      'id',
+      notifications.map((notification) => notification.id)
+    );
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to mark notifications as read' };
+  }
+
+  return { success: true };
+}
+
+export async function getRecentChats() {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to view your recent chats');
+    return { error: 'You must be logged in to view your recent chats' };
+  }
+
+  const { data, error } = await supabase
+    .from('directMessages')
+    .select('*')
+    .or(
+      `sender_id.eq.${userObject.data.user.id},receiver_id.eq.${userObject.data.user.id}`
+    );
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch recent chats' };
+  }
+
+  // Process the messages to get only the newest message for each sender or receiver
+  const recentChats = data.reduce((acc, message) => {
+    if (!userObject.data.user) {
+      return acc;
+    }
+    const key =
+      message.sender_id === userObject.data.user.id
+        ? message.receiver_id
+        : message.sender_id;
+    if (
+      !acc[key] ||
+      new Date(message.created_at) > new Date(acc[key].created_at)
+    ) {
+      acc[key] = message;
+    }
+    return acc;
+  }, {});
+
+  // Fetch user details for each unique sender or receiver
+  const userIds = Object.keys(recentChats);
+  const { data: usersData, error: usersError } = await supabase
+    .from('users')
+    .select('id, username')
+    .in('id', userIds);
+
+  if (usersError) {
+    console.error(usersError);
+    return { error: 'Failed to fetch user details' };
+  }
+
+  // Combine user details with the messages
+  const recentChatsWithUsernames = (
+    Object.values(recentChats) as RecentChat[]
+  ).map((chat: RecentChat) => {
+    const user = usersData.find(
+      (user) => user.id === chat.sender_id || user.id === chat.receiver_id
+    );
+    return {
+      ...chat,
+      username: user ? user.username : 'Unknown',
+    };
+  });
+
+  // Sort the recent chats based on their created_at value
+  recentChatsWithUsernames.sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  return { recentChats: recentChatsWithUsernames };
 }

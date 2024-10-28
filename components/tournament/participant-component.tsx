@@ -20,6 +20,7 @@ import { User, MessageSquare, AlertCircle, UserRoundX } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { kickPlayer } from '@/lib/actions';
 import { User as UserType } from '@supabase/supabase-js';
+import { useChat } from '@/utils/context/ChatContext';
 import clsx from 'clsx';
 
 interface ParticipantProps {
@@ -38,6 +39,7 @@ export const Participant: React.FC<ParticipantProps> = ({
   user,
 }) => {
   const [isKickDialogOpen, setIsKickDialogOpen] = useState(false);
+  const { setChatOpen, setReceiverId } = useChat();
 
   const handleShowProfile = () => {
     //TODO: redirect to user profile
@@ -48,6 +50,8 @@ export const Participant: React.FC<ParticipantProps> = ({
 
   const handleSendMessage = () => {
     //TODO: open direct message chat box with user
+    setChatOpen(true);
+    setReceiverId(participant.userId);
   };
 
   const handleKickPlayer = async () => {
@@ -84,7 +88,7 @@ export const Participant: React.FC<ParticipantProps> = ({
           {participant.username.charAt(0).toUpperCase()}
         </AvatarFallback>
         {present && (
-          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-10" />
+          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-0" />
         )}
       </Avatar>
 

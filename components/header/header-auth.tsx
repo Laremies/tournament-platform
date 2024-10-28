@@ -6,6 +6,8 @@ import { Button } from '../ui/button';
 import { createClient } from '@/utils/supabase/server';
 import { LogIn, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import NotificationComponent from './notifications-server';
+import RecentChatsList from './recentChats';
 
 export default async function AuthButton() {
   const supabase = createClient();
@@ -55,7 +57,9 @@ export default async function AuthButton() {
     );
   }
   return user ? (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 z-10">
+      <RecentChatsList user={user} />
+      <NotificationComponent user={user} />
       <Avatar>
         <AvatarImage src={''} alt={''} />{' '}
         {/* placeholder until avatars implemented */}
