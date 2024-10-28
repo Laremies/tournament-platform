@@ -70,11 +70,11 @@ const TournamentPage = async ({ params }: { params: Params }) => {
 
   return (
     <div className="mx-auto p-4 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr,1fr,1.5fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr,1.5fr,1.5fr] gap-6">
         {/* Tournament Bracket */}
         {tournament && <Bracket tournament={tournament} user={user} />}
         {/* Tournament Statistics and Participants */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-[350px]">
           {/* Access Requests */}
           {isUserCreator && tournament.private && (
             <AccessRequests tournamentId={id} />
