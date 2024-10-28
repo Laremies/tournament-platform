@@ -160,7 +160,7 @@ export function ChatBox({
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           className="flex-grow"
-          autoComplete='off'
+          autoComplete="off"
         />
         <Button type="submit" className="ml-2" disabled={isSubmitting}>
           {isSubmitting ? 'Sending...' : 'Send'}

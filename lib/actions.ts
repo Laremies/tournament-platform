@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
 import { Notification } from '@/components/header/notifications-server';
+import { RecentChat } from '@/components/header/recentChats';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
@@ -819,4 +820,77 @@ export async function markAllNotificationsAsRead(
   }
 
   return { success: true };
+}
+
+export async function getRecentChats() {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to view your recent chats');
+    return { error: 'You must be logged in to view your recent chats' };
+  }
+
+  const { data, error } = await supabase
+    .from('directMessages')
+    .select('*')
+    .or(
+      `sender_id.eq.${userObject.data.user.id},receiver_id.eq.${userObject.data.user.id}`
+    );
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch recent chats' };
+  }
+
+  // Process the messages to get only the newest message for each sender or receiver
+  const recentChats = data.reduce((acc, message) => {
+    if (!userObject.data.user) {
+      return acc;
+    }
+    const key =
+      message.sender_id === userObject.data.user.id
+        ? message.receiver_id
+        : message.sender_id;
+    if (
+      !acc[key] ||
+      new Date(message.created_at) > new Date(acc[key].created_at)
+    ) {
+      acc[key] = message;
+    }
+    return acc;
+  }, {});
+
+  // Fetch user details for each unique sender or receiver
+  const userIds = Object.keys(recentChats);
+  const { data: usersData, error: usersError } = await supabase
+    .from('users')
+    .select('id, username')
+    .in('id', userIds);
+
+  if (usersError) {
+    console.error(usersError);
+    return { error: 'Failed to fetch user details' };
+  }
+
+  // Combine user details with the messages
+  const recentChatsWithUsernames = (
+    Object.values(recentChats) as RecentChat[]
+  ).map((chat: RecentChat) => {
+    const user = usersData.find(
+      (user) => user.id === chat.sender_id || user.id === chat.receiver_id
+    );
+    return {
+      ...chat,
+      username: user ? user.username : 'Unknown',
+    };
+  });
+
+  // Sort the recent chats based on their created_at value
+  recentChatsWithUsernames.sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  return { recentChats: recentChatsWithUsernames };
 }

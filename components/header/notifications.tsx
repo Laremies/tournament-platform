@@ -6,8 +6,8 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@radix-ui/react-popover';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+} from '@/components/ui/popover';
+import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { useChat } from '@/utils/context/ChatContext';
@@ -38,53 +38,43 @@ export function Notifications({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent>
-          <Card className="z-10 w-[300px] pr-1 pl-0">
-            <CardHeader className="p-2 pb-0 ">
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="text-sm font-semibold">
-                    Notifications
-                  </CardTitle>
-                </div>
-                <Button
-                  size="sm"
-                  variant={'ghost'}
-                  className="text-xs"
-                  onClick={handleMarkAllAsRead} //TODO: also update notification.read to true in db
-                >
-                  Clear All
-                </Button>
+        <PopoverContent className="w-80 p-1">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm font-semibold">Notifications</p>
+            </div>
+            <Button
+              size="sm"
+              variant={'ghost'}
+              className="text-xs"
+              onClick={handleMarkAllAsRead} //TODO: also update notification.read to true in db
+            >
+              Clear All
+            </Button>
+          </div>
+          <ScrollArea className="h-[300px] ">
+            {notifications.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-muted-foreground">
+                  No new notifications
+                </p>
               </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[200px] ">
-                {notifications.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-sm text-muted-foreground">
-                      No new notifications
-                    </p>
-                  </div>
-                ) : (
-                  notifications.map((notification) => (
-                    <div key={notification.id}>
-                      {notification.type === 'new_message' && (
-                        <NewMessageNotification notification={notification} />
-                      )}
-                      {notification.type === 'tournament_start' && (
-                        <TournamentStartNotification
-                          notification={notification}
-                        />
-                      )}
-                      {notification.type === 'new_matchup' && (
-                        <NewMatchupNotification notification={notification} />
-                      )}
-                    </div>
-                  ))
-                )}
-              </ScrollArea>
-            </CardContent>
-          </Card>
+            ) : (
+              notifications.map((notification) => (
+                <div key={notification.id}>
+                  {notification.type === 'new_message' && (
+                    <NewMessageNotification notification={notification} />
+                  )}
+                  {notification.type === 'tournament_start' && (
+                    <TournamentStartNotification notification={notification} />
+                  )}
+                  {notification.type === 'new_matchup' && (
+                    <NewMatchupNotification notification={notification} />
+                  )}
+                </div>
+              ))
+            )}
+          </ScrollArea>
         </PopoverContent>
       </Popover>
     </>
