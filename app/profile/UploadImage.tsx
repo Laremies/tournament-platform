@@ -1,121 +1,141 @@
+'use client';
 
-"use client";
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { createClient } from '@/utils/supabase/client'; // Ensure this import path is correct
-import { getAuthUser } from '@/lib/actions'; // Ensure this import path is correct
+import { Camera } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { getAuthUser } from '@/lib/actions';
 import { v4 as uuidv4 } from 'uuid';
 
-export default function Avatar2({
-    uid,
-    url: initialUrl,
-    size,
-    usernames,
+export default function Component({
+  uid,
+  initialUrl,
+  size = 96,
+  username,
 }: {
-    uid: string | null;
-    url: string | null;
-    size: number;
-    usernames: any;
+  uid: string | null;
+  initialUrl: string | null;
+  size?: number;
+  username?: string;
 }) {
-    const supabase = createClient();
-    const [uploading, setUploading] = useState(false);
-    const [url, setUrl] = useState(initialUrl); // Local state for the avatar URL
+  const [url, setUrl] = useState(initialUrl);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const supabase = createClient();
 
-    const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
-        try {
-            setUploading(true);
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
 
-            if (!event.target.files || event.target.files.length === 0) {
-                throw new Error('You must select an image to upload.');
-            }
+  const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (
+    event
+  ) => {
+    try {
+      setUploading(true);
 
-            const file = event.target.files[0];
-            const user = await getAuthUser();
-            const userid = user?.id;
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
 
-            if (!file.type.startsWith('image/')) {
-                throw new Error('Only image files are allowed.');
-            }
+      const file = event.target.files[0];
+      const user = await getAuthUser();
+      const userid = user?.id;
 
-            const { data: existingFiles, error: listError } = await supabase.storage.from('profiles').list(userid + '/');
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Only image files are allowed.');
+      }
 
-            if (listError) {
-                console.error("Error listing files:", listError); // Log the error
-                throw listError;
-            }
+      const { data: existingFiles, error: listError } = await supabase.storage
+        .from('profiles')
+        .list(userid + '/');
 
-            if (existingFiles && existingFiles.length > 0) {
-                const filesToDelete = existingFiles.map(file => `${userid}/${file.name}`);
+      if (listError) {
+        console.error('Error listing files:', listError);
+        throw listError;
+      }
 
-                // Remove all existing files
-                const { error: deleteError } = await supabase.storage.from('profiles').remove(filesToDelete);
+      if (existingFiles && existingFiles.length > 0) {
+        const filesToDelete = existingFiles.map(
+          (file) => `${userid}/${file.name}`
+        );
+        const { error: deleteError } = await supabase.storage
+          .from('profiles')
+          .remove(filesToDelete);
 
-                if (deleteError) {
-                    throw deleteError;
-                } else {
-                    console.log("All existing files deleted successfully.");
-                }
-            }
-
-
-            // Upload the new avatar
-            const fileName = `${userid}/${uuidv4()}`; // Create a unique filename
-            const { error: uploadError } = await supabase.storage.from('profiles').upload(fileName, file);
-
-            if (uploadError) {
-                throw uploadError;
-            }
-
-            // Construct the public URL for the newly uploaded file
-            const { data: publicUrlData } = supabase.storage.from('profiles').getPublicUrl(fileName);
-            const publicURL = publicUrlData.publicUrl; // Access the publicUrl property from the data object
-            if (publicURL) {
-                setUrl(publicURL); // Set the URL state to the new public URL
-            }
-        } catch (error) {
-            alert('Error uploading avatar!');
-        } finally {
-            setUploading(false);
+        if (deleteError) {
+          throw deleteError;
+        } else {
+          console.log('All existing files deleted successfully.');
         }
-    };
+      }
 
-    return (
-        <div>
-            {url ? (
-                <Image
-                    width={size}
-                    height={size}
-                    src={url}
-                    alt="Avatar"
-                    className="avatar image"
-                    style={{ height: size, width: size }}
-                />
-            ) : (
-                <Avatar className="w-16 h-16">
-                    <AvatarImage src={''} alt={''} />
-                    <AvatarFallback>
-                        {usernames.username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                </Avatar>
-            )}
-            <div style={{ width: size }}>
-                <label className="button primary block" htmlFor="single">
-                    {uploading ? 'Uploading...' : 'Upload'}
-                </label>
-                <input
-                    style={{
-                        visibility: 'hidden',
-                        position: 'absolute',
-                    }}
-                    type="file"
-                    id="single"
-                    accept="image/*"
-                    onChange={uploadAvatar}
-                    disabled={uploading}
-                />
-            </div>
+      const fileName = `${userid}/${uuidv4()}`;
+      const { error: uploadError } = await supabase.storage
+        .from('profiles')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('profiles')
+        .getPublicUrl(fileName);
+      const publicURL = publicUrlData.publicUrl;
+      if (publicURL) {
+        setUrl(publicURL);
+      }
+    } catch (error) {
+      alert('Error uploading avatar!');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="relative inline-block">
+      {url ? (
+        <Image
+          width={size}
+          height={size}
+          src={url}
+          alt="Profile"
+          className="rounded-full object-cover cursor-pointer"
+          onClick={handleImageClick}
+        />
+      ) : (
+        <Avatar
+          className={`w-${size / 4} h-${size / 4} cursor-pointer`}
+          onClick={handleImageClick}
+        >
+          <AvatarImage src={''} alt={''} />
+          <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+      )}
+      <Button
+        size="icon"
+        variant="secondary"
+        className="absolute bottom-0 right-0 rounded-full"
+        onClick={handleImageClick}
+        aria-label="Upload new image"
+      >
+        <Camera className="h-4 w-4" />
+      </Button>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={uploadAvatar}
+        className="hidden"
+        accept="image/*"
+        disabled={uploading}
+      />
+      {uploading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
         </div>
-    );
+      )}
+    </div>
+  );
 }
-

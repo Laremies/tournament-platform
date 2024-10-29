@@ -5,32 +5,37 @@ import Progress from '@/components/ui/progress';
 import { CalendarDays, Trophy, Swords } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Avatar2 from '@/app/profile/UploadImage';
-import { getUsername, getAuthUser, getMediaNAme, getMediaURL } from '@/lib/actions';
-import React from 'react';
+import {
+  getUsername,
+  getAuthUser,
+  getMediaNAme,
+  getMediaURL,
+} from '@/lib/actions';
+
+import EditableUsername from './Editname';
 
 import { getAllUserCurrentTournaments } from '@/lib/actions';
 export default async function Component() {
   const user = await getAuthUser();
-
+  const userid = user?.id as string;
   const usernames = await getUsername(user?.id);
-  const MediaName = await getMediaNAme()
+  const MediaName = await getMediaNAme();
   const avatar_url = await getMediaURL(MediaName);
   const { tournaments } = await getAllUserCurrentTournaments();
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
-
         <Avatar2
           uid={user?.id ?? null}
-          url={avatar_url}
+          initialUrl={avatar_url}
           size={150}
-          usernames={usernames}
+          username={usernames.username}
         />
         <div>
-          <h1 className="text-2xl font-bold">{usernames.username}</h1>
+          <EditableUsername username={usernames.username} userid={userid} />
           <p className="text-gray-500">
-            @{user ? user.email : 'guest@example.com'}
+            {user ? user.email : 'guest@example.com'}
           </p>
         </div>
       </div>

@@ -377,41 +377,57 @@ export async function getMostPopularTournaments() {
 
   return { popularTournaments: data as Tournament[] };
 }
+
+export async function test(newName: string, userid: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('users')
+    .update({ username: newName })
+    .eq('id', userid)
+    .select();
+
+  if (error) {
+    throw new Error('Failed to update name');
+  }
+}
 export async function getMediaNAme() {
   const supabase = createClient();
   const user = await getAuthUser();
   const userid = user?.id;
 
   // Fetch the list of media for the user
-  const { data, error } = await supabase.storage.from('profiles').list(userid + '/');
+  const { data, error } = await supabase.storage
+    .from('profiles')
+    .list(userid + '/');
 
-  // Handle potential error in fetching data
   if (error) {
     console.error('Error fetching media list:', error);
-    return null; // Return null in case of error
+    return null;
   }
 
-  // Return the name of the first media file or null if none exists
   return data.length > 0 ? data[0].name : null;
 }
-
 
 export async function getMediaURL(name: string | null) {
   if (name == '.emptyFolderPlaceholder') {
     console.warn('No media name provided; cannot fetch URL.');
 
-    return null; // or handle as needed
+    return null;
   }
-  const supabase = createClient()
-  const user = await getAuthUser()
-  const userid = user?.id
+  const supabase = createClient();
+  const user = await getAuthUser();
+  const userid = user?.id;
   if (name == null) {
     console.warn('No media name provided; cannot fetch URL.');
-    const { data } = await supabase.storage.from('profiles').getPublicUrl(userid + '/')
-    return data.publicUrl as string // or handle as needed
+    const { data } = await supabase.storage
+      .from('profiles')
+      .getPublicUrl(userid + '/');
+    return data.publicUrl as string;
   }
-  const { data } = await supabase.storage.from('profiles').getPublicUrl(userid + '/' + name)
-  return data.publicUrl as string
+  const { data } = await supabase.storage
+    .from('profiles')
+    .getPublicUrl(userid + '/' + name);
+  return data.publicUrl as string;
 }
 
 export async function getUsername(userId: string | undefined) {
