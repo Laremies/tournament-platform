@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Notification } from './notifications-server';
-import { Bell, ChevronRight, MessageSquare, X } from 'lucide-react';
+import Link from 'next/link';
+import { Bell, ChevronRight, MessageSquare, Trophy, X } from 'lucide-react';
 import {
   Popover,
   PopoverTrigger,
@@ -28,20 +29,30 @@ export function Notifications({
   const [newNotification, setNewNotification] = useState<Notification>();
 
   useEffect(() => {
-    const handleNewNotification = async (newNotification: Notification) => {
-      if (newNotification.type === 'new_message') {
-        const { username } = await getUsername(newNotification.related_id);
-        newNotification.username = username;
+    const handleNewNotification = async (
+      newNotificationFromServer: Notification
+    ) => {
+      if (newNotificationFromServer.type === 'new_message') {
+        const { username } = await getUsername(
+          newNotificationFromServer.related_id
+        );
+        newNotificationFromServer.username = username;
         setNotifications((prevNotifications) => [
-          newNotification,
+          newNotificationFromServer,
           ...prevNotifications,
         ]);
-        setNewNotification(newNotification);
-        setShowNewNotification(true);
-        setTimeout(() => {
-          setShowNewNotification(false);
-        }, 4000);
       }
+      if (newNotificationFromServer.type === 'tournament_start') {
+        setNotifications((prevNotifications) => [
+          newNotificationFromServer,
+          ...prevNotifications,
+        ]);
+      }
+      setNewNotification(newNotificationFromServer);
+      setShowNewNotification(true);
+      setTimeout(() => {
+        setShowNewNotification(false);
+      }, 4000);
     };
     //TODO: handle different notification types here
 
@@ -83,6 +94,13 @@ export function Notifications({
                   {newNotification.type === 'new_message' && ( //different message for different notification types
                     <p className="text-sm">
                       {'New message from ' + newNotification.username}
+                    </p>
+                  )}
+                  {newNotification.type === 'tournament_start' && ( //different message for different notification types
+                    <p className="text-sm">
+                      {'Tournament ' +
+                        newNotification.message +
+                        ' just started!'}
                     </p>
                   )}
                 </div>
@@ -212,10 +230,47 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
   );
 };
 
-//TODO
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TournamentStartNotification = ({ notification }: NotificationProps) => {
-  return <></>;
+  return (
+    <>
+      <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black z-20">
+        <CardContent className="pt-1 pr-2 pb-0 pl-1">
+          <div className="flex items-start">
+            <div className="flex-1 ">
+              <p className="text-sm font-medium leading-none line-clamp-">
+                Tournament {''}
+                <span className="font-bold text-green-500">
+                  {notification.message}
+                </span>{' '}
+                just started!
+              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                Go see who you&apos;re up against!
+              </p>
+              <div className="flex items-center justify-between ">
+                <div className="flex items-center">
+                  <Trophy className="mr-2 h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(notification.created_at)}
+                  </span>
+                </div>
+                <Link href={`/tournaments/${notification.related_id}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs hover:bg-transparent"
+                  >
+                    {'Show Tournament'}
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
 };
 
 //TODO

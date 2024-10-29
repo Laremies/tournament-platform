@@ -355,10 +355,46 @@ export async function startTournament(tournamentId: string) {
   if (error) {
     return { error: error };
   }
-  await supabase
+  const { data: tournament, error: updateError } = await supabase
     .from('tournaments')
     .update({ started: true })
-    .eq('id', tournamentId);
+    .eq('id', tournamentId)
+    .select();
+
+  if (updateError) {
+    console.error(updateError);
+    return { error: 'Failed to update tournament' };
+  }
+
+  const { tournamentUsers } = await getTournamentPlayers(tournamentId);
+
+  if (!tournamentUsers) {
+    return { error: 'Failed to fetch tournament players' };
+  }
+
+  //send notification for participants
+  for (const player of tournamentUsers) {
+    if (player.user_id === tournament[0].creator_id) {
+      continue;
+    }
+    const notificationData = {
+      type: 'tournament_start',
+      user_id: player.user_id,
+      related_id: tournamentId,
+      message: tournament[0].name,
+    };
+
+    const { error: notificationError } = await supabase
+      .from('notifications')
+      .insert([notificationData]);
+
+    if (notificationError) {
+      console.error(
+        `Failed to send notification to user ${player.user_id}:`,
+        notificationError
+      );
+    }
+  }
 
   revalidatePath(`/tournaments/${tournamentId}`);
 
@@ -736,7 +772,8 @@ export async function getUserNotifications(user_id: string) {
     .from('notifications')
     .select('*')
     .eq('user_id', user_id)
-    .eq('read', false);
+    .eq('read', false)
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error(error);

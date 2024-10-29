@@ -42,7 +42,7 @@ export const generateSingleEliminationBracket = async (
     };
   }
 
-  if (tournamentPlayers.length < 3) {
+  if (tournamentPlayers.length < 2) {
     return {
       error: 'Tournament must have at least 3 players to generate bracket',
     };
