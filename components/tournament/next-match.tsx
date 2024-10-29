@@ -9,7 +9,6 @@ import {
 } from '../ui/card';
 import { XCircle, Swords, Trophy } from 'lucide-react';
 import { Participant } from './participant-component';
-import next from 'next';
 
 interface NextMatchProps {
   user: User;

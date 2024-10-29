@@ -8,9 +8,7 @@ import {
 } from '../ui/card';
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
-import { getTournamentMatches } from '@/lib/actions';
 import { User } from '@supabase/supabase-js';
-import next from 'next';
 
 interface BracketProps {
   tournament: Tournament;
