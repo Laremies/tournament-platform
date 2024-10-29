@@ -109,7 +109,7 @@ export default function Component({
           onClick={handleImageClick}
         >
           <AvatarImage src={''} alt={''} />
-          <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
       )}
       <Button

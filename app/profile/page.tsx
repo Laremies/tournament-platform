@@ -26,7 +26,6 @@ export default async function Component() {
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
         <Avatar2
-          uid={user?.id ?? null}
           initialUrl={avatar_url}
           size={150}
           username={usernames.username}
