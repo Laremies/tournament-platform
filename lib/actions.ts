@@ -679,7 +679,9 @@ export async function submitMatchResult(
 
   const { data: nextMatchData, error: nextMatchError } = await supabase
     .from('singleEliminationMatches')
-    .select('id, home_matchup_id, away_matchup_id')
+    .select(
+      'id, home_matchup_id, away_matchup_id, home_player_id, away_player_id'
+    )
     .or(`home_matchup_id.eq.${matchId}, away_matchup_id.eq.${matchId}`)
     .single();
 
@@ -704,6 +706,27 @@ export async function submitMatchResult(
     if (nextMatchUpdateError) {
       console.error(nextMatchUpdateError);
       return { error: 'Failed to update the next match' };
+    }
+
+    //if the next match has a waiting opponent, send a notification to them
+    const opponentId =
+      updateColumn === 'home_player_id'
+        ? nextMatchData.away_player_id
+        : nextMatchData.home_player_id;
+    if (opponentId) {
+      const { data: tournament } = await supabase
+        .from('tournaments')
+        .select('name')
+        .eq('id', tournamentId)
+        .single();
+      await supabase.from('notifications').insert([
+        {
+          type: 'new_matchup',
+          user_id: opponentId,
+          related_id: tournamentId,
+          message: tournament?.name,
+        },
+      ]);
     }
   }
 
