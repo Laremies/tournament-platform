@@ -10,12 +10,10 @@ import { getAuthUser } from '@/lib/actions';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Component({
-  uid,
   initialUrl,
   size = 96,
   username,
 }: {
-  uid: string | null;
   initialUrl: string | null;
   size?: number;
   username?: string;
