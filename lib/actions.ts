@@ -378,7 +378,7 @@ export async function getMostPopularTournaments() {
   return { popularTournaments: data as Tournament[] };
 }
 
-export async function test(newName: string, userid: string) {
+export async function UpdateUsername(newName: string, userid: string) {
   const supabase = createClient();
   const { error } = await supabase
     .from('users')

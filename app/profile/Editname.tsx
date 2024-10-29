@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { test } from '@/lib/actions';
+import { UpdateUsername } from '@/lib/actions';
 interface EditableUsernameProps {
   username: string;
   userid: string;
@@ -18,7 +18,7 @@ const EditableUsername: React.FC<EditableUsernameProps> = ({
 
   const handleSaveName = async () => {
     try {
-      await test(tempName, `${userid}`);
+      await UpdateUsername(tempName, `${userid}`);
       setCurrentName(tempName);
       setIsEditing(false);
     } catch (error) {
