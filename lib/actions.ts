@@ -503,11 +503,17 @@ export async function getTournamentMatches(tournamentId: string) {
       getUsername(match.away_player_id),
       getUsername(match.home_player_id),
     ]);
+    const [awayPlayerAvatar, homePlayerAvatar] = await Promise.all([
+      getPublicUserData(match.away_player_id),
+      getPublicUserData(match.home_player_id),
+    ]);
 
     return {
       ...match,
       awayPlayerUsername: awayPlayer.username,
       homePlayerUsername: homePlayer.username,
+      awayPlayerAvatarUrl: awayPlayerAvatar.data.avatar_url,
+      homePlayerAvatarUrl: homePlayerAvatar.data.avatar_url,
     };
   });
 
