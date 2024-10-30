@@ -43,7 +43,6 @@ export const Participant: React.FC<ParticipantProps> = ({
   const { setChatOpen, setReceiverId } = useChat();
 
   const handleSendMessage = () => {
-    //TODO: open direct message chat box with user
     setChatOpen(true);
     setReceiverId(participant.userId);
   };
