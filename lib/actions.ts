@@ -365,10 +365,46 @@ export async function startTournament(tournamentId: string) {
   if (error) {
     return { error: error };
   }
-  await supabase
+  const { data: tournament, error: updateError } = await supabase
     .from('tournaments')
     .update({ started: true })
-    .eq('id', tournamentId);
+    .eq('id', tournamentId)
+    .select();
+
+  if (updateError) {
+    console.error(updateError);
+    return { error: 'Failed to update tournament' };
+  }
+
+  const { tournamentUsers } = await getTournamentPlayers(tournamentId);
+
+  if (!tournamentUsers) {
+    return { error: 'Failed to fetch tournament players' };
+  }
+
+  //send notification for participants
+  for (const player of tournamentUsers) {
+    if (player.user_id === tournament[0].creator_id) {
+      continue;
+    }
+    const notificationData = {
+      type: 'tournament_start',
+      user_id: player.user_id,
+      related_id: tournamentId,
+      message: tournament[0].name,
+    };
+
+    const { error: notificationError } = await supabase
+      .from('notifications')
+      .insert([notificationData]);
+
+    if (notificationError) {
+      console.error(
+        `Failed to send notification to user ${player.user_id}:`,
+        notificationError
+      );
+    }
+  }
 
   revalidatePath(`/tournaments/${tournamentId}`);
 
@@ -696,7 +732,9 @@ export async function submitMatchResult(
   } else {
     const { data: nextMatchData, error: nextMatchError } = await supabase
       .from('singleEliminationMatches')
-      .select('id, home_matchup_id, away_matchup_id')
+      .select(
+        'id, home_matchup_id, away_matchup_id, home_player_id, away_player_id'
+      )
       .or(`home_matchup_id.eq.${matchId}, away_matchup_id.eq.${matchId}`)
       .single();
 
@@ -720,7 +758,30 @@ export async function submitMatchResult(
       if (nextMatchUpdateError) {
         return { error: nextMatchUpdateError.message };
       }
+
+      const opponentId =
+        updateColumn === 'home_player_id'
+          ? nextMatchData.away_player_id
+          : nextMatchData.home_player_id;
+
+      if (opponentId) {
+        const { data: tournament } = await supabase
+          .from('tournaments')
+          .select('name')
+          .eq('id', tournamentId)
+          .single();
+        await supabase.from('notifications').insert([
+          {
+            type: 'new_matchup',
+            user_id: opponentId,
+            related_id: tournamentId,
+            message: tournament?.name,
+          },
+        ]);
+      }
     }
+
+    //if the next match has a waiting opponent, send a notification to them
   }
 
   revalidatePath(`/tournaments/${tournamentId}`);
@@ -818,7 +879,8 @@ export async function getUserNotifications(user_id: string) {
     .from('notifications')
     .select('*')
     .eq('user_id', user_id)
-    .eq('read', false);
+    .eq('read', false)
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error(error);
