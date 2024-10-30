@@ -5,14 +5,14 @@ import { CalendarDays, Trophy, Swords } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Avatar2 from '@/app/profile/UploadImage';
 import { getAuthUser, getPublicUserData } from '@/lib/actions';
-
+import { redirect } from 'next/navigation';
 import EditableUsername from './Editname';
-
 import { getAllUserCurrentTournaments } from '@/lib/actions';
 export default async function Profile() {
   const user = await getAuthUser();
+
   if (!user) {
-    return null; //or redirect to login
+    redirect('/sign-in');
   }
   const userid = user?.id as string;
   const { data: publicUser } = await getPublicUserData(user.id);

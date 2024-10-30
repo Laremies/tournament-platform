@@ -512,8 +512,8 @@ export async function getTournamentMatches(tournamentId: string) {
       ...match,
       awayPlayerUsername: awayPlayer.username,
       homePlayerUsername: homePlayer.username,
-      awayPlayerAvatarUrl: awayPlayerAvatar.data.avatar_url,
-      homePlayerAvatarUrl: homePlayerAvatar.data.avatar_url,
+      awayPlayerAvatarUrl: awayPlayerAvatar.data?.avatar_url || null,
+      homePlayerAvatarUrl: homePlayerAvatar.data?.avatar_url || null,
     };
   });
 
