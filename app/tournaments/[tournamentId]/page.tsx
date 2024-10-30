@@ -1,12 +1,12 @@
 import { JoinButton } from '@/components/tournament/join-button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  getAuthUser,
   getTournamentById,
   getTournamentPlayers,
   getUserAccessRequest,
   getUsername,
 } from '@/lib/actions';
-import { createClient } from '@/utils/supabase/server';
 import { Info, Users, Crown } from 'lucide-react';
 import ChatComponent from '@/components/tournament/chat-component';
 import PrivateTournamentView from '@/components/tournament/private-tournament-view';
@@ -27,34 +27,31 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   }
 
   const { tournament, error } = await getTournamentById(id);
-  if (error) {
-    return <p>{error}</p>;
+  if (error || !tournament) {
+    return <p>{error || 'Error loading tournament.'}</p>;
   }
 
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
 
-  const { data } = await createClient().auth.getUser();
+  const user = await getAuthUser();
   //check if user is aprticipating, if not show join button (data && data.user && data.user.id goofy af iknow)
   const isUserParticipant =
-    data &&
-    data.user &&
-    data.user.id &&
+    user &&
     tournamentPlayers &&
-    tournamentPlayers.some((player) => player.user_id === data.user.id);
+    tournamentPlayers.some((player) => player.user_id === user.id);
 
-  const isUserCreator =
-    data && data.user && data.user.id === tournament?.creator_id;
+  const isUserCreator = user && user.id === tournament.creator_id;
 
   const { username: creatorUsername } = await getUsername(
-    tournament?.creator_id
+    tournament.creator_id
   );
 
   // Check if the tournament is private
-  if (tournament?.private && !isUserParticipant && !isUserCreator) {
+  if (tournament.private && !isUserParticipant && !isUserCreator) {
     //participants and creators dont need to be checked
     //non logged in user doesn't have to fetch the accessrequest data
-    if (!data || !data.user) {
-      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+    if (!user) {
+      return <PrivateTournamentView tournament={tournament} user={user} />;
     }
     // Check if the user has a pending or accepted access request
     const { accessRequest, error } = await getUserAccessRequest(id);
@@ -67,19 +64,17 @@ const TournamentPage = async ({ params }: { params: Params }) => {
       // User has a pending or rejected access request
       return <AccessRequestStatus status={accessRequest.status} />;
     } else {
-      return <PrivateTournamentView tournament={tournament} user={data.user} />;
+      return <PrivateTournamentView tournament={tournament} user={user} />;
     }
   }
 
   return (
     <div className="mx-auto p-4 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr,1fr,1.5fr] gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr,1.5fr,1.5fr] gap-6">
         {/* Tournament Bracket */}
-        {tournament && (
-          <Bracket tournament={tournament} isUserCreator={isUserCreator} />
-        )}
+        {tournament && <Bracket tournament={tournament} user={user} />}
         {/* Tournament Statistics and Participants */}
-        <div className="space-y-6">
+        <div className="space-y-6 w-[350px]">
           {/* Access Requests */}
           {isUserCreator && tournament.private && (
             <AccessRequests tournamentId={id} />
@@ -94,9 +89,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <Info className="mr-2 h-4 w-4 text-primary" />
                 <span>
                   Tournament Status:{' '}
-                  {tournament?.finished
+                  {tournament.finished
                     ? 'Tournament ended'
-                    : tournament?.started
+                    : tournament.started
                       ? 'Ongoing'
                       : 'Waiting for players'}
                 </span>
@@ -105,15 +100,15 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <Users className="mr-2 h-4 w-4 text-primary" />
                 <span>
                   Max player amount:{' '}
-                  {tournament?.max_player_count || 'Unlimited'}
+                  {tournament.max_player_count || 'Unlimited'}
                 </span>
               </div>
               <div className="flex items-center">
                 <Crown className="mr-2 h-4 w-4 text-primary" />
                 <span>Creator: {creatorUsername}</span>
               </div>
-              {!isUserParticipant && (
-                <JoinButton user={data.user} tournamentId={id} />
+              {!isUserParticipant && !tournament.started && (
+                <JoinButton user={user} tournamentId={id} />
               )}
             </CardContent>
           </Card>
@@ -123,7 +118,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
               tournamentPlayers={tournamentPlayers}
               creator={isUserCreator}
               tournament={tournament}
-              user={data.user}
+              user={user}
             />
           )}
           {/*chatbox*/}

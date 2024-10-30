@@ -9,14 +9,16 @@ import {
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
 import { getTournamentMatches } from '@/lib/actions';
+import { User } from '@supabase/supabase-js';
 
 interface BracketProps {
   tournament: Tournament;
-  isUserCreator?: boolean | null;
+  user: User | null;
 }
 
-export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
+export const Bracket = async ({ tournament, user }: BracketProps) => {
   const { matches } = await getTournamentMatches(tournament.id);
+  const isCreator = tournament.creator_id === user?.id;
 
   return (
     <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted flex flex-col">
@@ -30,7 +32,7 @@ export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
         {tournament?.started && !tournament?.finished ? (
           <>
             {matches && matches.length > 0 ? (
-              <SingleEliminationBracket matches={matches} />
+              <SingleEliminationBracket matches={matches} user={user} />
             ) : (
               <p className="text-muted-foreground">
                 The bracket will be generated once the tournament starts.
@@ -42,7 +44,7 @@ export const Bracket = async ({ tournament, isUserCreator }: BracketProps) => {
             The bracket will be generated once the tournament starts.
           </p>
         )}
-        {!tournament?.started && isUserCreator && (
+        {!tournament.started && isCreator && (
           <StartTournamentButton tournamentId={tournament.id} />
         )}
       </CardContent>
