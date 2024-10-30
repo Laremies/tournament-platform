@@ -1,4 +1,4 @@
-import { Tournament } from '@/app/types/types';
+import { SingleEliminationMatch, Tournament } from '@/app/types/types';
 import {
   CardHeader,
   CardTitle,
@@ -8,16 +8,15 @@ import {
 } from '../ui/card';
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
-import { getTournamentMatches } from '@/lib/actions';
 import { User } from '@supabase/supabase-js';
 
 interface BracketProps {
   tournament: Tournament;
   user: User | null;
+  matches: SingleEliminationMatch[] | undefined;
 }
 
-export const Bracket = async ({ tournament, user }: BracketProps) => {
-  const { matches } = await getTournamentMatches(tournament.id);
+export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
   const isCreator = tournament.creator_id === user?.id;
 
   return (
@@ -28,8 +27,9 @@ export const Bracket = async ({ tournament, user }: BracketProps) => {
           {tournament.description}
         </CardDescription>
       </CardHeader>
+
       <CardContent className="p-0 h-full flex flex-col max-h-screen">
-        {tournament?.started && !tournament?.finished ? (
+        {tournament?.started ? (
           <>
             {matches && matches.length > 0 ? (
               <SingleEliminationBracket matches={matches} user={user} />

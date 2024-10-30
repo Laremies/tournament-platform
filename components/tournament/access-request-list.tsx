@@ -75,9 +75,9 @@ export default function AccessRequestList({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Access Requests</CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle>Access Requests</CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="pr-2">

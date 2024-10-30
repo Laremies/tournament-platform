@@ -2,7 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
-import { Tournament, TournamentPlayer } from '@/app/types/types';
+import {
+  Tournament,
+  TournamentPlayer,
+  SingleEliminationMatch,
+} from '@/app/types/types';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -13,6 +17,11 @@ import { RecentChat } from '@/components/header/recentChats';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
+}
+
+interface FinalMatchResult {
+  finalMatch?: SingleEliminationMatch;
+  error?: string;
 }
 
 export const signUpAction = async (formData: FormData) => {
@@ -713,6 +722,18 @@ export async function submitMatchResult(
     return { error: 'Failed to submit match result' };
   }
 
+  const { finalMatch } = await getTournamentFinalMatch(tournamentId);
+
+  if (finalMatch?.id === matchId) {
+    await supabase
+      .from('tournaments')
+      .update({ finished: true })
+      .eq('id', tournamentId);
+
+    revalidatePath(`/tournaments/${tournamentId}`);
+    return { success: true };
+  }
+
   const { data: nextMatchData, error: nextMatchError } = await supabase
     .from('singleEliminationMatches')
     .select(
@@ -722,7 +743,6 @@ export async function submitMatchResult(
     .single();
 
   if (nextMatchError) {
-    console.error(nextMatchError);
     return { error: 'Failed to find the next match for the winner' };
   }
 
@@ -740,8 +760,7 @@ export async function submitMatchResult(
       .eq('id', nextMatchId);
 
     if (nextMatchUpdateError) {
-      console.error(nextMatchUpdateError);
-      return { error: 'Failed to update the next match' };
+      return { error: nextMatchUpdateError.message };
     }
 
     //if the next match has a waiting opponent, send a notification to them
@@ -749,12 +768,14 @@ export async function submitMatchResult(
       updateColumn === 'home_player_id'
         ? nextMatchData.away_player_id
         : nextMatchData.home_player_id;
+
     if (opponentId) {
       const { data: tournament } = await supabase
         .from('tournaments')
         .select('name')
         .eq('id', tournamentId)
         .single();
+
       await supabase.from('notifications').insert([
         {
           type: 'new_matchup',
@@ -767,8 +788,37 @@ export async function submitMatchResult(
   }
 
   revalidatePath(`/tournaments/${tournamentId}`);
-
   return { success: true };
+}
+
+export async function getTournamentWinner(tournamentId: string) {
+  const { finalMatch, error }: FinalMatchResult =
+    await getTournamentFinalMatch(tournamentId);
+
+  if (error || !finalMatch || !finalMatch.winner_id) {
+    return { error };
+  }
+
+  const { data: winner } = await getPublicUserData(finalMatch.winner_id);
+  return { winner };
+}
+
+export async function getTournamentFinalMatch(tournamentId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .order('round', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { finalMatch: data };
 }
 
 export async function getDirectMessages(receiver_id: string) {
