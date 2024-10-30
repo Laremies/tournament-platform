@@ -85,7 +85,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
             <AccessRequests tournamentId={id} />
           )}
           {/* Next Match */}
-          {user && matches && tournament.started && !tournament.finished && (
+          {isUserParticipant && matches && tournament.started && !tournament.finished && (
             <NextMatch user={user} matches={matches} />
           )}
           {/* Tournament Winner */}
