@@ -16,6 +16,7 @@ import AccessRequests from '@/components/tournament/access-requests';
 import { ParticipantList } from '@/components/tournament/participant-list';
 import { NextMatch } from '@/components/tournament/next-match';
 import { Bracket } from '@/components/tournament/bracket';
+import { WinnerCard } from '@/components/tournament/winner-card';
 
 interface Params {
   tournamentId: string;
@@ -83,9 +84,12 @@ const TournamentPage = async ({ params }: { params: Params }) => {
           {isUserCreator && tournament.private && !tournament.started && (
             <AccessRequests tournamentId={id} />
           )}
+          {/* Next Match */}
           {user && matches && tournament.started && !tournament.finished && (
             <NextMatch user={user} matches={matches} />
           )}
+          {/* Tournament Winner */}
+          {tournament.finished && <WinnerCard tournament={tournament} />}
           {/* Tournament Statistics */}
           <Card>
             <CardHeader>
@@ -97,7 +101,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <span>
                   Tournament Status:{' '}
                   {tournament.finished
-                    ? 'Tournament ended'
+                    ? 'Finished'
                     : tournament.started
                       ? 'Ongoing'
                       : 'Waiting for players'}

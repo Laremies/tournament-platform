@@ -29,7 +29,7 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
       </CardHeader>
 
       <CardContent className="p-0 h-full flex flex-col max-h-screen">
-        {tournament?.started && !tournament?.finished ? (
+        {tournament?.started ? (
           <>
             {matches && matches.length > 0 ? (
               <SingleEliminationBracket matches={matches} user={user} />
