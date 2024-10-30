@@ -48,14 +48,10 @@ export function Notifications({
           ...prevNotifications,
         ]);
       }
-      if (newNotificationFromServer.type === 'tournament_start') {
-        setNotifications((prevNotifications) => [
-          newNotificationFromServer,
-          ...prevNotifications,
-        ]);
-      }
-      if (newNotificationFromServer.type === 'new_matchup') {
-        console.log(newNotificationFromServer);
+      if (
+        newNotificationFromServer.type === 'tournament_start' ||
+        newNotificationFromServer.type === 'new_matchup'
+      ) {
         setNotifications((prevNotifications) => [
           newNotificationFromServer,
           ...prevNotifications,
