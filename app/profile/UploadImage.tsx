@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { getAuthUser } from '@/lib/actions';
+import { getAuthUser, revalidateAll } from '@/lib/actions';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function Component({
@@ -82,9 +82,17 @@ export default function Component({
         .from('profiles')
         .getPublicUrl(fileName);
       const publicURL = publicUrlData.publicUrl;
+
+      await supabase
+        .from('users')
+        .update({ avatar_url: publicURL })
+        .eq('id', userid);
+
       if (publicURL) {
         setUrl(publicURL);
       }
+      await revalidateAll(); // this just to get the corner picture to update aswell
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       alert('Error uploading avatar!');
     } finally {

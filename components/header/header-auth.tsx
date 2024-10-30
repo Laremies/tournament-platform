@@ -1,4 +1,4 @@
-import { getUsername, signOutAction } from '@/lib/actions';
+import { getPublicUserData, signOutAction } from '@/lib/actions';
 import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import Link from 'next/link';
 import { Badge } from '../ui/badge';
@@ -7,13 +7,19 @@ import { createClient } from '@/utils/supabase/server';
 import { LogIn, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+export interface PublicUser {
+  id: string;
+  username: string;
+  avatar_url: string;
+}
+
 export default async function AuthButton() {
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { username } = await getUsername(user?.id);
+  const { data: publicUser } = await getPublicUserData(user?.id);
 
   if (!hasEnvVars) {
     return (
@@ -59,8 +65,10 @@ export default async function AuthButton() {
     <div className="flex items-center gap-4">
       <a href="/profile">
         <Avatar>
-          <AvatarImage src={''} alt={''} />{' '}
-          <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarImage src={publicUser.avatar_url} alt={''} />{' '}
+          <AvatarFallback>
+            {publicUser.username?.charAt(0).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
       </a>
 

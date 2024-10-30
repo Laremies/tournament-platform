@@ -7,6 +7,7 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
+import { PublicUser } from '@/components/header/header-auth';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
@@ -440,6 +441,22 @@ export async function getUsername(userId: string | undefined) {
     .single();
 
   return { username: data?.username as string };
+}
+
+//todo: this and getUsername gives a lot of unlogged errors when user is not logged in.
+export async function getPublicUserData(userid: string | undefined) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userid)
+    .single();
+
+  return { data: data as PublicUser };
+}
+
+export async function revalidateAll() {
+  revalidatePath('/');
 }
 
 export async function getPublicMessages(tournamentId: string) {
