@@ -2,6 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Progress from '@/components/ui/progress';
 import {
+  getAllUserMatchResults,
+  getAllUserOwnedPublicTournaments,
   getAuthUser,
   getProfileComments,
   getPublicUserData,
@@ -12,6 +14,8 @@ import { Trophy, Swords } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import ProfileComments from '@/components/profile/comment-box';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 type Params = {
   userId: string;
@@ -28,6 +32,9 @@ const UserPage = async ({ params }: { params: Params }) => {
   }
 
   const { data: publicUser } = await getPublicUserData(id);
+  const { tournaments } = await getAllUserOwnedPublicTournaments(id);
+  const { matchesWithUsernames: pastMatches } =
+    await getAllUserMatchResults(id);
 
   if (!publicUser) {
     return <p>User not found</p>;
@@ -53,22 +60,105 @@ const UserPage = async ({ params }: { params: Params }) => {
           </p>
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <Tabs defaultValue="current">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="current">
-                Owned Public Tournaments
-              </TabsTrigger>
-              <TabsTrigger value="previous">
-                Joined Public Tournaments
-              </TabsTrigger>
+          <Tabs defaultValue="owned">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="owned">Hosted Tournaments</TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-[355px] rounded-md  mt-2">
-              <TabsContent value="current">
-                <div className="space-y-4"></div>
+            <ScrollArea className="h-h-[800px]  rounded-md  mt-2">
+              <TabsContent value="owned">
+                <div className="space-y-4">
+                  {tournaments != null ? (
+                    tournaments.map((tournament) => (
+                      <Card key={tournament.id}>
+                        <CardHeader>
+                          <CardTitle>{tournament.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p>Players: {tournament.player_count}</p>
+                              <span>
+                                {tournament.finished
+                                  ? 'Tournament ended'
+                                  : tournament.started
+                                    ? 'Ongoing'
+                                    : 'Waiting for players'}
+                              </span>
+                              <p className="text-muted-foreground">
+                                {tournament.description}
+                              </p>
+                            </div>
+                            <Link href={`/tournaments/${tournament.id}`}>
+                              <Button
+                                variant="link"
+                                className="mt-2 px-4 py-2 rounded"
+                              >
+                                View Tournament
+                              </Button>
+                            </Link>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <p>No tournaments available</p>
+                      </CardHeader>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="results">
+                <div className="space-y-4">
+                  {pastMatches != null ? (
+                    pastMatches.map((match) => (
+                      <Card key={match.id}>
+                        <CardHeader>
+                          <CardTitle>
+                            <span> {match.tournaments.name} </span>- Round{' '}
+                            {match.round}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-muted-foreground">
+                                <span>{match.homePlayerUsername}</span> vs{' '}
+                                <span>{match.awayPlayerUsername}</span>
+                              </p>
+                              <p>
+                                Winner:{' '}
+                                <span className="font-bold text-blue-500">
+                                  {match.winnerId === match.homePlayerId
+                                    ? match.homePlayerUsername
+                                    : match.awayPlayerUsername}
+                                </span>
+                              </p>
+                            </div>
+                            <Link href={`/tournaments/${match.tournament_id}`}>
+                              <Button
+                                variant="link"
+                                className="mt-2 px-4 py-2 rounded"
+                              >
+                                View Tournament
+                              </Button>
+                            </Link>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <p>No matches available</p>
+                      </CardHeader>
+                    </Card>
+                  )}
+                </div>
               </TabsContent>
             </ScrollArea>
           </Tabs>

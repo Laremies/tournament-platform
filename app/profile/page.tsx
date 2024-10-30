@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Avatar2 from '@/app/profile/UploadImage';
 import {
   getAuthUser,
+  getCurrentUserMatchResults,
   getProfileComments,
   getPublicUserData,
 } from '@/lib/actions';
@@ -13,6 +14,8 @@ import { redirect } from 'next/navigation';
 import EditableUsername from './Editname';
 import { getAllUserCurrentTournaments } from '@/lib/actions';
 import ProfileComments from '@/components/profile/comment-box';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 export default async function Profile() {
   const user = await getAuthUser();
 
@@ -23,6 +26,7 @@ export default async function Profile() {
   const { data: publicUser } = await getPublicUserData(user.id);
   const { tournaments } = await getAllUserCurrentTournaments();
   const { comments } = await getProfileComments(user.id);
+  const { matchesWithUsernames: matches } = await getCurrentUserMatchResults();
 
   return (
     <div className="container mx-auto p-4">
@@ -43,12 +47,12 @@ export default async function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Tabs defaultValue="current">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="current">Current Tournaments</TabsTrigger>
-              <TabsTrigger value="previous">Previous Tournaments</TabsTrigger>
+
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-[355px] rounded-md  mt-2">
+            <ScrollArea className="h-[800px] rounded-md  mt-2">
               <TabsContent value="current">
                 <div className="space-y-4">
                   {tournaments != null ? (
@@ -58,9 +62,29 @@ export default async function Profile() {
                           <CardTitle>{tournament.name}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <p>Players: {tournament.player_count}</p>
-                          <p>Round: Group Stage</p>
-                          <p>Next match: July 20, 2023</p>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p>Players: {tournament.player_count}</p>
+                              <span>
+                                {tournament.finished
+                                  ? 'Tournament ended'
+                                  : tournament.started
+                                    ? 'Ongoing'
+                                    : 'Waiting for players'}
+                              </span>
+                              <p className="text-muted-foreground">
+                                {tournament.description}
+                              </p>
+                            </div>
+                            <Link href={`/tournaments/${tournament.id}`}>
+                              <Button
+                                variant="link"
+                                className="mt-2 px-4 py-2 rounded"
+                              >
+                                View Tournament
+                              </Button>
+                            </Link>
+                          </div>
                         </CardContent>
                       </Card>
                     ))
@@ -68,6 +92,51 @@ export default async function Profile() {
                     <Card>
                       <CardHeader>
                         <p>No tournaments available</p>
+                      </CardHeader>
+                    </Card>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="results">
+                <div className="space-y-4">
+                  {matches != null ? (
+                    matches.map((match) => (
+                      <Card key={match.id}>
+                        <CardHeader>
+                          <CardTitle>
+                            {match.tournaments.name} - Round {match.round}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <p className="text-muted-foreground">
+                                <span>{match.homePlayerUsername}</span> vs{' '}
+                                <span>{match.awayPlayerUsername}</span>
+                              </p>
+                              <p>
+                                Winner:{' '}
+                                {match.winnerId === match.homePlayerId
+                                  ? match.homePlayerUsername
+                                  : match.awayPlayerUsername}
+                              </p>
+                            </div>
+                            <Link href={`/tournaments/${match.tournament_id}`}>
+                              <Button
+                                variant="link"
+                                className="mt-2 px-4 py-2 rounded"
+                              >
+                                View Tournament
+                              </Button>
+                            </Link>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card>
+                      <CardHeader>
+                        <p>No matches available</p>
                       </CardHeader>
                     </Card>
                   )}

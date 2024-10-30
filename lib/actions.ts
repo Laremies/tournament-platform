@@ -269,6 +269,100 @@ export async function getAllUserCurrentTournaments() {
   };
 }
 
+export async function getAllUserOwnedPublicTournaments(userId: string) {
+  const supabase = createClient();
+  const { data: tournaments, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('creator_id', userId)
+    .eq('private', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public tournaments' };
+  }
+
+  return { tournaments: tournaments as Tournament[] };
+}
+
+export async function getAllUserMatchResults(userId: string) {
+  const supabase = createClient();
+  const { data: matches, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(private, name)')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .not('winner_id', 'is', null)
+    .eq('tournaments.private', false)
+    .not('tournaments', 'is', null);
+
+  if (!matches) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+
+  const matchPromises = matches.map(async (match) => {
+    const [homePlayer, awayPlayer] = await Promise.all([
+      getUsername(match.home_player_id),
+      getUsername(match.away_player_id),
+    ]);
+
+    return {
+      ...match,
+      homePlayerUsername: homePlayer.username,
+      awayPlayerUsername: awayPlayer.username,
+    };
+  });
+
+  const matchesWithUsernames = await Promise.all(matchPromises);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch match results' };
+  }
+
+  return { matchesWithUsernames };
+}
+
+export async function getCurrentUserMatchResults() {
+  const supabase = createClient();
+  const user = await getAuthUser();
+  if (!user) {
+    return { error: 'You must be logged in to view your match results' };
+  }
+  const { data: matches, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(name)')
+    .or(`home_player_id.eq.${user.id},away_player_id.eq.${user.id}`)
+    .not('winner_id', 'is', null)
+    .not('tournaments', 'is', null);
+
+  if (!matches) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch match results' };
+  }
+  const matchPromises = matches.map(async (match) => {
+    const [homePlayer, awayPlayer] = await Promise.all([
+      getUsername(match.home_player_id),
+      getUsername(match.away_player_id),
+    ]);
+
+    return {
+      ...match,
+      homePlayerUsername: homePlayer.username,
+      awayPlayerUsername: awayPlayer.username,
+    };
+  });
+
+  const matchesWithUsernames = await Promise.all(matchPromises);
+
+  return { matchesWithUsernames };
+}
+
 export async function joinTournament(tournamentId: string) {
   const supabase = createClient();
   const userObject = await supabase.auth.getUser();
