@@ -99,6 +99,7 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
                 participant={{
                   userId: participant.user_id,
                   username: participant.users.username,
+                  avatar_url: participant.users.avatar_url,
                 }}
                 isCreator={creator}
                 tournamentId={tournament.id}

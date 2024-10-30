@@ -7,6 +7,7 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
+import { PublicUser } from '@/components/header/header-auth';
 import { Notification } from '@/components/header/notifications-server';
 import { RecentChat } from '@/components/header/recentChats';
 
@@ -330,7 +331,7 @@ export async function getTournamentPlayers(tournamentId: string) {
   //need to provide tags?
   const { data: tournamentUsers, error } = await supabase
     .from('tournamentUsers')
-    .select('*, users(username)')
+    .select('*, users(username, avatar_url)')
     .eq('tournament_id', tournamentId);
 
   if (error) {
@@ -380,6 +381,19 @@ export async function getMostPopularTournaments() {
   return { popularTournaments: data as Tournament[] };
 }
 
+export async function UpdateUsername(newName: string, userid: string) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('users')
+    .update({ username: newName })
+    .eq('id', userid)
+    .select();
+
+  if (error) {
+    throw new Error('Failed to update name');
+  }
+}
+
 export async function getUsername(userId: string | undefined) {
   const supabase = createClient();
 
@@ -390,6 +404,22 @@ export async function getUsername(userId: string | undefined) {
     .single();
 
   return { username: data?.username as string };
+}
+
+//todo: this and getUsername gives a lot of unlogged errors when user is not logged in.
+export async function getPublicUserData(userid: string | undefined) {
+  const supabase = createClient();
+  const { data } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', userid)
+    .single();
+
+  return { data: data as PublicUser };
+}
+
+export async function revalidateAll() {
+  revalidatePath('/');
 }
 
 export async function getPublicMessages(tournamentId: string) {
@@ -473,11 +503,17 @@ export async function getTournamentMatches(tournamentId: string) {
       getUsername(match.away_player_id),
       getUsername(match.home_player_id),
     ]);
+    const [awayPlayerAvatar, homePlayerAvatar] = await Promise.all([
+      getPublicUserData(match.away_player_id),
+      getPublicUserData(match.home_player_id),
+    ]);
 
     return {
       ...match,
       awayPlayerUsername: awayPlayer.username,
       homePlayerUsername: homePlayer.username,
+      awayPlayerAvatarUrl: awayPlayerAvatar.data?.avatar_url || null,
+      homePlayerAvatarUrl: homePlayerAvatar.data?.avatar_url || null,
     };
   });
 

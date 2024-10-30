@@ -29,10 +29,12 @@ export const MatchModal: React.FC<MatchModalProps> = ({ match, user }) => {
   const homePlayer = {
     userId: match.home_player_id || 'tbd',
     username: match.homePlayerUsername || 'TBD',
+    avatar_url: match.homePlayerAvatarUrl,
   };
   const awayPlayer = {
     userId: match.away_player_id || 'tbd',
     username: match.awayPlayerUsername || 'TBD',
+    avatar_url: match.awayPlayerAvatarUrl,
   };
 
   const matchHasBothPlayers =

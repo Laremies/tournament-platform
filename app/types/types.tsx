@@ -20,6 +20,8 @@ export interface SingleEliminationMatch {
   away_player_id?: string;
   home_matchup_id?: string;
   away_matchup_id?: string;
+  awayPlayerAvatarUrl?: string;
+  homePlayerAvatarUrl?: string;
   winner_id?: string;
 }
 
@@ -30,5 +32,6 @@ export interface TournamentPlayer {
   user_id: string;
   users: {
     username: string;
+    avatar_url?: string;
   };
 }
