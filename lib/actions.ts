@@ -1201,3 +1201,69 @@ export async function deleteProfileComment(
 
   return { success: true };
 }
+
+//this will not be accurate if we give tournaments a lifetime or people delete tournaments
+//keeping track of seperate attributes for each statistic would be more accurate but way more annoying to implement
+//this is just a quick way to get some statistics to the profile page, can be improved later
+export async function getUserStatistics(userId: string) {
+  const supabase = createClient();
+
+  //amount of tournaments user has joined
+  const { data: joinedCount, error } = await supabase
+    .from('tournamentUsers')
+    .select('tournament_id')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  //amount of tournaments user has won
+  const { data: userTournaments, error: tournamentUserError } = await supabase
+    .from('tournamentUsers')
+    .select('tournament_id')
+    .eq('user_id', userId);
+  if (tournamentUserError) {
+    console.error(tournamentUserError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+  let wonCount = 0;
+  for (const tournament of userTournaments) {
+    const { winner } = await getTournamentWinner(tournament.tournament_id);
+    if (winner?.id === userId) {
+      wonCount++;
+    }
+  }
+
+  // amount of matches user has won
+  const { data: matchesWon, error: matchesWonError } = await supabase
+    .from('singleEliminationMatches')
+    .select('id')
+    .eq('winner_id', userId);
+
+  if (matchesWonError) {
+    console.error(matchesWonError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  const { data: matchesLost, error: matchesLostError } = await supabase
+    .from('singleEliminationMatches')
+    .select('id')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .not('winner_id', 'eq', userId);
+
+  if (matchesLostError) {
+    console.error(matchesLostError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  const statistics = {
+    tournamentCount: joinedCount.length,
+    wonCount: wonCount,
+    matchesWon: matchesWon.length,
+    matchesLost: matchesLost.length,
+  };
+
+  return { data: statistics };
+}

@@ -9,6 +9,7 @@ import {
   getCurrentUserMatchResults,
   getProfileComments,
   getPublicUserData,
+  getUserStatistics,
 } from '@/lib/actions';
 import { redirect } from 'next/navigation';
 import EditableUsername from './Editname';
@@ -27,6 +28,7 @@ export default async function Profile() {
   const { tournaments } = await getAllUserCurrentTournaments();
   const { comments } = await getProfileComments(user.id);
   const { matchesWithUsernames: matches } = await getCurrentUserMatchResults();
+  const { data: statistics } = await getUserStatistics(user.id);
 
   return (
     <div className="container mx-auto p-4">
@@ -149,50 +151,75 @@ export default async function Profile() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Stats</CardTitle>
+              <CardTitle>Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span>Win Ratio</span>
-                    <span>0%</span>
+              {statistics && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span>Match Win Ratio</span>
+                      <span>
+                        {Math.round(
+                          (statistics.matchesWon /
+                            (statistics.matchesWon + statistics.matchesLost)) *
+                            100
+                        )}
+                        %
+                      </span>
+                    </div>
+                    {
+                      <Progress
+                        value={
+                          (statistics.matchesWon /
+                            (statistics.matchesWon + statistics.matchesLost)) *
+                          100
+                        }
+                      />
+                    }
                   </div>
-                  <Progress value={0} />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Trophy className="w-4 h-4" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.tournamentCount}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Tournaments Participated
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.wonCount}
+                        </p>
+                        <p className="text-xs text-gray-500">Tournaments Won</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Swords className="w-4 h-4 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.matchesWon}
+                        </p>
+                        <p className="text-xs text-gray-500">Matches Won</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Swords className="w-4 h-4 text-red-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.matchesLost}
+                        </p>
+                        <p className="text-xs text-gray-500">Matches Lost</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="w-4 h-4" />
-                    <div>
-                      <p className="text-sm font-medium">0</p>
-                      <p className="text-xs text-gray-500">
-                        Tournaments Participated
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="w-4 h-4 text-yellow-500" />
-                    <div>
-                      <p className="text-sm font-medium">0</p>
-                      <p className="text-xs text-gray-500">Tournaments Won</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Swords className="w-4 h-4 text-green-500" />
-                    <div>
-                      <p className="text-sm font-medium">0</p>
-                      <p className="text-xs text-gray-500">Matches Won</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Swords className="w-4 h-4 text-red-500" />
-                    <div>
-                      <p className="text-sm font-medium">0</p>
-                      <p className="text-xs text-gray-500">Matches Lost</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 

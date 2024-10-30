@@ -7,6 +7,7 @@ import {
   getAuthUser,
   getProfileComments,
   getPublicUserData,
+  getUserStatistics,
 } from '@/lib/actions';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -35,6 +36,7 @@ const UserPage = async ({ params }: { params: Params }) => {
   const { tournaments } = await getAllUserOwnedPublicTournaments(id);
   const { matchesWithUsernames: pastMatches } =
     await getAllUserMatchResults(id);
+  const { data: statistics } = await getUserStatistics(id);
 
   if (!publicUser) {
     return <p>User not found</p>;
@@ -167,71 +169,75 @@ const UserPage = async ({ params }: { params: Params }) => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Stats</CardTitle>
+              <CardTitle>Tournament Statistics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span>Match Win Ratio</span>
-                    <span>
-                      {(publicUser.matches_won_amount /
-                        (publicUser.matches_won_amount +
-                          publicUser.matches_lost_amount)) *
-                        100}
-                      %
-                    </span>
-                  </div>
-                  <Progress
-                    value={
-                      (publicUser.matches_won_amount /
-                        (publicUser.matches_won_amount +
-                          publicUser.matches_lost_amount)) *
-                      100
+              {statistics && (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span>Match Win Ratio</span>
+                      <span>
+                        {Math.round(
+                          (statistics.matchesWon /
+                            (statistics.matchesWon + statistics.matchesLost)) *
+                            100
+                        )}
+                        %
+                      </span>
+                    </div>
+                    {
+                      <Progress
+                        value={
+                          (statistics.matchesWon /
+                            (statistics.matchesWon + statistics.matchesLost)) *
+                          100
+                        }
+                      />
                     }
-                  />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-2">
+                      <Trophy className="w-4 h-4" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.tournamentCount}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Tournaments Participated
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.wonCount}
+                        </p>
+                        <p className="text-xs text-gray-500">Tournaments Won</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Swords className="w-4 h-4 text-green-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.matchesWon}
+                        </p>
+                        <p className="text-xs text-gray-500">Matches Won</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Swords className="w-4 h-4 text-red-500" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.matchesLost}
+                        </p>
+                        <p className="text-xs text-gray-500">Matches Lost</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="w-4 h-4" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {publicUser.tournaments_participated_amount}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Tournaments Participated
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="w-4 h-4 text-yellow-500" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {publicUser.tournaments_won_amount}
-                      </p>
-                      <p className="text-xs text-gray-500">Tournaments Won</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Swords className="w-4 h-4 text-green-500" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {publicUser.matches_won_amount}
-                      </p>
-                      <p className="text-xs text-gray-500">Matches Won</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Swords className="w-4 h-4 text-red-500" />
-                    <div>
-                      <p className="text-sm font-medium">
-                        {publicUser.matches_lost_amount}
-                      </p>
-                      <p className="text-xs text-gray-500">Matches Lost</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
           <ProfileComments
