@@ -1,13 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Progress from '@/components/ui/progress';
-import { CalendarDays, Trophy, Swords } from 'lucide-react';
+import { Trophy, Swords } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Avatar2 from '@/app/profile/UploadImage';
-import { getAuthUser, getPublicUserData } from '@/lib/actions';
+import {
+  getAuthUser,
+  getProfileComments,
+  getPublicUserData,
+} from '@/lib/actions';
 import { redirect } from 'next/navigation';
 import EditableUsername from './Editname';
 import { getAllUserCurrentTournaments } from '@/lib/actions';
+import ProfileComments from '@/components/profile/comment-box';
 export default async function Profile() {
   const user = await getAuthUser();
 
@@ -17,6 +22,7 @@ export default async function Profile() {
   const userid = user?.id as string;
   const { data: publicUser } = await getPublicUserData(user.id);
   const { tournaments } = await getAllUserCurrentTournaments();
+  const { comments } = await getProfileComments(user.id);
 
   return (
     <div className="container mx-auto p-4">
@@ -121,23 +127,11 @@ export default async function Profile() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Matches</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                <li className="flex items-center space-x-2">
-                  <CalendarDays className="w-4 h-4" />
-                  <span>July 15 - Summer Showdown 2023</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <CalendarDays className="w-4 h-4" />
-                  <span>July 20 - City League Championship</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
+          <ProfileComments
+            user={user}
+            profile_user_id={user.id}
+            comments={comments}
+          />
         </div>
       </div>
     </div>

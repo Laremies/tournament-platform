@@ -976,3 +976,24 @@ export async function submitProfileComment(
 
   return { success: true };
 }
+
+export async function deleteProfileComment(
+  commentId: string,
+  profileUserId: string
+) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('profileComments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to delete comment' };
+  }
+
+  revalidatePath(`/profile/${profileUserId}`);
+
+  return { success: true };
+}

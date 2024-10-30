@@ -13,13 +13,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { User } from '@supabase/supabase-js';
 import { ScrollArea } from '../ui/scroll-area';
-import { submitProfileComment } from '@/lib/actions';
+import { deleteProfileComment, submitProfileComment } from '@/lib/actions';
 
 interface Comment {
   id: string;
   profile_user_id: string;
   message: string;
   created_at: string;
+  sender_id: string;
   users: {
     username: string;
     avatar_url: string;
@@ -37,6 +38,8 @@ export default function ProfileComments({
 }) {
   const [newComment, setNewComment] = useState('');
 
+  const ownProfile = user?.id === profile_user_id;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -45,25 +48,16 @@ export default function ProfileComments({
     setNewComment('');
   };
 
+  const handleDelete = async (commentId: string) => {
+    await deleteProfileComment(commentId, profile_user_id);
+  };
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Comments</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {user && (
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <Textarea
-              placeholder="Leave a comment..."
-              name="message"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              required
-            />
-            <Button type="submit">Post Comment</Button>
-          </form>
-        )}
-
         <div className="space-y-4">
           <ScrollArea className="h-[300px]">
             {comments.map((comment) => (
@@ -86,6 +80,16 @@ export default function ProfileComments({
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(comment.created_at).toLocaleDateString()}
+                          {(ownProfile || user?.id === comment.sender_id) && (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              <a
+                                href="#"
+                                onClick={() => handleDelete(comment.id)}
+                              >
+                                Delete
+                              </a>
+                            </span>
+                          )}
                         </p>
                       </div>
                       <p className="text-sm">{comment.message}</p>
@@ -96,6 +100,18 @@ export default function ProfileComments({
             ))}
           </ScrollArea>
         </div>
+        {user && (
+          <form onSubmit={handleSubmit} className="space-y-2">
+            <Textarea
+              placeholder="Leave a comment..."
+              name="message"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              required
+            />
+            <Button type="submit">Post Comment</Button>
+          </form>
+        )}
       </CardContent>
       <CardFooter>
         <p className="text-sm text-muted-foreground">

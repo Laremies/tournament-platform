@@ -59,9 +59,11 @@ const UserPage = async ({ params }: { params: Params }) => {
           <Tabs defaultValue="current">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="current">
-                Current Public Tournaments
+                Owned Public Tournaments
               </TabsTrigger>
-              <TabsTrigger value="previous">Previous Tournaments</TabsTrigger>
+              <TabsTrigger value="previous">
+                Joined Public Tournaments
+              </TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
             <ScrollArea className="h-[355px] rounded-md  mt-2">
