@@ -64,9 +64,8 @@ export default async function AuthButton() {
   }
 
   return user ? (
-
     <div className="flex items-center gap-4">
-           <RecentChatsList user={user} />
+      <RecentChatsList user={user} />
       <NotificationComponent user={user} />
       <a href="/profile">
         <Avatar>
@@ -76,7 +75,6 @@ export default async function AuthButton() {
           </AvatarFallback>
         </Avatar>
       </a>
-
 
       <form action={signOutAction}>
         <Button type="submit" variant={'outline'}>

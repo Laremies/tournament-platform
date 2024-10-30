@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera } from 'lucide-react';
@@ -102,24 +101,16 @@ export default function Component({
 
   return (
     <div className="relative inline-block">
-      {url ? (
-        <Image
-          width={size}
-          height={size}
-          src={url}
-          alt="Profile"
-          className="rounded-full object-cover cursor-pointer"
-          onClick={handleImageClick}
-        />
-      ) : (
+      {
         <Avatar
-          className={`w-${size / 4} h-${size / 4} cursor-pointer`}
+          className="cursor-pointer"
           onClick={handleImageClick}
+          style={{ width: size, height: size }}
         >
-          <AvatarImage src={''} alt={''} />
+          <AvatarImage src={url || ''} alt="Profile" />
           <AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-      )}
+      }
       <Button
         size="icon"
         variant="secondary"

@@ -11,7 +11,6 @@ import { PublicUser } from '@/components/header/header-auth';
 import { Notification } from '@/components/header/notifications-server';
 import { RecentChat } from '@/components/header/recentChats';
 
-
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
 }
@@ -393,45 +392,6 @@ export async function UpdateUsername(newName: string, userid: string) {
   if (error) {
     throw new Error('Failed to update name');
   }
-}
-export async function getMediaNAme() {
-  const supabase = createClient();
-  const user = await getAuthUser();
-  const userid = user?.id;
-
-  // Fetch the list of media for the user
-  const { data, error } = await supabase.storage
-    .from('profiles')
-    .list(userid + '/');
-
-  if (error) {
-    console.error('Error fetching media list:', error);
-    return null;
-  }
-
-  return data.length > 0 ? data[0].name : null;
-}
-
-export async function getMediaURL(name: string | null) {
-  if (name == '.emptyFolderPlaceholder') {
-    console.warn('No media name provided; cannot fetch URL.');
-
-    return null;
-  }
-  const supabase = createClient();
-  const user = await getAuthUser();
-  const userid = user?.id;
-  if (name == null) {
-    console.warn('No media name provided; cannot fetch URL.');
-    const { data } = await supabase.storage
-      .from('profiles')
-      .getPublicUrl(userid + '/');
-    return data.publicUrl as string;
-  }
-  const { data } = await supabase.storage
-    .from('profiles')
-    .getPublicUrl(userid + '/' + name);
-  return data.publicUrl as string;
 }
 
 export async function getUsername(userId: string | undefined) {
