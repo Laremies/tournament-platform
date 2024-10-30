@@ -11,7 +11,7 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
-import { PublicUser } from '@/components/header/header-auth';
+import { PublicUser } from '@/app/types/types';
 import { Notification } from '@/components/header/notifications-server';
 import { RecentChat } from '@/components/header/recentChats';
 
@@ -276,6 +276,100 @@ export async function getAllUserCurrentTournaments() {
     ],
     error: null,
   };
+}
+
+export async function getAllUserOwnedPublicTournaments(userId: string) {
+  const supabase = createClient();
+  const { data: tournaments, error } = await supabase
+    .from('tournaments')
+    .select('*')
+    .eq('creator_id', userId)
+    .eq('private', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public tournaments' };
+  }
+
+  return { tournaments: tournaments as Tournament[] };
+}
+
+export async function getAllUserMatchResults(userId: string) {
+  const supabase = createClient();
+  const { data: matches, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(private, name)')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .not('winner_id', 'is', null)
+    .eq('tournaments.private', false)
+    .not('tournaments', 'is', null);
+
+  if (!matches) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+
+  const matchPromises = matches.map(async (match) => {
+    const [homePlayer, awayPlayer] = await Promise.all([
+      getUsername(match.home_player_id),
+      getUsername(match.away_player_id),
+    ]);
+
+    return {
+      ...match,
+      homePlayerUsername: homePlayer.username,
+      awayPlayerUsername: awayPlayer.username,
+    };
+  });
+
+  const matchesWithUsernames = await Promise.all(matchPromises);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch match results' };
+  }
+
+  return { matchesWithUsernames };
+}
+
+export async function getCurrentUserMatchResults() {
+  const supabase = createClient();
+  const user = await getAuthUser();
+  if (!user) {
+    return { error: 'You must be logged in to view your match results' };
+  }
+  const { data: matches, error } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(name)')
+    .or(`home_player_id.eq.${user.id},away_player_id.eq.${user.id}`)
+    .not('winner_id', 'is', null)
+    .not('tournaments', 'is', null);
+
+  if (!matches) {
+    console.error('No matches found');
+    return { error: 'No matches found' };
+  }
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch match results' };
+  }
+  const matchPromises = matches.map(async (match) => {
+    const [homePlayer, awayPlayer] = await Promise.all([
+      getUsername(match.home_player_id),
+      getUsername(match.away_player_id),
+    ]);
+
+    return {
+      ...match,
+      homePlayerUsername: homePlayer.username,
+      awayPlayerUsername: awayPlayer.username,
+    };
+  });
+
+  const matchesWithUsernames = await Promise.all(matchPromises);
+
+  return { matchesWithUsernames };
 }
 
 export async function joinTournament(tournamentId: string) {
@@ -1039,4 +1133,137 @@ export async function getRecentChats() {
   );
 
   return { recentChats: recentChatsWithUsernames };
+}
+
+export async function getProfileComments(userId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('profileComments')
+    .select('*, users!profileComments_sender_id_fkey(username, avatar_url)') // test if you can get users table stuff nat join
+    .eq('profile_user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch profile comments' };
+  }
+
+  return { comments: data };
+}
+
+export async function submitProfileComment(
+  formData: FormData,
+  profileUserId: string
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to submit a comment');
+    return { error: 'You must be logged in to submit a comment' };
+  }
+
+  const data = {
+    message: formData.get('message') as string,
+    profile_user_id: profileUserId,
+    sender_id: userObject.data.user.id as string,
+  };
+
+  const { error } = await supabase.from('profileComments').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to submit comment' };
+  }
+  revalidatePath(`/profile/${profileUserId}`);
+
+  return { success: true };
+}
+
+export async function deleteProfileComment(
+  commentId: string,
+  profileUserId: string
+) {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('profileComments')
+    .delete()
+    .eq('id', commentId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to delete comment' };
+  }
+
+  revalidatePath(`/profile/${profileUserId}`);
+
+  return { success: true };
+}
+
+//this will not be accurate if we give tournaments a lifetime or people delete tournaments
+//keeping track of seperate attributes for each statistic would be more accurate but way more annoying to implement
+//this is just a quick way to get some statistics to the profile page, can be improved later
+export async function getUserStatistics(userId: string) {
+  const supabase = createClient();
+
+  //amount of tournaments user has joined
+  const { data: joinedCount, error } = await supabase
+    .from('tournamentUsers')
+    .select('tournament_id')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  //amount of tournaments user has won
+  const { data: userTournaments, error: tournamentUserError } = await supabase
+    .from('tournamentUsers')
+    .select('tournament_id')
+    .eq('user_id', userId);
+  if (tournamentUserError) {
+    console.error(tournamentUserError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+  let wonCount = 0;
+  for (const tournament of userTournaments) {
+    const { winner } = await getTournamentWinner(tournament.tournament_id);
+    if (winner?.id === userId) {
+      wonCount++;
+    }
+  }
+
+  // amount of matches user has won
+  const { data: matchesWon, error: matchesWonError } = await supabase
+    .from('singleEliminationMatches')
+    .select('id')
+    .eq('winner_id', userId);
+
+  if (matchesWonError) {
+    console.error(matchesWonError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  const { data: matchesLost, error: matchesLostError } = await supabase
+    .from('singleEliminationMatches')
+    .select('id')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .not('winner_id', 'eq', userId);
+
+  if (matchesLostError) {
+    console.error(matchesLostError);
+    return { error: 'Failed to fetch user statistics' };
+  }
+
+  const statistics = {
+    tournamentCount: joinedCount.length,
+    wonCount: wonCount,
+    matchesWon: matchesWon.length,
+    matchesLost: matchesLost.length,
+  };
+
+  return { data: statistics };
 }

@@ -1,61 +1,76 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Progress from '@/components/ui/progress';
-import { Trophy, Swords } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import Avatar2 from '@/app/profile/UploadImage';
 import {
+  getAllUserMatchResults,
+  getAllUserOwnedPublicTournaments,
   getAuthUser,
-  getCurrentUserMatchResults,
   getProfileComments,
   getPublicUserData,
   getUserStatistics,
 } from '@/lib/actions';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Trophy, Swords } from 'lucide-react';
 import { redirect } from 'next/navigation';
-import EditableUsername from './Editname';
-import { getAllUserCurrentTournaments } from '@/lib/actions';
+import { Label } from '@/components/ui/label';
 import ProfileComments from '@/components/profile/comment-box';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-export default async function Profile() {
-  const user = await getAuthUser();
+import { Button } from '@/components/ui/button';
 
-  if (!user) {
-    redirect('/sign-in');
+type Params = {
+  userId: string;
+};
+
+const UserPage = async ({ params }: { params: Params }) => {
+  const id = params.userId;
+
+  const user = await getAuthUser(); // get user to check if it's the same as the public user
+  //and also to check if the user is logged in
+
+  if (!id) {
+    return <p>No user ID provided</p>;
   }
-  const userid = user?.id as string;
-  const { data: publicUser } = await getPublicUserData(user.id);
-  const { tournaments } = await getAllUserCurrentTournaments();
-  const { comments } = await getProfileComments(user.id);
-  const { matchesWithUsernames: matches } = await getCurrentUserMatchResults();
-  const { data: statistics } = await getUserStatistics(user.id);
+
+  const { data: publicUser } = await getPublicUserData(id);
+  const { tournaments } = await getAllUserOwnedPublicTournaments(id);
+  const { matchesWithUsernames: pastMatches } =
+    await getAllUserMatchResults(id);
+  const { data: statistics } = await getUserStatistics(id);
+
+  if (!publicUser) {
+    return <p>User not found</p>;
+  }
+  if (user && user.id === publicUser.id) {
+    redirect('/profile');
+  }
+  const { comments } = await getProfileComments(id);
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
-        <Avatar2
-          initialUrl={publicUser.avatar_url}
-          size={150}
-          username={publicUser.username}
-        />
+        <Avatar className="cursor-pointer" style={{ width: 120, height: 120 }}>
+          <AvatarImage src={publicUser.avatar_url || ''} alt="Profile" />
+          <AvatarFallback>
+            {publicUser.username.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         <div>
-          <EditableUsername username={publicUser.username} userid={userid} />
-          <p className="text-gray-500">
-            {user ? user.email : 'guest@example.com'}
+          <Label className="text-2xl">{publicUser.username}</Label>
+          <p className="text-gray-600">
+            {publicUser.description || 'No description provided.'}
           </p>
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
-          <Tabs defaultValue="current">
+          <Tabs defaultValue="owned">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="current">Current Tournaments</TabsTrigger>
-
+              <TabsTrigger value="owned">Hosted Tournaments</TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-[800px] rounded-md  mt-2">
-              <TabsContent value="current">
+            <ScrollArea className="h-h-[800px]  rounded-md  mt-2">
+              <TabsContent value="owned">
                 <div className="space-y-4">
                   {tournaments != null ? (
                     tournaments.map((tournament) => (
@@ -101,12 +116,13 @@ export default async function Profile() {
               </TabsContent>
               <TabsContent value="results">
                 <div className="space-y-4">
-                  {matches != null ? (
-                    matches.map((match) => (
+                  {pastMatches != null ? (
+                    pastMatches.map((match) => (
                       <Card key={match.id}>
                         <CardHeader>
                           <CardTitle>
-                            {match.tournaments.name} - Round {match.round}
+                            <span> {match.tournaments.name} </span>- Round{' '}
+                            {match.round}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -118,9 +134,11 @@ export default async function Profile() {
                               </p>
                               <p>
                                 Winner:{' '}
-                                {match.winnerId === match.homePlayerId
-                                  ? match.homePlayerUsername
-                                  : match.awayPlayerUsername}
+                                <span className="font-bold text-blue-500">
+                                  {match.winnerId === match.homePlayerId
+                                    ? match.homePlayerUsername
+                                    : match.awayPlayerUsername}
+                                </span>
                               </p>
                             </div>
                             <Link href={`/tournaments/${match.tournament_id}`}>
@@ -151,7 +169,7 @@ export default async function Profile() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Statistics</CardTitle>
+              <CardTitle>Tournament Statistics</CardTitle>
             </CardHeader>
             <CardContent>
               {statistics && (
@@ -222,14 +240,15 @@ export default async function Profile() {
               )}
             </CardContent>
           </Card>
-
           <ProfileComments
             user={user}
-            profile_user_id={user.id}
+            profile_user_id={id}
             comments={comments}
           />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default UserPage;

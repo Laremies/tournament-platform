@@ -35,3 +35,14 @@ export interface TournamentPlayer {
     avatar_url?: string;
   };
 }
+
+export interface PublicUser {
+  id: string;
+  username: string;
+  avatar_url: string;
+  description?: string;
+  tournaments_won_amount: number;
+  tournaments_participated_amount: number;
+  matches_won_amount: number;
+  matches_lost_amount: number;
+}

@@ -22,6 +22,7 @@ import { kickPlayer } from '@/lib/actions';
 import { User as UserType } from '@supabase/supabase-js';
 import { useChat } from '@/utils/context/ChatContext';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 interface ParticipantProps {
   participant: { userId: string; username: string; avatar_url?: string };
@@ -40,13 +41,6 @@ export const Participant: React.FC<ParticipantProps> = ({
 }) => {
   const [isKickDialogOpen, setIsKickDialogOpen] = useState(false);
   const { setChatOpen, setReceiverId } = useChat();
-
-  const handleShowProfile = () => {
-    //TODO: redirect to user profile
-    //router.push(`/profiles/${participant.id}`);
-    // OR
-    //<Link href={`/profiles/${participant.id}`}></Link>
-  };
 
   const handleSendMessage = () => {
     setChatOpen(true);
@@ -105,13 +99,12 @@ export const Participant: React.FC<ParticipantProps> = ({
         </DropdownMenuTrigger>
         {participant.userId !== 'tbd' && (
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onSelect={() => handleShowProfile()}
-              className="cursor-pointer"
-            >
-              <User className="mr-2 h-4 w-4" />
-              <span>Show Profile</span>
-            </DropdownMenuItem>
+            <Link href={`/profile/${participant.userId}`}>
+              <DropdownMenuItem className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Show Profile</span>
+              </DropdownMenuItem>
+            </Link>
             {user && user.id !== participant.userId && (
               <DropdownMenuItem
                 onSelect={() => handleSendMessage()}
