@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ import { useChat } from '@/utils/context/ChatContext';
 import clsx from 'clsx';
 
 interface ParticipantProps {
-  participant: { userId: string; username: string };
+  participant: { userId: string; username: string; avatar_url?: string };
   isCreator?: boolean | null;
   tournamentId: string;
   present: boolean;
@@ -79,18 +79,19 @@ export const Participant: React.FC<ParticipantProps> = ({
       key={participant.userId}
       className="flex items-center space-x-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors duration-200"
     >
-      <Avatar className="relative overflow-visible">
-        {/* <AvatarImage
-          src={participant.users.avatarUrl}
-          alt={participant.users.username}
-        /> */}
-        <AvatarFallback>
-          {participant.username.charAt(0).toUpperCase()}
-        </AvatarFallback>
+      <div className="relative">
+        <Avatar>
+          <AvatarImage src={participant.avatar_url} alt={''} />
+          <AvatarFallback>
+            {participant.username.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
         {present && (
-          <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background z-0" />
+          <div className="absolute bottom-0 right-0">
+            <span className="block h-3 w-3 rounded-full bg-green-400 ring-2 ring-background" />
+          </div>
         )}
-      </Avatar>
+      </div>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

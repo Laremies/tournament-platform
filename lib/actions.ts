@@ -331,7 +331,7 @@ export async function getTournamentPlayers(tournamentId: string) {
   //need to provide tags?
   const { data: tournamentUsers, error } = await supabase
     .from('tournamentUsers')
-    .select('*, users(username)')
+    .select('*, users(username, avatar_url)')
     .eq('tournament_id', tournamentId);
 
   if (error) {

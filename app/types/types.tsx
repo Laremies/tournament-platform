@@ -30,5 +30,6 @@ export interface TournamentPlayer {
   user_id: string;
   users: {
     username: string;
+    avatar_url?: string;
   };
 }
