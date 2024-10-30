@@ -9,12 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import NotificationComponent from './notifications-server';
 import RecentChatsList from './recentChats';
 
-export interface PublicUser {
-  id: string;
-  username: string;
-  avatar_url: string;
-}
-
 export default async function AuthButton() {
   const supabase = createClient();
   const {

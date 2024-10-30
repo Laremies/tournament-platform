@@ -7,7 +7,7 @@ import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { generateSingleEliminationBracket } from './bracket-generators';
-import { PublicUser } from '@/components/header/header-auth';
+import { PublicUser } from '@/app/types/types';
 import { Notification } from '@/components/header/notifications-server';
 import { RecentChat } from '@/components/header/recentChats';
 
@@ -929,4 +929,50 @@ export async function getRecentChats() {
   );
 
   return { recentChats: recentChatsWithUsernames };
+}
+
+export async function getProfileComments(userId: string) {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('profileComments')
+    .select('*, users!profileComments_sender_id_fkey(username, avatar_url)') // test if you can get users table stuff nat join
+    .eq('profile_user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch profile comments' };
+  }
+
+  return { comments: data };
+}
+
+export async function submitProfileComment(
+  formData: FormData,
+  profileUserId: string
+) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to submit a comment');
+    return { error: 'You must be logged in to submit a comment' };
+  }
+
+  const data = {
+    message: formData.get('message') as string,
+    profile_user_id: profileUserId,
+    sender_id: userObject.data.user.id as string,
+  };
+
+  const { error } = await supabase.from('profileComments').insert([data]);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to submit comment' };
+  }
+  revalidatePath(`/profile/${profileUserId}`);
+
+  return { success: true };
 }
