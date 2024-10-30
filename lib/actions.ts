@@ -729,63 +729,65 @@ export async function submitMatchResult(
       .from('tournaments')
       .update({ finished: true })
       .eq('id', tournamentId);
-  } else {
-    const { data: nextMatchData, error: nextMatchError } = await supabase
+
+    revalidatePath(`/tournaments/${tournamentId}`);
+    return { success: true };
+  }
+
+  const { data: nextMatchData, error: nextMatchError } = await supabase
+    .from('singleEliminationMatches')
+    .select(
+      'id, home_matchup_id, away_matchup_id, home_player_id, away_player_id'
+    )
+    .or(`home_matchup_id.eq.${matchId}, away_matchup_id.eq.${matchId}`)
+    .single();
+
+  if (nextMatchError) {
+    return { error: 'Failed to find the next match for the winner' };
+  }
+
+  if (nextMatchData) {
+    const nextMatchId = nextMatchData.id;
+    const updateColumn =
+      nextMatchData.home_matchup_id === matchId
+        ? 'home_player_id'
+        : 'away_player_id';
+
+    // Update the next match with the winner
+    const { error: nextMatchUpdateError } = await supabase
       .from('singleEliminationMatches')
-      .select(
-        'id, home_matchup_id, away_matchup_id, home_player_id, away_player_id'
-      )
-      .or(`home_matchup_id.eq.${matchId}, away_matchup_id.eq.${matchId}`)
-      .single();
+      .update({ [updateColumn]: winnerId })
+      .eq('id', nextMatchId);
 
-    if (nextMatchError) {
-      return { error: 'Failed to find the next match for the winner' };
-    }
-
-    if (nextMatchData) {
-      const nextMatchId = nextMatchData.id;
-      const updateColumn =
-        nextMatchData.home_matchup_id === matchId
-          ? 'home_player_id'
-          : 'away_player_id';
-
-      // Update the next match with the winner
-      const { error: nextMatchUpdateError } = await supabase
-        .from('singleEliminationMatches')
-        .update({ [updateColumn]: winnerId })
-        .eq('id', nextMatchId);
-
-      if (nextMatchUpdateError) {
-        return { error: nextMatchUpdateError.message };
-      }
-
-      const opponentId =
-        updateColumn === 'home_player_id'
-          ? nextMatchData.away_player_id
-          : nextMatchData.home_player_id;
-
-      if (opponentId) {
-        const { data: tournament } = await supabase
-          .from('tournaments')
-          .select('name')
-          .eq('id', tournamentId)
-          .single();
-        await supabase.from('notifications').insert([
-          {
-            type: 'new_matchup',
-            user_id: opponentId,
-            related_id: tournamentId,
-            message: tournament?.name,
-          },
-        ]);
-      }
+    if (nextMatchUpdateError) {
+      return { error: nextMatchUpdateError.message };
     }
 
     //if the next match has a waiting opponent, send a notification to them
+    const opponentId =
+      updateColumn === 'home_player_id'
+        ? nextMatchData.away_player_id
+        : nextMatchData.home_player_id;
+
+    if (opponentId) {
+      const { data: tournament } = await supabase
+        .from('tournaments')
+        .select('name')
+        .eq('id', tournamentId)
+        .single();
+
+      await supabase.from('notifications').insert([
+        {
+          type: 'new_matchup',
+          user_id: opponentId,
+          related_id: tournamentId,
+          message: tournament?.name,
+        },
+      ]);
+    }
   }
 
   revalidatePath(`/tournaments/${tournamentId}`);
-
   return { success: true };
 }
 
