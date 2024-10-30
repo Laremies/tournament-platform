@@ -1,14 +1,10 @@
 import { SingleEliminationMatch } from '@/app/types/types';
 import { User } from '@supabase/supabase-js';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card';
-import { XCircle, Swords, Trophy } from 'lucide-react';
-import { Participant } from './participant-component';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { XCircle, Swords, HelpCircle, MessageSquare } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 
 interface NextMatchProps {
   user: User;
@@ -36,31 +32,44 @@ export const NextMatch: React.FC<NextMatchProps> = ({ user, matches }) => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="text-center p-4">
         <CardTitle>Next Match</CardTitle>
-        <CardDescription>Information about your next match</CardDescription>
       </CardHeader>
 
       {nextMatch ? (
-        <CardContent className="space-y-4">
-          <div className="flex items-center">
-            <Swords className="mr-2 w-4 h-4 text-primary" />
-              Opponent:{' '}
-              {opponent && opponent.userId !== 'tbd' ? (
-                <Participant
-                  participant={opponent}
-                  tournamentId={nextMatch.tournament_id}
-                  user={user}
-                  present={false}
-                />
-              ) : (
-                <span className="text-muted-foreground">TBD</span>
-              )}
-          </div>
-          <div className="flex items-center">
-            <Trophy className="mr-2 w-4 h-4 text-primary" />
-            <span>Round: {nextMatch.round}</span>
-          </div>
+        <CardContent className="flex flex-col items-center p-4 pt-0">
+          <Badge
+            variant="secondary"
+            className="mb-2 hover:bg-secondary text-base"
+          >
+            Round {nextMatch.round}
+          </Badge>
+          {opponent && opponent.userId !== 'tbd' ? (
+            <>
+              <div className="flex flex-col items-center rounded-lg border-4 border-purple-600 p-4 space-y-2 mb-2">
+                <div className="flex items-center justify-center">
+                  <Swords className="mr-2 h-4 w-4 text-primary" />
+                  <span className="text-primary">Your Opponent</span>
+                </div>
+                <Avatar className="w-10 h-10">
+                  {/*<AvatarImage></AvatarImage>*/}
+                  <AvatarFallback>{opponent.username.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <h3>{opponent.username}</h3>
+              </div>
+              <Button size="sm">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Send Message
+              </Button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center space-y-2 mb-4">
+              <HelpCircle className="h-10 w-10 text-muted-foreground" />
+              <h3 className="text-muted-foreground">
+                Opponent to be determined
+              </h3>
+            </div>
+          )}
         </CardContent>
       ) : (
         <CardContent className="flex flex-col items-center space-y-4">
