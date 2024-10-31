@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import ProfileComments from '@/components/profile/comment-box';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import SendMessageButton from '@/components/profile/send-message-button';
 
 type Params = {
   userId: string;
@@ -56,9 +57,12 @@ const UserPage = async ({ params }: { params: Params }) => {
           </AvatarFallback>
         </Avatar>
         <div>
-          <Label className="text-2xl">{publicUser.username}</Label>
+          <Label className="text-2xl">
+            {publicUser.username}{' '}
+            {user && <SendMessageButton userId={publicUser.id} />}
+          </Label>
           <p className="text-gray-600">
-            {publicUser.description || 'No description provided.'}
+            {publicUser.bio || 'No description provided.'}
           </p>
         </div>
       </div>
@@ -69,7 +73,7 @@ const UserPage = async ({ params }: { params: Params }) => {
               <TabsTrigger value="owned">Hosted Tournaments</TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-h-[800px]  rounded-md  mt-2">
+            <ScrollArea className="h-[800px]  rounded-md  mt-2">
               <TabsContent value="owned">
                 <div className="space-y-4">
                   {tournaments != null ? (

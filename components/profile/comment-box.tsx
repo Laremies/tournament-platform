@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { User } from '@supabase/supabase-js';
 import { ScrollArea } from '../ui/scroll-area';
 import { deleteProfileComment, submitProfileComment } from '@/lib/actions';
+import Link from 'next/link';
 
 interface Comment {
   id: string;
@@ -75,9 +76,11 @@ export default function ProfileComments({
                     </Avatar>
                     <div className="flex-1 space-y-1">
                       <div className="flex justify-between">
-                        <p className=" font-medium leading-none">
-                          {comment.users.username}
-                        </p>
+                        <Link href={`/profile/${comment.sender_id}`}>
+                          <p className=" font-medium leading-none">
+                            {comment.users.username}
+                          </p>
+                        </Link>
                         <p className="text-sm text-muted-foreground">
                           {new Date(comment.created_at).toLocaleDateString()}
                           {(ownProfile || user?.id === comment.sender_id) && (

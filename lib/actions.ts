@@ -222,7 +222,8 @@ export async function getUserTournaments() {
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
     .select('tournaments(name, id)')
-    .eq('user_id', userObject.data.user.id);
+    .eq('user_id', userObject.data.user.id)
+    .order('created_at', { ascending: false });
 
   if (joinedError || error) {
     console.error(joinedError);
@@ -1266,4 +1267,27 @@ export async function getUserStatistics(userId: string) {
   };
 
   return { data: statistics };
+}
+
+export async function updateUserBio(bio: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to update your bio');
+    return { error: 'You must be logged in to update your bio' };
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ bio: bio })
+    .eq('id', userObject.data.user.id);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to update bio' };
+  }
+  revalidatePath(`/profile`);
+
+  return { success: true };
 }
