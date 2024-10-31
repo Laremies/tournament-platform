@@ -1,7 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Notification } from './notifications-server';
-import { Bell, ChevronRight, MessageSquare, X } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Bell,
+  ChevronRight,
+  MessageSquare,
+  Swords,
+  Trophy,
+  X,
+} from 'lucide-react';
 import {
   Popover,
   PopoverTrigger,
@@ -15,7 +23,6 @@ import { getUsername, markAllNotificationsAsRead } from '@/lib/actions';
 import { createClient } from '@/utils/supabase/client';
 import { AnimatePresence, motion } from 'framer-motion';
 
-//TODO: add realtime to notifications
 export function Notifications({
   initNotifications,
 }: {
@@ -28,22 +35,34 @@ export function Notifications({
   const [newNotification, setNewNotification] = useState<Notification>();
 
   useEffect(() => {
-    const handleNewNotification = async (newNotification: Notification) => {
-      if (newNotification.type === 'new_message') {
-        const { username } = await getUsername(newNotification.related_id);
-        newNotification.username = username;
+    const handleNewNotification = async (
+      newNotificationFromServer: Notification
+    ) => {
+      if (newNotificationFromServer.type === 'new_message') {
+        const { username } = await getUsername(
+          newNotificationFromServer.related_id
+        );
+        newNotificationFromServer.username = username;
         setNotifications((prevNotifications) => [
-          newNotification,
+          newNotificationFromServer,
           ...prevNotifications,
         ]);
-        setNewNotification(newNotification);
-        setShowNewNotification(true);
-        setTimeout(() => {
-          setShowNewNotification(false);
-        }, 4000);
       }
+      if (
+        newNotificationFromServer.type === 'tournament_start' ||
+        newNotificationFromServer.type === 'new_matchup'
+      ) {
+        setNotifications((prevNotifications) => [
+          newNotificationFromServer,
+          ...prevNotifications,
+        ]);
+      }
+      setNewNotification(newNotificationFromServer);
+      setShowNewNotification(true);
+      setTimeout(() => {
+        setShowNewNotification(false);
+      }, 4000);
     };
-    //TODO: handle different notification types here
 
     const channel = supabase
       .channel('public:notifications')
@@ -85,6 +104,20 @@ export function Notifications({
                       {'New message from ' + newNotification.username}
                     </p>
                   )}
+                  {newNotification.type === 'tournament_start' && (
+                    <p className="text-sm">
+                      {'Tournament ' +
+                        newNotification.message +
+                        ' just started!'}
+                    </p>
+                  )}
+                  {newNotification.type === 'new_matchup' && (
+                    <p className="text-sm">
+                      {'You got a new opponent in ' +
+                        newNotification.message +
+                        '!'}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => setShowNewNotification(false)}
@@ -109,14 +142,14 @@ export function Notifications({
         </PopoverTrigger>
         <PopoverContent className="w-80 p-1 animate-slide-in">
           <div className="flex justify-between items-center">
-            <div>
+            <div className="pl-2">
               <p className="text-sm font-semibold">Notifications</p>
             </div>
             <Button
               size="sm"
               variant={'ghost'}
               className="text-xs"
-              onClick={handleMarkAllAsRead} //TODO: also update notification.read to true in db
+              onClick={handleMarkAllAsRead}
             >
               Clear All
             </Button>
@@ -212,14 +245,85 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
   );
 };
 
-//TODO
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TournamentStartNotification = ({ notification }: NotificationProps) => {
-  return <></>;
+  return (
+    <>
+      <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black z-20">
+        <CardContent className="pt-1 pr-2 pb-0 pl-1">
+          <div className="flex items-start">
+            <div className="flex-1 ">
+              <p className="text-sm font-medium leading-none line-clamp-">
+                Tournament {''}
+                <span className="font-bold text-green-500">
+                  {notification.message}
+                </span>{' '}
+                just started!
+              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                Go see who you&apos;re up against!
+              </p>
+              <div className="flex items-center justify-between ">
+                <div className="flex items-center">
+                  <Trophy className="mr-2 h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(notification.created_at)}
+                  </span>
+                </div>
+                <Link href={`/tournaments/${notification.related_id}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs hover:bg-transparent"
+                  >
+                    {'Show Tournament'}
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
 };
 
-//TODO
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const NewMatchupNotification = ({ notification }: NotificationProps) => {
-  return <></>;
+  return (
+    <>
+      <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black z-20">
+        <CardContent className="pt-1 pr-2 pb-0 pl-1">
+          <div className="flex items-start">
+            <div className="flex-1 ">
+              <p className="text-sm font-medium leading-none line-clamp-">
+                You have a new opponent in {''}
+                <span className="font-bold text-yellow-500">
+                  {notification.message}
+                </span>
+                {'!'}
+              </p>
+              <div className="flex items-center justify-between ">
+                <div className="flex items-center">
+                  <Swords className="mr-2 h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(notification.created_at)}
+                  </span>
+                </div>
+                <Link href={`/tournaments/${notification.related_id}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs hover:bg-transparent"
+                  >
+                    {'Show Tournament'}
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
 };

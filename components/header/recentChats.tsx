@@ -76,7 +76,7 @@ export default function RecentChatsList({ user }: { user: User }) {
             <div key={chat.id}>
               <DropdownMenuItem
                 onSelect={() => handleChatOpen(chat)}
-                className="py-2"
+                className="py-2 hover:cursor-pointer"
               >
                 <div className="flex flex-col w-full">
                   <div className="flex justify-between items-baseline">

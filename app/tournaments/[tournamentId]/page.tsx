@@ -6,6 +6,7 @@ import {
   getTournamentPlayers,
   getUserAccessRequest,
   getUsername,
+  getTournamentMatches,
 } from '@/lib/actions';
 import { Info, Users, Crown } from 'lucide-react';
 import ChatComponent from '@/components/tournament/chat-component';
@@ -13,8 +14,9 @@ import PrivateTournamentView from '@/components/tournament/private-tournament-vi
 import AccessRequestStatus from '@/components/tournament/access-request-status';
 import AccessRequests from '@/components/tournament/access-requests';
 import { ParticipantList } from '@/components/tournament/participant-list';
-
+import { NextMatch } from '@/components/tournament/next-match';
 import { Bracket } from '@/components/tournament/bracket';
+import { WinnerCard } from '@/components/tournament/winner-card';
 
 interface Params {
   tournamentId: string;
@@ -32,6 +34,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
   }
 
   const { tournamentUsers: tournamentPlayers } = await getTournamentPlayers(id);
+  const { matches } = await getTournamentMatches(id);
 
   const user = await getAuthUser();
   //check if user is aprticipating, if not show join button (data && data.user && data.user.id goofy af iknow)
@@ -72,13 +75,22 @@ const TournamentPage = async ({ params }: { params: Params }) => {
     <div className="mx-auto p-4 space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-[3fr,1.5fr,1.5fr] gap-6">
         {/* Tournament Bracket */}
-        {tournament && <Bracket tournament={tournament} user={user} />}
+        {tournament && (
+          <Bracket tournament={tournament} user={user} matches={matches} />
+        )}
         {/* Tournament Statistics and Participants */}
         <div className="space-y-6 w-[350px]">
           {/* Access Requests */}
-          {isUserCreator && tournament.private && (
+          {isUserCreator && tournament.private && !tournament.started && (
             <AccessRequests tournamentId={id} />
           )}
+          {/* Next Match */}
+          {isUserParticipant &&
+            matches &&
+            tournament.started &&
+            !tournament.finished && <NextMatch user={user} matches={matches} />}
+          {/* Tournament Winner */}
+          {tournament.finished && <WinnerCard tournament={tournament} />}
           {/* Tournament Statistics */}
           <Card>
             <CardHeader>
@@ -90,7 +102,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 <span>
                   Tournament Status:{' '}
                   {tournament.finished
-                    ? 'Tournament ended'
+                    ? 'Finished'
                     : tournament.started
                       ? 'Ongoing'
                       : 'Waiting for players'}
