@@ -17,6 +17,7 @@ import { getAllUserCurrentTournaments } from '@/lib/actions';
 import ProfileComments from '@/components/profile/comment-box';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { BioBox } from '@/components/profile/bio-box';
 export default async function Profile() {
   const user = await getAuthUser();
 
@@ -32,20 +33,25 @@ export default async function Profile() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex items-center space-x-4 mb-6">
-        <Avatar2
-          initialUrl={publicUser.avatar_url}
-          size={150}
-          username={publicUser.username}
-        />
-        <div>
-          <EditableUsername username={publicUser.username} userid={userid} />
-          <p className="text-gray-500">
-            {user ? user.email : 'guest@example.com'}
-          </p>
+      <div className="flex items-center mb-6">
+        <div className="flex items-center space-x-4 ">
+          <Avatar2
+            initialUrl={publicUser.avatar_url}
+            size={150}
+            username={publicUser.username}
+          />
+          <div>
+            <EditableUsername username={publicUser.username} userid={userid} />
+            <p className="text-gray-500">
+              {user ? user.email : 'guest@example.com'}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col space-y-2 flex-grow ml-4 max-w-[550px]">
+          <div className="flex justify-center"></div>
+          <BioBox user={publicUser} />
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Tabs defaultValue="current">
@@ -118,9 +124,11 @@ export default async function Profile() {
                               </p>
                               <p>
                                 Winner:{' '}
-                                {match.winnerId === match.homePlayerId
-                                  ? match.homePlayerUsername
-                                  : match.awayPlayerUsername}
+                                <span className="font-bold text-blue-500">
+                                  {match.winnerId === match.homePlayerId
+                                    ? match.homePlayerUsername
+                                    : match.awayPlayerUsername}
+                                </span>
                               </p>
                             </div>
                             <Link href={`/tournaments/${match.tournament_id}`}>

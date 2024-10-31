@@ -58,7 +58,7 @@ const UserPage = async ({ params }: { params: Params }) => {
         <div>
           <Label className="text-2xl">{publicUser.username}</Label>
           <p className="text-gray-600">
-            {publicUser.description || 'No description provided.'}
+            {publicUser.bio || 'No description provided.'}
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@ const UserPage = async ({ params }: { params: Params }) => {
               <TabsTrigger value="owned">Hosted Tournaments</TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-h-[800px]  rounded-md  mt-2">
+            <ScrollArea className="h-[800px]  rounded-md  mt-2">
               <TabsContent value="owned">
                 <div className="space-y-4">
                   {tournaments != null ? (

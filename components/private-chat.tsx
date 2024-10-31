@@ -10,6 +10,7 @@ import { PrivateChatbox } from './private-chatbox';
 import { User } from '@supabase/supabase-js';
 import { Separator } from './ui/separator';
 import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
 
 export interface DirectMessage {
   id: string;
@@ -111,7 +112,9 @@ export const PrivateChat = ({ user }: { user: User }) => {
     <Card className="w-[400px] mx-auto fixed bottom-0 right-0">
       <CardHeader className="flex flex-row items-center justify-between p-4 ">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold">{username}</h2>
+          <Link href={`/profile/${receiverId}`}>
+            <h2 className="text-lg font-semibold">{username}</h2>
+          </Link>
           {username !== '' && (
             <>
               <div

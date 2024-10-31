@@ -40,6 +40,7 @@ export interface PublicUser {
   id: string;
   username: string;
   avatar_url: string;
+  bio?: string;
   description?: string;
   tournaments_won_amount: number;
   tournaments_participated_amount: number;
