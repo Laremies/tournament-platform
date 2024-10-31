@@ -9,6 +9,7 @@ import {
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
 import { User } from '@supabase/supabase-js';
+import CopyToClipboardButton from './copy-to-clipboard-button';
 
 interface BracketProps {
   tournament: Tournament;
@@ -22,7 +23,10 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
   return (
     <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted flex flex-col">
       <CardHeader>
-        <CardTitle>{tournament.name}</CardTitle>
+        <CardTitle>
+          {tournament.name} <CopyToClipboardButton />
+        </CardTitle>
+
         <CardDescription className="max-w-prose">
           {tournament.description}
         </CardDescription>

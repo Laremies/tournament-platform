@@ -222,7 +222,8 @@ export async function getUserTournaments() {
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
     .select('tournaments(name, id)')
-    .eq('user_id', userObject.data.user.id);
+    .eq('user_id', userObject.data.user.id)
+    .order('created_at', { ascending: false });
 
   if (joinedError || error) {
     console.error(joinedError);

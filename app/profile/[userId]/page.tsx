@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import ProfileComments from '@/components/profile/comment-box';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import SendMessageButton from '@/components/profile/send-message-button';
 
 type Params = {
   userId: string;
@@ -56,7 +57,10 @@ const UserPage = async ({ params }: { params: Params }) => {
           </AvatarFallback>
         </Avatar>
         <div>
-          <Label className="text-2xl">{publicUser.username}</Label>
+          <Label className="text-2xl">
+            {publicUser.username}{' '}
+            {user && <SendMessageButton userId={publicUser.id} />}
+          </Label>
           <p className="text-gray-600">
             {publicUser.bio || 'No description provided.'}
           </p>
