@@ -1,59 +1,97 @@
-// import React from 'react';
-// import { render, screen } from '@testing-library/react';
-// import Page from '@/app/page'; // Adjust the import path as necessary
-// import { getMostPopularTournaments } from '@/lib/actions';
-// import { BrowseTournamentsButton } from '@/components/ui/landing-pages';
-// // Mock the action to avoid making real calls
-// jest.mock('@lib/actions', () => ({
-//     getMostPopularTournaments: jest.fn() as jest.MockedFunction<typeof getMostPopularTournaments>,
-// }));
+import { signUpAction } from '@/lib/actions'; // Adjust the import to your file's location
+import { createClient } from '@/utils/supabase/server';
+import { encodedRedirect } from '@/utils/utils';
+import { headers } from 'next/headers';
 
-// // Mocking the components
-// jest.mock('@/components/ui/landing-pages', () => ({
-//     HowItWorksSection: () => <div>How It Works Section</div>,
-//     TournamentsSection: ({ title, tournaments, button }: { title: string; tournaments: any[]; button: React.ReactNode }) => (
-//         <div>
-//             <h2>{title}</h2>
-//             {button}
-//             <ul>
-//                 {tournaments.map((tournament, index) => (
-//                     <li key={index}>{tournament}</li>
-//                 ))}
-//             </ul>
-//         </div>
-//     ),
-//     SignUpButton: () => <button>Sign Up</button>,
-//     BrowseTournamentsButton: () => <button>Browse Tournaments</button>,
-// }));
+// Mock the createClient and its auth.signUp method
+jest.mock('@/utils/supabase/server', () => ({
+    createClient: jest.fn(),
+}));
 
-// describe('Page Component', () => {
-//     beforeEach(() => {
-//         // Set the mock implementation for getMostPopularTournaments
-//         (getMostPopularTournaments as jest.Mock).mockResolvedValue({
-//             popularTournaments: [],
-//         });
-//     });
+jest.mock('next/headers', () => ({
+    headers: jest.fn(),
+}));
 
+jest.mock('@/utils/utils', () => ({
+    encodedRedirect: jest.fn(),
+}));
 
-//     it('should call getMostPopularTournaments on render', async () => {
-//         // Render the Page component
-//         render(<BrowseTournamentsButton />);
+describe('signUpAction', () => {
+    const mockSignUp = jest.fn(); // Mock function for signUp
+    let supabase: any; // Type assertion for Supabase client
 
-//         // Check if getMostPopularTournaments was called
-//         // expect(getMostPopularTournaments).toHaveBeenCalled();
-//     });
-// });
+    beforeEach(() => {
+        supabase = {
+            auth: {
+                signUp: mockSignUp,
+            },
+        };
+        (createClient as jest.Mock).mockReturnValue(supabase);
+        (headers as jest.Mock).mockReturnValue({
+            get: jest.fn().mockReturnValue('http://localhost:3000'),
+        });
+    });
 
-import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
-import Page from '@/app/page'
+    afterEach(() => {
+        jest.clearAllMocks(); // Clear mocks after each test
+    });
 
-describe('Page', () => {
-    it('renders a heading', () => {
-        render(<Page />)
+    it('should return error if email or password is missing', async () => {
+        const formData = new FormData();
+        formData.append('username', 'testuser');
 
-        // const heading = screen.getByRole('heading', { level: 1 })
+        const result = await signUpAction(formData);
 
-        // expect(heading).toBeInTheDocument()
-    })
-})
+        expect(result).toEqual({ error: 'Email and password are required' });
+    });
+
+    // it('should call supabase.auth.signUp with correct parameters', async () => {
+    //     const formData = new FormData();
+    //     formData.append('username', 'testuser');
+    //     formData.append('email', 'test@example.com');
+    //     formData.append('password', 'password123');
+
+    //     await signUpAction(formData);
+
+    //     expect(mockSignUp).toHaveBeenCalledWith({
+    //         email: 'test@example.com',
+    //         password: 'password123',
+    //         options: {
+    //             data: { username: 'testuser' },
+    //             emailRedirectTo: 'http://localhost:3000/auth/callback',
+    //         },
+    //     });
+    // });
+
+    it('should return encoded redirect on successful sign up', async () => {
+        mockSignUp.mockResolvedValueOnce({ error: null }); // Successful sign-up mock response
+
+        const formData = new FormData();
+        formData.append('username', 'testuser');
+        formData.append('email', 'test@example.com');
+        formData.append('password', 'password123');
+
+        const result = await signUpAction(formData);
+
+        expect(result).toEqual(encodedRedirect(
+            'success',
+            '/sign-up',
+            'Thanks for signing up! Please check your email for a verification link.'
+        ));
+    });
+
+    it('should return encoded redirect on sign up error', async () => {
+        const error = { code: 'AuthInvalidEmail', message: 'Invalid email' };
+        mockSignUp.mockResolvedValueOnce({ error }); // Mocking sign-up error response
+
+        const formData = new FormData();
+        formData.append('username', 'testuser');
+        formData.append('email', 'test@example.com');
+        formData.append('password', 'password123');
+
+        const result = await signUpAction(formData);
+
+        expect(result).toEqual(encodedRedirect('error', '/sign-up', error.message));
+    });
+});
+
