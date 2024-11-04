@@ -41,6 +41,7 @@ export default function TournamentDropdown({
         <DropdownMenuItem
           key={tournament.id}
           onClick={() => handleTournamentClick(tournament.id)}
+          className='cursor-pointer'
         >
           {tournament.name}
         </DropdownMenuItem>

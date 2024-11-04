@@ -21,7 +21,9 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
     user &&
     (user.id === actualMatch.home_player_id ||
       user.id === actualMatch.away_player_id);
-  const creatorIsOverriding = isCreator && !!actualMatch.winner_id;
+  const creatorIsOverriding = userIsPlayer
+    ? isCreator && !!actualMatch.winner_id
+    : isCreator;
 
   if (
     actualMatch.winner_id &&
