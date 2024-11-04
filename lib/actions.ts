@@ -1325,15 +1325,6 @@ export async function overrideMatchResult(
     return { error: errorMsg };
   }
 
-  const currentMatch = await submitMatchResult(
-    tournamentId,
-    match.id,
-    winnerId
-  );
-  if (currentMatch.error || !currentMatch.success) {
-    return { error: errorMsg };
-  }
-
   const supabase = createClient();
   for (const match of nextMatchesOfOverridenPlayer) {
     const updateColumn =
@@ -1343,7 +1334,7 @@ export async function overrideMatchResult(
 
     const { error } = await supabase
       .from('singleEliminationMatches')
-      .update({ [updateColumn]: winnerId, winner_id: null })
+      .update({ [updateColumn]: null, winner_id: null })
       .eq('id', match.id);
     if (error) {
       return { error: errorMsg };
@@ -1358,6 +1349,15 @@ export async function overrideMatchResult(
         return { error: errorMsg };
       }
     }
+  }
+
+  const currentMatch = await submitMatchResult(
+    tournamentId,
+    match.id,
+    winnerId
+  );
+  if (currentMatch.error || !currentMatch.success) {
+    return { error: errorMsg };
   }
 
   revalidatePath(`/tournaments/${tournamentId}`);
