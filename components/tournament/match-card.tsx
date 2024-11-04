@@ -11,7 +11,11 @@ export interface MatchCardClientProps {
   isCreator: boolean;
 }
 
-export const MatchCard: React.FC<MatchCardClientProps> = ({ match, user, isCreator }) => {
+export const MatchCard: React.FC<MatchCardClientProps> = ({
+  match,
+  user,
+  isCreator,
+}) => {
   const actualMatch = match.match;
   const userIsPlayer =
     user &&
@@ -80,7 +84,11 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({ match, user, isCreat
             userIsPlayer && 'border-4 border-purple-600'
           )}
         >
-          <MatchModal match={actualMatch} user={user} creatorIsOverriding={creatorIsOverriding} />
+          <MatchModal
+            match={actualMatch}
+            user={user}
+            creatorIsOverriding={creatorIsOverriding}
+          />
         </div>
       )}
     </Card>

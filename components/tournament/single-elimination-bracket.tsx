@@ -178,7 +178,12 @@ const SingleEliminationBracket: React.FC<{
             }}
             contentStyle={{ width: '100%', height: '100%', padding: '1.5rem' }}
           >
-            <Matches node={bracketStructure} isFirstRow={true} user={user} isCreator={isCreator} />
+            <Matches
+              node={bracketStructure}
+              isFirstRow={true}
+              user={user}
+              isCreator={isCreator}
+            />
           </TransformComponent>
         </>
       )}
@@ -225,7 +230,12 @@ const Matches: React.FC<{
               className="flex items-start justify-end my-[10px] relative"
             >
               <div className="flex flex-row-reverse">
-                <Matches node={child} isFirstRow={index === 0} user={user} isCreator={isCreator} />
+                <Matches
+                  node={child}
+                  isFirstRow={index === 0}
+                  user={user}
+                  isCreator={isCreator}
+                />
               </div>
               <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
               <div

@@ -1380,3 +1380,22 @@ async function getPlayerFollowingMatchesInTournament(
 
   return matches;
 }
+
+export async function getUserCurrentMatches() {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) {
+    return { error: 'You must be logged in to view your matches' };
+  }
+
+  const userId = data.user.id;
+
+  const { data: matches } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(name)')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .is('winner_id', null)
+    .not('tournaments', 'is', null);
+
+  return { matches };
+}

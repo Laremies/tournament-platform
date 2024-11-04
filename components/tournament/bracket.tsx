@@ -36,7 +36,11 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
         {tournament?.started ? (
           <>
             {matches && matches.length > 0 ? (
-              <SingleEliminationBracket matches={matches} user={user} isCreator={isCreator} />
+              <SingleEliminationBracket
+                matches={matches}
+                user={user}
+                isCreator={isCreator}
+              />
             ) : (
               <p className="text-muted-foreground pl-6 pb-4">
                 The bracket will be generated once the tournament starts.
