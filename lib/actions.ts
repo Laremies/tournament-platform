@@ -1318,8 +1318,8 @@ export async function overrideMatchResult(
 
   const overridenPlayerId =
     winnerId === match.home_player_id
-      ? match.home_player_id
-      : match.away_player_id;
+      ? match.away_player_id
+      : match.home_player_id;
   if (!overridenPlayerId) {
     return { error: errorMsg };
   }
