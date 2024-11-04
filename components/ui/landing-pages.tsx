@@ -80,13 +80,7 @@ const TournamentsSection: React.FC<TournamentsSectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {tournaments && tournaments.length > 0 ? (
           tournaments.map((tournament) => (
-            <TournamentCard
-              key={tournament.id}
-              id={tournament.id}
-              name={tournament.name}
-              description={tournament.description}
-              players={tournament.player_count}
-            />
+            <TournamentCard key={tournament.id} tournament={tournament} />
           ))
         ) : (
           <div className="col-span-full flex flex-col items-center justify-center gap-8">

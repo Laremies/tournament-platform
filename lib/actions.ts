@@ -521,6 +521,28 @@ export async function getMostPopularTournaments() {
   return { popularTournaments: data as Tournament[] };
 }
 
+export async function getPublicTournaments() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*, analytics(view_count)')
+    .eq('private', false);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public tournaments' };
+  }
+  //sort in client, dunno how to do in query, cant bother to make a function for it
+  const sortedData = data.sort((a, b) => {
+    const viewCountA = a.analytics[0]?.view_count || 0;
+    const viewCountB = b.analytics[0]?.view_count || 0;
+    return viewCountB - viewCountA; // Descending order
+  });
+
+  return { tournaments: sortedData as Tournament[] };
+}
+
 export async function UpdateUsername(newName: string, userid: string) {
   const supabase = createClient();
   const { error } = await supabase
