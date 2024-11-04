@@ -47,3 +47,19 @@ export interface PublicUser {
   matches_won_amount: number;
   matches_lost_amount: number;
 }
+
+export interface Match {
+  id: string;
+  tournament_id: string;
+  home_player_id?: string;
+  away_player_id?: string;
+  home_matchup_id?: string;
+  away_matchup_id?: string;
+  date?: Date;
+  description?: string;
+  winner_id?: string;
+  round: number;
+  result?: string;
+  created_at: Date;
+  tournaments: { name: string };
+}

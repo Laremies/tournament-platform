@@ -1291,3 +1291,111 @@ export async function updateUserBio(bio: string) {
 
   return { success: true };
 }
+
+export async function overrideMatchResult(
+  tournamentId: string,
+  match: SingleEliminationMatch,
+  winnerId: string
+) {
+  const errorMsg = 'Failed to override match';
+  if (!match.id) {
+    return { error: errorMsg };
+  }
+
+  const final = await getTournamentFinalMatch(tournamentId);
+  if (final.error || !final.finalMatch) {
+    return { error: errorMsg };
+  }
+
+  const currentMatch = await submitMatchResult(
+    tournamentId,
+    match.id,
+    winnerId
+  );
+  if (currentMatch.error || !currentMatch.success) {
+    return { error: errorMsg };
+  }
+
+  const overridenPlayerId =
+    winnerId === match.home_player_id
+      ? match.away_player_id
+      : match.home_player_id;
+  if (!overridenPlayerId) {
+    return { error: errorMsg };
+  }
+
+  const nextMatchesOfOverridenPlayer =
+    await getPlayerFollowingMatchesInTournament(
+      tournamentId,
+      overridenPlayerId,
+      match.round
+    );
+  if (!nextMatchesOfOverridenPlayer) {
+    return { error: errorMsg };
+  }
+
+  const supabase = createClient();
+  for (const match of nextMatchesOfOverridenPlayer) {
+    const updateColumn =
+      match.home_player_id === overridenPlayerId
+        ? 'home_player_id'
+        : 'away_player_id';
+
+    const { error } = await supabase
+      .from('singleEliminationMatches')
+      .update({ [updateColumn]: winnerId, winner_id: null })
+      .eq('id', match.id);
+    if (error) {
+      return { error: errorMsg };
+    }
+
+    if (match.round === final.finalMatch.round) {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ finished: false })
+        .eq('id', tournamentId);
+      if (error) {
+        return { error: errorMsg };
+      }
+    }
+  }
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+  return { success: true };
+}
+
+async function getPlayerFollowingMatchesInTournament(
+  tournamentId: string,
+  playerId: string,
+  currentMatchRound: number
+) {
+  const supabase = createClient();
+
+  const { data: matches } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .gt('round', currentMatchRound)
+    .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`);
+
+  return matches;
+}
+
+export async function getUserCurrentMatches() {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) {
+    return { error: 'You must be logged in to view your matches' };
+  }
+
+  const userId = data.user.id;
+
+  const { data: matches } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(name)')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .is('winner_id', null)
+    .not('tournaments', 'is', null);
+
+  return { matches };
+}
