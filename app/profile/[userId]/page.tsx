@@ -62,7 +62,7 @@ const UserPage = async ({ params }: { params: Params }) => {
             {user && <SendMessageButton userId={publicUser.id} />}
           </Label>
           <p className="text-gray-600">
-            {publicUser.bio || 'No description provided.'}
+            {publicUser.bio || 'No bio provided.'}
           </p>
         </div>
       </div>

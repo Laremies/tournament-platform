@@ -143,7 +143,8 @@ const generateSingleEliminationBracket = (
 const SingleEliminationBracket: React.FC<{
   matches: SingleEliminationMatch[];
   user: User | null;
-}> = ({ matches, user }) => {
+  isCreator: boolean;
+}> = ({ matches, user, isCreator }) => {
   const bracketStructure = useMemo(
     () => generateSingleEliminationBracket(matches),
     [matches]
@@ -177,7 +178,7 @@ const SingleEliminationBracket: React.FC<{
             }}
             contentStyle={{ width: '100%', height: '100%', padding: '1.5rem' }}
           >
-            <Matches node={bracketStructure} isFirstRow={true} user={user} />
+            <Matches node={bracketStructure} isFirstRow={true} user={user} isCreator={isCreator} />
           </TransformComponent>
         </>
       )}
@@ -189,7 +190,8 @@ const Matches: React.FC<{
   node: MatchNode;
   isFirstRow: boolean;
   user: User | null;
-}> = ({ node, isFirstRow, user }) => {
+  isCreator: boolean;
+}> = ({ node, isFirstRow, user, isCreator }) => {
   if (node.children.length === 0) {
     return (
       <>
@@ -199,7 +201,7 @@ const Matches: React.FC<{
           </div>
         )}
         <div className="flex items-start justify-end my-[10px] relative">
-          <MatchCard match={node} user={user} />
+          <MatchCard match={node} user={user} isCreator={isCreator} />
           <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
         </div>
       </>
@@ -212,7 +214,7 @@ const Matches: React.FC<{
             Round {node.match.round} {/* replace with more descriptive name */}
           </div>
           <div className="flex-grow flex items-center justify-center">
-            <MatchCard match={node} user={user} />
+            <MatchCard match={node} user={user} isCreator={isCreator} />
           </div>
           <div className="absolute w-[25px] h-[2px] left-0 top-1/2 bg-white -translate-x-full"></div>
         </div>
@@ -223,7 +225,7 @@ const Matches: React.FC<{
               className="flex items-start justify-end my-[10px] relative"
             >
               <div className="flex flex-row-reverse">
-                <Matches node={child} isFirstRow={index === 0} user={user} />
+                <Matches node={child} isFirstRow={index === 0} user={user} isCreator={isCreator} />
               </div>
               <div className="absolute w-[25px] h-[2px] right-0 top-1/2 bg-white translate-x-full"></div>
               <div
