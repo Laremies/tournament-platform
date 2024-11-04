@@ -1307,15 +1307,6 @@ export async function overrideMatchResult(
     return { error: errorMsg };
   }
 
-  const currentMatch = await submitMatchResult(
-    tournamentId,
-    match.id,
-    winnerId
-  );
-  if (currentMatch.error || !currentMatch.success) {
-    return { error: errorMsg };
-  }
-
   const overridenPlayerId =
     winnerId === match.home_player_id
       ? match.away_player_id
@@ -1331,6 +1322,15 @@ export async function overrideMatchResult(
       match.round
     );
   if (!nextMatchesOfOverridenPlayer) {
+    return { error: errorMsg };
+  }
+
+  const currentMatch = await submitMatchResult(
+    tournamentId,
+    match.id,
+    winnerId
+  );
+  if (currentMatch.error || !currentMatch.success) {
     return { error: errorMsg };
   }
 
