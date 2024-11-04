@@ -23,7 +23,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
   players,
 }) => {
   return (
-    <Card>
+    <Card className="flex flex-col justify-between">
       <CardHeader>
         <CardTitle className="line-clamp-1">{name}</CardTitle>
         <CardDescription>{players} Players</CardDescription>
@@ -35,7 +35,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({
           {description || 'Tournament has no description.'}
         </p>
       </CardContent>
-      <CardFooter className="mt-auto pt-6">
+      <CardFooter className="pt-6">
         <Link href={`/tournaments/${id}`}>
           <Button variant="outline" size="sm">
             View Tournament
