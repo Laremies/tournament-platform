@@ -4,23 +4,15 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Search, Users, Calendar } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { TournamentWithStatus } from '@/app/tournaments/page';
-import Link from 'next/link';
+import TournamentCard from '../tournament/card';
 
 // Mock data for tournaments
 
@@ -31,15 +23,30 @@ export default function TournmamentsBrowser({
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('popularity');
   const [currentPage, setCurrentPage] = useState(1);
   const tournamentsPerPage = 9;
 
-  const filteredTournaments = tournaments.filter(
-    (tournament) =>
-      (statusFilter === 'all' || tournament.status === statusFilter) &&
-      (tournament.name.toLowerCase().includes(search.toLowerCase()) ||
-        tournament.description.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredTournaments = tournaments
+    .filter(
+      (tournament) =>
+        (statusFilter === 'all' || tournament.status === statusFilter) &&
+        (tournament.name.toLowerCase().includes(search.toLowerCase()) ||
+          tournament.description.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return (
+          new Date(b.created_at || 0).getTime() -
+          new Date(a.created_at || 0).getTime()
+        );
+      } else if (sortBy === 'popularity') {
+        const viewCountA = a.analytics[0]?.view_count || 0;
+        const viewCountB = b.analytics[0]?.view_count || 0;
+        return viewCountB - viewCountA; // Descending order
+      }
+      return 0; // Default case if no sortBy matches
+    });
 
   const indexOfLastTournament = currentPage * tournamentsPerPage;
   const indexOfFirstTournament = indexOfLastTournament - tournamentsPerPage;
@@ -49,12 +56,6 @@ export default function TournmamentsBrowser({
   );
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-  const statusColors = {
-    waiting_for_players: 'bg-yellow-500',
-    ongoing: 'bg-green-500',
-    ended: 'bg-blue-500',
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -75,45 +76,25 @@ export default function TournmamentsBrowser({
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="waiting_for_players">Waiting</SelectItem>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="waiting_for_players">Waiting Players</SelectItem>
             <SelectItem value="ongoing">In Progress</SelectItem>
             <SelectItem value="ended">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="popularity">Popularity</SelectItem>
+            <SelectItem value="newest">Newest</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {currentTournaments.map((tournament) => (
-          <Card key={tournament.id}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-start">
-                <span>{tournament.name}</span>
-                <Badge
-                  className={`${statusColors[tournament.status as keyof typeof statusColors]} text-white`}
-                >
-                  {tournament.status.replace(/_/g, ' ')}
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                {tournament.description}
-              </p>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Users size={16} />
-                <span>{tournament.player_count} players</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
-                <Calendar size={16} />
-                <span>date</span>
-              </div>
-            </CardContent>
-            <Link href={`/tournaments/${tournament.id}`}>
-              <CardFooter>
-                <Button className="w-full">View Tournament</Button>
-              </CardFooter>
-            </Link>
-          </Card>
+          <TournamentCard key={tournament.id} tournament={tournament} />
         ))}
       </div>
       <div className="flex justify-center gap-2">

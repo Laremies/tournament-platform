@@ -8,6 +8,10 @@ export interface Tournament {
   started: boolean;
   finished: boolean;
   player_count: number;
+  created_at?: Date;
+  analytics: {
+    view_count: number;
+  }[];
 }
 
 export interface SingleEliminationMatch {

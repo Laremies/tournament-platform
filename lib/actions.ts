@@ -533,14 +533,8 @@ export async function getPublicTournaments() {
     console.error(error);
     return { error: 'Failed to fetch public tournaments' };
   }
-  //sort in client, dunno how to do in query, cant bother to make a function for it
-  const sortedData = data.sort((a, b) => {
-    const viewCountA = a.analytics[0]?.view_count || 0;
-    const viewCountB = b.analytics[0]?.view_count || 0;
-    return viewCountB - viewCountA; // Descending order
-  });
 
-  return { tournaments: sortedData as Tournament[] };
+  return { tournaments: data as Tournament[] };
 }
 
 export async function UpdateUsername(newName: string, userid: string) {
