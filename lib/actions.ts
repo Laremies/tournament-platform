@@ -521,6 +521,22 @@ export async function getMostPopularTournaments() {
   return { popularTournaments: data as Tournament[] };
 }
 
+export async function getPublicTournaments() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*, analytics(view_count)')
+    .eq('private', false);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public tournaments' };
+  }
+
+  return { tournaments: data as Tournament[] };
+}
+
 export async function UpdateUsername(newName: string, userid: string) {
   const supabase = createClient();
   const { error } = await supabase
