@@ -14,8 +14,6 @@ import { Search } from 'lucide-react';
 import { TournamentWithStatus } from '@/app/tournaments/page';
 import TournamentCard from '../tournament/card';
 
-// Mock data for tournaments
-
 export default function TournmamentsBrowser({
   tournaments,
 }: {
@@ -43,9 +41,9 @@ export default function TournmamentsBrowser({
       } else if (sortBy === 'popularity') {
         const viewCountA = a.analytics?.[0]?.view_count || 0;
         const viewCountB = b.analytics?.[0]?.view_count || 0;
-        return viewCountB - viewCountA; // Descending order
+        return viewCountB - viewCountA;
       }
-      return 0; // Default case if no sortBy matches
+      return 0;
     });
 
   const indexOfLastTournament = currentPage * tournamentsPerPage;
@@ -87,7 +85,7 @@ export default function TournmamentsBrowser({
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="popularity">Popularity</SelectItem>
+            <SelectItem value="popularity">Popular</SelectItem>
             <SelectItem value="newest">Newest</SelectItem>
           </SelectContent>
         </Select>
