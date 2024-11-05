@@ -42,16 +42,13 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
           {tournament.description
             ? tournament.description
             : 'No description available'}
         </p>
-        <div
-          className={`flex items-center gap-2 text-sm text-muted-foreground ${tournament.description ? 'mt-4' : ''}`}
-        >
-          <Users size={16} />
-          <div className="flex items-center">
+        <div className={`flex items-center text-sm`}>
+          <div className="flex items-center gap-1  ml-auto">
             {tournament.max_player_count ? (
               <span>
                 {tournament.player_count} / {tournament.max_player_count}
@@ -59,6 +56,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
             ) : (
               <span>{tournament.player_count} </span>
             )}
+            <Users size={16} />
           </div>
         </div>
       </CardContent>

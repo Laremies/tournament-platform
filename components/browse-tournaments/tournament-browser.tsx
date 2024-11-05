@@ -41,8 +41,8 @@ export default function TournmamentsBrowser({
           new Date(a.created_at || 0).getTime()
         );
       } else if (sortBy === 'popularity') {
-        const viewCountA = a.analytics[0]?.view_count || 0;
-        const viewCountB = b.analytics[0]?.view_count || 0;
+        const viewCountA = a.analytics?.[0]?.view_count || 0;
+        const viewCountB = b.analytics?.[0]?.view_count || 0;
         return viewCountB - viewCountA; // Descending order
       }
       return 0; // Default case if no sortBy matches
@@ -62,7 +62,7 @@ export default function TournmamentsBrowser({
       <h1 className="text-3xl font-bold mb-8">Browse Public Tournaments</h1>
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <div className="relative flex-grow">
-          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search tournaments..."

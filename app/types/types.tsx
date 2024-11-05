@@ -9,7 +9,7 @@ export interface Tournament {
   finished: boolean;
   player_count: number;
   created_at?: Date;
-  analytics: {
+  analytics?: {
     view_count: number;
   }[];
 }
