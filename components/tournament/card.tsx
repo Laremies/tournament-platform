@@ -23,50 +23,55 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
   };
   const getStatusBadge = (tournament: Tournament) => {
     if (tournament.finished) {
-      return <Badge className={statusColors.finished}>Ended</Badge>;
+      return (
+        <Badge variant="outline" className={statusColors.finished}>
+          Ended
+        </Badge>
+      );
     } else if (tournament.started) {
-      return <Badge className={statusColors.started}>Ongoing</Badge>;
+      return (
+        <Badge variant="outline" className={statusColors.started}>
+          Ongoing
+        </Badge>
+      );
     } else {
       return (
-        <Badge className={statusColors.waiting}>Waiting for players</Badge>
+        <Badge variant="outline" className={statusColors.waiting}>
+          Waiting for players
+        </Badge>
       );
     }
   };
 
   return (
-    <Card key={tournament.id} className="flex flex-col h-full">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-start ">
-          <span className="overflow-hidden break-words">{tournament.name}</span>
+    <Card className="flex flex-col h-full shadow-lg">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex justify-between items-start text-lg">
+          <span className="overflow-hidden break-words mr-2">
+            {tournament.name}
+          </span>
           {getStatusBadge(tournament)}
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {tournament.description
-            ? tournament.description
-            : 'No description available'}
+      <CardContent className="flex-grow pb-2">
+        <p className="text-sm text-muted-foreground line-clamp-3">
+          {tournament.description || 'No description available'}
         </p>
-        <div className={`flex items-center text-sm`}>
-          <div className="flex items-center gap-1  ml-auto">
-            {tournament.max_player_count ? (
-              <span>
-                {tournament.player_count} / {tournament.max_player_count}
-              </span>
-            ) : (
-              <span>{tournament.player_count} </span>
-            )}
-            <Users size={16} />
-          </div>
-        </div>
       </CardContent>
-      <Link href={`/tournaments/${tournament.id}`} className="mt-auto">
-        <CardFooter className="flex justify-center">
-          <Button variant={'default'} className="w-full">
+      <CardFooter className="flex flex-col pt-2">
+        <div className="flex justify-end items-center w-full text-sm text-muted-foreground mb-2">
+          <span className="mr-1">
+            {tournament.player_count}
+            {tournament.max_player_count && ` / ${tournament.max_player_count}`}
+          </span>
+          <Users size={16} className="mr-1" />
+        </div>
+        <Link href={`/tournaments/${tournament.id}`} className="w-full">
+          <Button variant="secondary" className="w-full">
             View Tournament
           </Button>
-        </CardFooter>
-      </Link>
+        </Link>
+      </CardFooter>
     </Card>
   );
 };
