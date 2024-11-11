@@ -131,13 +131,12 @@ export const PrivateChat = ({ user }: { user: User }) => {
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+          className="rounded-full"
           onClick={() => {
             setChatOpen(false);
           }}
         >
-          <X className="h-6 w-6 text-black dark:text-white" />
-          <span className="sr-only">Close</span>
+          <X className="h-6 w-6" />
         </Button>
       </CardHeader>
       <Separator />

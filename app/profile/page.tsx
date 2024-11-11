@@ -75,7 +75,7 @@ export default async function Profile() {
                               <p>Players: {tournament.player_count}</p>
                               <span>
                                 {tournament.finished
-                                  ? 'Tournament ended'
+                                  ? 'Tournament finished'
                                   : tournament.started
                                     ? 'Ongoing'
                                     : 'Waiting for players'}
@@ -87,7 +87,7 @@ export default async function Profile() {
                             <Link href={`/tournaments/${tournament.id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded"
+                                className="mt-2 px-4 py-2 rounded dark:text-accent"
                               >
                                 View Tournament
                               </Button>
@@ -124,7 +124,7 @@ export default async function Profile() {
                               </p>
                               <p>
                                 Winner:{' '}
-                                <span className="font-bold text-blue-500">
+                                <span className="font-bold text-secondary">
                                   {match.winnerId === match.homePlayerId
                                     ? match.homePlayerUsername
                                     : match.awayPlayerUsername}
@@ -134,7 +134,7 @@ export default async function Profile() {
                             <Link href={`/tournaments/${match.tournament_id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded"
+                                className="mt-2 px-4 py-2 rounded dark:text-accent"
                               >
                                 View Tournament
                               </Button>
@@ -199,7 +199,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <Trophy className="w-4 h-4 text-secondary" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.wonCount}
@@ -208,7 +208,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-500" />
+                      <Swords className="w-4 h-4 text-green-700" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}
@@ -217,7 +217,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-red-500" />
+                      <Swords className="w-4 h-4 text-destructive" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesLost}

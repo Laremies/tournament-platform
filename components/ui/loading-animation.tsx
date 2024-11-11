@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 export default function LoadingAnimation() {
-  const colors = ['bg-blue-950', 'bg-yellow-600', 'bg-red-500'];
+  const colors = ['bg-primary', 'bg-secondary', 'bg-destructive'];
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">

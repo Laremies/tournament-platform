@@ -136,7 +136,7 @@ export function Notifications({
           <Button variant="ghost" size="icon" className="relative rounded-full">
             <Bell className="h-5 w-5" />
             {notifications.length > 0 && (
-              <span className="absolute top-1.5 right-3 h-2 w-2 rounded-full bg-red-500" />
+              <span className="absolute top-1.5 right-3 h-2 w-2 rounded-full bg-destructive" />
             )}
           </Button>
         </PopoverTrigger>
@@ -214,7 +214,7 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
           <div className="flex-1 ">
             <p className="text-sm font-medium leading-none line-clamp-">
               New message from{' '}
-              <span className="font-bold text-blue-500">
+              <span className="font-bold text-primary dark:text-accent">
                 {notification.username}
               </span>
             </p>
@@ -231,7 +231,7 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs hover:bg-transparent"
+                className="text-xs hover:bg-transparent hover:text-foreground"
                 onClick={handleShowChat}
               >
                 {'Open Chat'}
@@ -254,7 +254,7 @@ const TournamentStartNotification = ({ notification }: NotificationProps) => {
             <div className="flex-1 ">
               <p className="text-sm font-medium leading-none line-clamp-">
                 Tournament {''}
-                <span className="font-bold text-green-500">
+                <span className="font-bold text-green-700">
                   {notification.message}
                 </span>{' '}
                 just started!
@@ -273,7 +273,7 @@ const TournamentStartNotification = ({ notification }: NotificationProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs hover:bg-transparent"
+                    className="text-xs hover:bg-transparent hover:text-foreground"
                   >
                     {'Show Tournament'}
                     <ChevronRight className="ml-1 h-3 w-3" />
@@ -297,7 +297,7 @@ const NewMatchupNotification = ({ notification }: NotificationProps) => {
             <div className="flex-1 ">
               <p className="text-sm font-medium leading-none line-clamp-">
                 You have a new opponent in {''}
-                <span className="font-bold text-yellow-500">
+                <span className="font-bold text-secondary">
                   {notification.message}
                 </span>
                 {'!'}
@@ -313,7 +313,7 @@ const NewMatchupNotification = ({ notification }: NotificationProps) => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-xs hover:bg-transparent"
+                    className="text-xs hover:bg-transparent hover:text-foreground"
                   >
                     {'Show Tournament'}
                     <ChevronRight className="ml-1 h-3 w-3" />

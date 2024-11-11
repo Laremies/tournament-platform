@@ -49,10 +49,10 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
       <CardContent className="pt-6 space-y-4">
         <p
           className={clsx('overflow-hidden text-ellipsis', {
-            'text-green-600':
+            'text-green-700':
               actualMatch.winner_id &&
               actualMatch.home_player_id === actualMatch.winner_id,
-            'text-red-600 text-opacity-75':
+            'text-destructive':
               actualMatch.winner_id &&
               actualMatch.home_player_id !== actualMatch.winner_id,
             'text-muted-foreground': !actualMatch.home_player_id,
@@ -65,10 +65,10 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
         <Separator />
         <p
           className={clsx('overflow-hidden text-ellipsis', {
-            'text-green-600':
+            'text-green-700':
               actualMatch.winner_id &&
               actualMatch.away_player_id === actualMatch.winner_id,
-            'text-red-600 text-opacity-75':
+            'text-destructive':
               actualMatch.winner_id &&
               actualMatch.away_player_id !== actualMatch.winner_id,
             'text-muted-foreground': !actualMatch.away_player_id,
@@ -82,8 +82,8 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
       {(userIsPlayer || creatorIsOverriding) && (
         <div
           className={clsx(
-            'absolute inset-0 bg-purple-600 bg-opacity-0 hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center',
-            userIsPlayer && 'border-4 border-purple-600'
+            'absolute inset-0 bg-accent/0 hover:bg-accent/50 transition-all duration-300 flex items-center justify-center',
+            userIsPlayer && 'border-4 border-accent'
           )}
         >
           <MatchModal

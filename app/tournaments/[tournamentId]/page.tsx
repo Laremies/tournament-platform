@@ -98,7 +98,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center">
-                <Info className="mr-2 h-4 w-4 text-primary" />
+                <Info className="mr-2 h-4 w-4 text-primary dark:text-accent" />
                 <span>
                   Tournament Status:{' '}
                   {tournament.finished
@@ -109,14 +109,14 @@ const TournamentPage = async ({ params }: { params: Params }) => {
                 </span>
               </div>
               <div className="flex items-center">
-                <Users className="mr-2 h-4 w-4 text-primary" />
+                <Users className="mr-2 h-4 w-4 text-primary dark:text-accent" />
                 <span>
                   Max player amount:{' '}
                   {tournament.max_player_count || 'Unlimited'}
                 </span>
               </div>
               <div className="flex items-center">
-                <Crown className="mr-2 h-4 w-4 text-primary" />
+                <Crown className="mr-2 h-4 w-4 text-primary dark:text-accent" />
                 <span>Creator: {creatorUsername}</span>
               </div>
               {!isUserParticipant && !tournament.started && (

@@ -88,7 +88,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                               <p>Players: {tournament.player_count}</p>
                               <span>
                                 {tournament.finished
-                                  ? 'Tournament ended'
+                                  ? 'Tournament finished'
                                   : tournament.started
                                     ? 'Ongoing'
                                     : 'Waiting for players'}
@@ -100,7 +100,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                             <Link href={`/tournaments/${tournament.id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded"
+                                className="mt-2 px-4 py-2 rounded dark:text-accent"
                               >
                                 View Tournament
                               </Button>
@@ -138,7 +138,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                               </p>
                               <p>
                                 Winner:{' '}
-                                <span className="font-bold text-blue-500">
+                                <span className="font-bold text-secondary">
                                   {match.winnerId === match.homePlayerId
                                     ? match.homePlayerUsername
                                     : match.awayPlayerUsername}
@@ -148,7 +148,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                             <Link href={`/tournaments/${match.tournament_id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded"
+                                className="mt-2 px-4 py-2 rounded dark:text-accent"
                               >
                                 View Tournament
                               </Button>
@@ -222,7 +222,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-500" />
+                      <Swords className="w-4 h-4 text-green-700" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}

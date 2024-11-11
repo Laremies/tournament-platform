@@ -8,14 +8,14 @@ import Link from 'next/link';
 export default function Login({ searchParams }: { searchParams: Message }) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md p-8 space-y-8 rounded-xl shadow-2xl border border-primary/10 mt-[-40vh]">
+      <div className="w-full max-w-md p-8 space-y-8 rounded-xl shadow-2xl border mt-[-40vh] dark:bg-gradient-to-b dark:from-primary/20 dark:to-background">
         <form className="flex flex-col space-y-6">
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-bold tracking-tight">Sign in</h1>
             <p className="text-sm text-muted-foreground">
               {"Don't have an account? "}
               <Link
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-primary hover:underline dark:text-accent"
                 href="/sign-up"
               >
                 Sign up

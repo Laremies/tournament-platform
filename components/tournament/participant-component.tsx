@@ -57,7 +57,7 @@ export const Participant: React.FC<ParticipantProps> = ({
     if (success) {
       toast({
         title: 'Player Kicked',
-        description: `Kicked ${participant.username} from the game.`,
+        description: `Kicked ${participant.username} from the tournament.`,
       });
     } else {
       toast({
