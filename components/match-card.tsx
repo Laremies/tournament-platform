@@ -33,7 +33,7 @@ const MatchCard: React.FC<MatchCardProps> = async ({ match }) => {
           {opponentName.username ? (
             <Link
               href={`/profile/${opponentId}`}
-              className="text-destructive hover:underline"
+              className="text-accent hover:underline"
             >
               {opponentName.username}
             </Link>
@@ -53,10 +53,8 @@ const MatchCard: React.FC<MatchCardProps> = async ({ match }) => {
         {match.tournaments.name} - Round {match.round}
       </CardContent>
       <CardFooter className="w-full">
-        <Link href={`/tournaments/${match.tournament_id}`} className='w-full'>
-          <Button className='w-full'>
-            View Tournament
-          </Button>
+        <Link href={`/tournaments/${match.tournament_id}`} className="w-full">
+          <Button className="w-full">View Tournament</Button>
         </Link>
       </CardFooter>
     </Card>

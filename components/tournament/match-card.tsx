@@ -49,7 +49,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
       <CardContent className="pt-6 space-y-4">
         <p
           className={clsx('overflow-hidden text-ellipsis', {
-            'text-green-700':
+            'text-green-700 dark:text-green-400':
               actualMatch.winner_id &&
               actualMatch.home_player_id === actualMatch.winner_id,
             'text-destructive':
@@ -65,7 +65,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
         <Separator />
         <p
           className={clsx('overflow-hidden text-ellipsis', {
-            'text-green-700':
+            'text-green-700 dark:text-green-400':
               actualMatch.winner_id &&
               actualMatch.away_player_id === actualMatch.winner_id,
             'text-destructive':

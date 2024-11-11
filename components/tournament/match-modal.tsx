@@ -119,7 +119,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
               <div>
                 <div
                   className={clsx({
-                    'text-green-700 font-semibold':
+                    'text-green-700 dark:text-green-400 font-semibold':
                       winner && winner === homePlayer.userId,
                     'text-destructive':
                       winner && winner !== homePlayer.userId,
@@ -151,7 +151,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
               <div>
                 <div
                   className={clsx({
-                    'text-green-700 font-semibold':
+                    'text-green-700 dark:text-green-400 font-semibold':
                       winner && winner === awayPlayer.userId,
                     'text-destructive':
                       winner && winner !== awayPlayer.userId,

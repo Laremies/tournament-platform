@@ -74,11 +74,17 @@ export default async function Profile() {
                             <div>
                               <p>Players: {tournament.player_count}</p>
                               <span>
-                                {tournament.finished
-                                  ? 'Tournament finished'
-                                  : tournament.started
-                                    ? 'Ongoing'
-                                    : 'Waiting for players'}
+                                {tournament.finished ? (
+                                  <span className="text-destructive">
+                                    Tournament finished
+                                  </span>
+                                ) : tournament.started ? (
+                                  <span className="text-primary">Ongoing</span>
+                                ) : (
+                                  <span className="text-secondary">
+                                    Waiting for players
+                                  </span>
+                                )}
                               </span>
                               <p className="text-muted-foreground">
                                 {tournament.description}
@@ -87,7 +93,7 @@ export default async function Profile() {
                             <Link href={`/tournaments/${tournament.id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded dark:text-accent"
+                                className="mt-2 px-4 py-2 rounded"
                               >
                                 View Tournament
                               </Button>
@@ -134,7 +140,7 @@ export default async function Profile() {
                             <Link href={`/tournaments/${match.tournament_id}`}>
                               <Button
                                 variant="link"
-                                className="mt-2 px-4 py-2 rounded dark:text-accent"
+                                className="mt-2 px-4 py-2 rounded"
                               >
                                 View Tournament
                               </Button>
@@ -208,7 +214,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-700" />
+                      <Swords className="w-4 h-4 text-green-700 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}

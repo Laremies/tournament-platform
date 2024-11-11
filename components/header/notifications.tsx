@@ -214,7 +214,7 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
           <div className="flex-1 ">
             <p className="text-sm font-medium leading-none line-clamp-">
               New message from{' '}
-              <span className="font-bold text-primary dark:text-accent">
+              <span className="font-bold text-accent">
                 {notification.username}
               </span>
             </p>
@@ -254,7 +254,7 @@ const TournamentStartNotification = ({ notification }: NotificationProps) => {
             <div className="flex-1 ">
               <p className="text-sm font-medium leading-none line-clamp-">
                 Tournament {''}
-                <span className="font-bold text-green-700">
+                <span className="font-bold text-destructive">
                   {notification.message}
                 </span>{' '}
                 just started!
@@ -297,7 +297,7 @@ const NewMatchupNotification = ({ notification }: NotificationProps) => {
             <div className="flex-1 ">
               <p className="text-sm font-medium leading-none line-clamp-">
                 You have a new opponent in {''}
-                <span className="font-bold text-secondary">
+                <span className="font-bold text-destructive">
                   {notification.message}
                 </span>
                 {'!'}

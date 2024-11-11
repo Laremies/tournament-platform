@@ -113,7 +113,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
       <CardHeader className="flex flex-row items-center justify-between p-4 ">
         <div className="flex items-center gap-2">
           <Link href={`/profile/${receiverId}`}>
-            <h2 className="text-lg font-semibold">{username}</h2>
+            <h2 className="text-lg font-semibold text-accent">{username}</h2>
           </Link>
           {username !== '' && (
             <>
