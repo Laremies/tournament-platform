@@ -113,7 +113,7 @@ export const PrivateChat = ({ user }: { user: User }) => {
       <CardHeader className="flex flex-row items-center justify-between p-4 ">
         <div className="flex items-center gap-2">
           <Link href={`/profile/${receiverId}`}>
-            <h2 className="text-lg font-semibold">{username}</h2>
+            <h2 className="text-lg font-semibold text-accent">{username}</h2>
           </Link>
           {username !== '' && (
             <>
@@ -131,13 +131,12 @@ export const PrivateChat = ({ user }: { user: User }) => {
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-full text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+          className="rounded-full"
           onClick={() => {
             setChatOpen(false);
           }}
         >
-          <X className="h-6 w-6 text-black dark:text-white" />
-          <span className="sr-only">Close</span>
+          <X className="h-6 w-6" />
         </Button>
       </CardHeader>
       <Separator />

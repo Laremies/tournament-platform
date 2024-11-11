@@ -77,7 +77,7 @@ export default function ProfileComments({
                     <div className="flex-1 space-y-1">
                       <div className="flex justify-between">
                         <Link href={`/profile/${comment.sender_id}`}>
-                          <p className=" font-medium leading-none">
+                          <p className=" font-medium leading-none text-accent">
                             {comment.users.username}
                           </p>
                         </Link>

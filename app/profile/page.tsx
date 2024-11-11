@@ -74,11 +74,17 @@ export default async function Profile() {
                             <div>
                               <p>Players: {tournament.player_count}</p>
                               <span>
-                                {tournament.finished
-                                  ? 'Tournament ended'
-                                  : tournament.started
-                                    ? 'Ongoing'
-                                    : 'Waiting for players'}
+                                {tournament.finished ? (
+                                  <span className="text-destructive">
+                                    Tournament finished
+                                  </span>
+                                ) : tournament.started ? (
+                                  <span className="text-primary">Ongoing</span>
+                                ) : (
+                                  <span className="text-secondary">
+                                    Waiting for players
+                                  </span>
+                                )}
                               </span>
                               <p className="text-muted-foreground">
                                 {tournament.description}
@@ -124,7 +130,7 @@ export default async function Profile() {
                               </p>
                               <p>
                                 Winner:{' '}
-                                <span className="font-bold text-blue-500">
+                                <span className="font-bold text-secondary">
                                   {match.winnerId === match.homePlayerId
                                     ? match.homePlayerUsername
                                     : match.awayPlayerUsername}
@@ -199,7 +205,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <Trophy className="w-4 h-4 text-secondary" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.wonCount}
@@ -208,7 +214,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-500" />
+                      <Swords className="w-4 h-4 text-green-700 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}
@@ -217,7 +223,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-red-500" />
+                      <Swords className="w-4 h-4 text-destructive" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesLost}

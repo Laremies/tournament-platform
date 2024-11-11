@@ -58,10 +58,10 @@ export const NextMatch: React.FC<NextMatchProps> = ({ user, matches }) => {
           </Badge>
           {opponent && opponent.userId !== 'tbd' ? (
             <>
-              <div className="flex flex-col items-center rounded-lg border-4 border-purple-600 p-4 space-y-2 mb-2">
+              <div className="flex flex-col items-center rounded-lg border-4 border-accent p-4 space-y-2 mb-2">
                 <div className="flex items-center justify-center">
-                  <Swords className="mr-2 h-4 w-4 text-primary" />
-                  <span className="text-primary">Your Opponent</span>
+                  <Swords className="mr-2 h-4 w-4" />
+                  <span>Your Opponent</span>
                 </div>
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={opponent.avatar} alt={opponent.username} />

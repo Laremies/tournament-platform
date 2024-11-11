@@ -17,14 +17,14 @@ export default async function Page() {
             Organize and Compete in Tournaments with Ease
           </h1>
           <p className="text-xl mb-8 text-muted-foreground">
-            Create, join, and manage tournaments for any game or sport. Connect
-            with players worldwide and showcase your skills.
+            Create, join, and manage tournaments for any game or sport.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4"></div>
         </div>
       </section>
 
       <HowItWorksSection />
+
       <TournamentsSection
         title="Popular Tournaments"
         tournaments={popularTournaments}
@@ -35,8 +35,8 @@ export default async function Page() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8">Ready to Get Started?</h2>
           <p className="text-xl mb-8 text-muted-foreground">
-            Join thousands of players and organizers on TournamentPlatform
-            today.
+            Join your friends on TournamentPlatform
+            today and show your skills!
           </p>
           <SignUpButton />
         </div>

@@ -115,7 +115,7 @@ export default function AccessRequestList({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-8 h-8 text-green-500 hover:text-green-700 hover:bg-green-100"
+                      className="w-8 h-8 text-green-500 hover:text-green-700 dark:hover:text-green-400 hover:bg-green-100"
                       onClick={() => handleAccept(request.id)}
                     >
                       <Check className="w-4 h-4" />
@@ -124,7 +124,7 @@ export default function AccessRequestList({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-8 h-8 text-red-500 hover:text-red-700 hover:bg-red-100"
+                      className="w-8 h-8 text-red-500 hover:text-destructive hover:bg-red-100"
                       onClick={() => handleReject(request.id)}
                     >
                       <X className="w-4 h-4" />

@@ -17,15 +17,15 @@ interface TournamentCardProps {
 
 const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
   const statusColors = {
-    finished: 'bg-blue-500 text-white m-1',
-    started: 'bg-purple-500 text-white m-1',
-    waiting: 'bg-green-500 text-white m-1',
+    finished: 'bg-destructive text-destructive-foreground m-1',
+    started: 'bg-primary text-primary-foreground m-1',
+    waiting: 'bg-secondary text-secondary-foreground m-1',
   };
   const getStatusBadge = (tournament: Tournament) => {
     if (tournament.finished) {
       return (
         <Badge variant="outline" className={statusColors.finished}>
-          Ended
+          Finished
         </Badge>
       );
     } else if (tournament.started) {
@@ -47,7 +47,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
     <Card className="flex flex-col h-full shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="flex justify-between items-start text-lg">
-          <span className="overflow-hidden break-words mr-2">
+          <span className="overflow-hidden text-destructive break-words mr-2">
             {tournament.name}
           </span>
           {getStatusBadge(tournament)}
@@ -67,7 +67,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
           <Users size={16} className="mr-1" />
         </div>
         <Link href={`/tournaments/${tournament.id}`} className="w-full">
-          <Button variant="secondary" className="w-full">
+          <Button className="w-full">
             View Tournament
           </Button>
         </Link>

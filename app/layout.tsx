@@ -33,14 +33,14 @@ export default async function RootLayout({
       <body className="bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
           <ChatProvider>
             <main className="min-h-screen flex flex-col items-center">
               <div className="flex-1 w-full flex flex-col items-center">
-                <nav className="w-full flex space-between border-b border-b-foreground/10 h-16">
+                <nav className="w-full flex space-between border-b border-b-foreground/10 h-16 text">
                   <div className="w-full flex justify-between items-center p-3 px-5 text-base">
                     <div className="flex gap-5 items-center font-semibold">
                       <Link

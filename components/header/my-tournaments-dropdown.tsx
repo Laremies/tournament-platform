@@ -55,7 +55,7 @@ export default function TournamentDropdown({
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">My Tournaments</Button>
+        <Button>My Tournaments</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>My Tournaments</DropdownMenuLabel>

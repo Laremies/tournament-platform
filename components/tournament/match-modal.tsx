@@ -88,6 +88,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
         <DialogTrigger asChild>
           <Button
             variant="outline"
+            size="sm"
             className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
           >
             {creatorIsOverriding ? 'Override Match Results' : 'Match Results'}
@@ -118,9 +119,9 @@ export const MatchModal: React.FC<MatchModalProps> = ({
               <div>
                 <div
                   className={clsx({
-                    'text-green-600 font-semibold':
+                    'text-green-700 dark:text-green-400 font-semibold':
                       winner && winner === homePlayer.userId,
-                    'text-red-600 text-opacity-75':
+                    'text-destructive':
                       winner && winner !== homePlayer.userId,
                     'text-muted-foreground': !homePlayer.userId,
                   })}
@@ -150,9 +151,9 @@ export const MatchModal: React.FC<MatchModalProps> = ({
               <div>
                 <div
                   className={clsx({
-                    'text-green-600 font-semibold':
+                    'text-green-700 dark:text-green-400 font-semibold':
                       winner && winner === awayPlayer.userId,
-                    'text-red-600 text-opacity-75':
+                    'text-destructive':
                       winner && winner !== awayPlayer.userId,
                     'text-muted-foreground': !awayPlayer.userId,
                   })}
@@ -208,7 +209,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
             >
               Cancel
             </Button>
-            <Button className="bg-green-600" onClick={handleConfirmWinner}>
+            <Button className="bg-primary" onClick={handleConfirmWinner}>
               Confirm
             </Button>
           </DialogFooter>
