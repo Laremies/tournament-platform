@@ -136,7 +136,7 @@ export function ChatBox({
         {messages.map((message) => (
           <div key={message.id}>
             <p>
-              <span className="font-bold text-accent">
+              <span className="font-bold text-secondary">
                 {message.users.username}
               </span>
               : {message.message}

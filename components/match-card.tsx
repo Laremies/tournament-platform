@@ -33,7 +33,7 @@ const MatchCard: React.FC<MatchCardProps> = async ({ match }) => {
           {opponentName.username ? (
             <Link
               href={`/profile/${opponentId}`}
-              className="text-accent hover:underline"
+              className="text-primary hover:underline"
             >
               {opponentName.username}
             </Link>

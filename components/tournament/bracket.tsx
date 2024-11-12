@@ -24,8 +24,7 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
     <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted flex flex-col">
       <CardHeader>
         <CardTitle>
-          <span className="text-destructive">{tournament.name}</span>{' '}
-          <CopyToClipboardButton />
+          <span>{tournament.name}</span> <CopyToClipboardButton />
         </CardTitle>
 
         <CardDescription className="max-w-prose">
