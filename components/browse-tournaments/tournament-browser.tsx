@@ -75,7 +75,9 @@ export default function TournmamentsBrowser({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
-            <SelectItem value="waiting_for_players">Waiting For Players</SelectItem>
+            <SelectItem value="waiting_for_players">
+              Waiting For Players
+            </SelectItem>
             <SelectItem value="ongoing">Ongoing</SelectItem>
             <SelectItem value="ended">Finished</SelectItem>
           </SelectContent>

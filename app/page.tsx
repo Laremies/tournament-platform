@@ -35,8 +35,7 @@ export default async function Page() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8">Ready to Get Started?</h2>
           <p className="text-xl mb-8 text-muted-foreground">
-            Join your friends on TournamentPlatform
-            today and show your skills!
+            Join your friends on TournamentPlatform today and show your skills!
           </p>
           <SignUpButton />
         </div>

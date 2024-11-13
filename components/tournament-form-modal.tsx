@@ -59,7 +59,7 @@ export default function TournamentFormModal({
       {user && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary">
+            <Button variant="outline">
               <Zap className="h-4 w-4 mr-2" /> Create Tournament
             </Button>
           </DialogTrigger>

@@ -214,7 +214,7 @@ const NewMessageNotification = ({ notification }: NotificationProps) => {
           <div className="flex-1 ">
             <p className="text-sm font-medium leading-none line-clamp-">
               New message from{' '}
-              <span className="font-bold text-accent">
+              <span className="font-bold text-primary">
                 {notification.username}
               </span>
             </p>

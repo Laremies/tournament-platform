@@ -47,7 +47,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
     <Card className="flex flex-col h-full shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="flex justify-between items-start text-lg">
-          <span className="overflow-hidden text-destructive break-words mr-2">
+          <span className="overflow-hidden  break-words mr-2">
             {tournament.name}
           </span>
           {getStatusBadge(tournament)}
@@ -67,9 +67,7 @@ const TournamentCard: React.FC<TournamentCardProps> = ({ tournament }) => {
           <Users size={16} className="mr-1" />
         </div>
         <Link href={`/tournaments/${tournament.id}`} className="w-full">
-          <Button className="w-full">
-            View Tournament
-          </Button>
+          <Button className="w-full">View Tournament</Button>
         </Link>
       </CardFooter>
     </Card>
