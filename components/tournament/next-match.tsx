@@ -22,24 +22,27 @@ export const NextMatch: React.FC<NextMatchProps> = ({ user, matches }) => {
       (user.id === match.home_player_id || user.id === match.away_player_id)
   );
 
-  const opponent: { userId: string; username: string; avatar: string } | null =
-    nextMatch
-      ? user.id === nextMatch.home_player_id
-        ? {
-            userId: nextMatch.away_player_id || 'tbd',
-            username: nextMatch.away_player_id
-              ? nextMatch.awayPlayerUsername
-              : 'TBD',
-            avatar: nextMatch.awayPlayerAvatarUrl || '',
-          }
-        : {
-            userId: nextMatch.home_player_id || 'tbd',
-            username: nextMatch.home_player_id
-              ? nextMatch.homePlayerUsername
-              : 'TBD',
-            avatar: nextMatch.homePlayerAvatarUrl || '',
-          }
-      : null;
+  const opponent: {
+    userId: string;
+    username: string | undefined;
+    avatar: string;
+  } | null = nextMatch
+    ? user.id === nextMatch.home_player_id
+      ? {
+          userId: nextMatch.away_player_id || 'tbd',
+          username: nextMatch.away_player_id
+            ? nextMatch.awayPlayerUsername
+            : 'TBD',
+          avatar: nextMatch.awayPlayerAvatarUrl || '',
+        }
+      : {
+          userId: nextMatch.home_player_id || 'tbd',
+          username: nextMatch.home_player_id
+            ? nextMatch.homePlayerUsername
+            : 'TBD',
+          avatar: nextMatch.homePlayerAvatarUrl || '',
+        }
+    : null;
 
   const handleSendMessage = (opponentId: string) => {
     setChatOpen(true);
@@ -70,7 +73,7 @@ export const NextMatch: React.FC<NextMatchProps> = ({ user, matches }) => {
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={opponent.avatar} alt={opponent.username} />
                   <AvatarFallback>
-                    {opponent.username.charAt(0).toUpperCase()}
+                    {opponent.username?.charAt(0).toUpperCase() ?? 'T'}
                   </AvatarFallback>
                 </Avatar>
                 <h3>{opponent.username}</h3>

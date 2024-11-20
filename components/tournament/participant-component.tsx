@@ -25,7 +25,11 @@ import clsx from 'clsx';
 import Link from 'next/link';
 
 interface ParticipantProps {
-  participant: { userId: string; username: string; avatar_url?: string };
+  participant: {
+    userId: string;
+    username: string | undefined;
+    avatar_url?: string;
+  };
   isCreator?: boolean | null;
   tournamentId: string;
   present: boolean;
@@ -76,7 +80,9 @@ export const Participant: React.FC<ParticipantProps> = ({
         <Avatar>
           <AvatarImage src={participant.avatar_url} alt={''} />
           <AvatarFallback>
-            {participant.username.charAt(0).toUpperCase()}
+            {participant.username
+              ? participant.username.charAt(0).toUpperCase()
+              : 'T'}
           </AvatarFallback>
         </Avatar>
         {present && (
