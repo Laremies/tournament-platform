@@ -32,7 +32,7 @@ export const Creator: React.FC<CreatorProps> = ({
       <span>{'Creator: '}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <span className="font-medium ml-2 cursor-pointer">
+          <span className="ml-2 cursor-pointer text-secondary ">
             {publicCreatorData.username}
           </span>
         </DropdownMenuTrigger>
