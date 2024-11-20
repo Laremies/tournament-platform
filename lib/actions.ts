@@ -172,7 +172,7 @@ export async function submitTournament(formData: FormData) {
     description: formData.get('description') as string,
     creator_id: userObject.data.user.id as string,
     max_player_count: parseInt(formData.get('maxPlayers') as string),
-    private: formData.get('isPrivate') === 'on',
+    private: formData.get('isPrivate'),
   };
 
   const { data: tournament, error } = await supabase

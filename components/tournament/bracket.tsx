@@ -27,7 +27,8 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
           <span>{tournament.name}</span> <CopyToClipboardButton />
         </CardTitle>
 
-        <CardDescription className="max-w-prose">
+        {/* the description should maybe be made collapsible */}
+        <CardDescription className="whitespace-pre-wrap max-w-[80%]">
           {tournament.description}
         </CardDescription>
       </CardHeader>
