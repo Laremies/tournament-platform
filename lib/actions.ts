@@ -255,8 +255,7 @@ export async function getAllUserCurrentTournaments() {
     .from('tournaments')
     .select('*')
     .eq('creator_id', userObject.data.user.id)
-    .eq('finished', false)
-    .order('created_at', { ascending: false });
+    .eq('finished', false);
 
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
@@ -269,12 +268,26 @@ export async function getAllUserCurrentTournaments() {
   }
 
   const joinedTournaments = joined.flatMap((item) => item.tournaments);
+  const uniqueTournaments = new Map<string, Tournament>();
 
+  ownTournaments.forEach((tournament) => {
+    uniqueTournaments.set(tournament.id, tournament);
+  });
+
+  joinedTournaments.forEach((tournament) => {
+    if (!uniqueTournaments.has(tournament.id)) {
+      uniqueTournaments.set(tournament.id, tournament);
+    }
+  });
+
+  const tournaments = Array.from(uniqueTournaments.values());
+  tournaments.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
   return {
-    tournaments: [
-      ...(ownTournaments as Tournament[]),
-      ...(joinedTournaments as Tournament[]),
-    ],
+    tournaments: tournaments,
     error: null,
   };
 }

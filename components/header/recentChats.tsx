@@ -80,7 +80,7 @@ export default function RecentChatsList({ user }: { user: User }) {
               >
                 <div className="flex flex-col w-full">
                   <div className="flex justify-between items-baseline">
-                    <span className="font-medium text-primary">
+                    <span className="font-medium text-primary truncate w-[60%]">
                       {chat.username}
                     </span>
                     <span className="text-xs text-muted-foreground">
