@@ -99,7 +99,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                                   </span>
                                 )}
                               </span>
-                              <p className="text-muted-foreground">
+                              <p className="text-muted-foreground line-clamp-2">
                                 {tournament.description}
                               </p>
                             </div>

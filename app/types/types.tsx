@@ -15,8 +15,8 @@ export interface Tournament {
 }
 
 export interface SingleEliminationMatch {
-  homePlayerUsername?: string;
-  awayPlayerUsername?: string;
+  homePlayerUsername: string;
+  awayPlayerUsername: string;
   id?: string;
   tournament_id: string;
   round: number;

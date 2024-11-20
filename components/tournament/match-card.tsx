@@ -33,7 +33,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
     return (
       <Card className="w-[200px]">
         <CardContent className="pt-6 space-y-4">
-          <p className="text-pretty text-muted-foreground">
+          <p className="text-pretty text-muted-foreground truncate max-w-full">
             {actualMatch.home_player_id == actualMatch.winner_id
               ? actualMatch.homePlayerUsername
               : actualMatch.awayPlayerUsername}{' '}
@@ -48,7 +48,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
     <Card className="w-[200px] relative overflow-hidden group">
       <CardContent className="pt-6 space-y-4">
         <p
-          className={clsx('overflow-hidden text-ellipsis', {
+          className={clsx('truncate max-w-full', {
             'text-green-700 dark:text-green-400':
               actualMatch.winner_id &&
               actualMatch.home_player_id === actualMatch.winner_id,
@@ -58,13 +58,11 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
             'text-muted-foreground': !actualMatch.home_player_id,
           })}
         >
-          {actualMatch.homePlayerUsername
-            ? actualMatch.homePlayerUsername
-            : 'TBD'}
+          {actualMatch.home_player_id ? actualMatch.homePlayerUsername : 'TBD'}
         </p>
         <Separator />
         <p
-          className={clsx('overflow-hidden text-ellipsis', {
+          className={clsx('truncate max-w-full', {
             'text-green-700 dark:text-green-400':
               actualMatch.winner_id &&
               actualMatch.away_player_id === actualMatch.winner_id,
@@ -74,9 +72,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
             'text-muted-foreground': !actualMatch.away_player_id,
           })}
         >
-          {actualMatch.awayPlayerUsername
-            ? actualMatch.awayPlayerUsername
-            : 'TBD'}
+          {actualMatch.away_player_id ? actualMatch.awayPlayerUsername : 'TBD'}
         </p>
       </CardContent>
       {(userIsPlayer || creatorIsOverriding) && (

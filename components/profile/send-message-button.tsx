@@ -19,7 +19,7 @@ export default function SendMessageButton({ userId }: { userId: string }) {
   };
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

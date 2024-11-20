@@ -172,7 +172,7 @@ export async function submitTournament(formData: FormData) {
     description: formData.get('description') as string,
     creator_id: userObject.data.user.id as string,
     max_player_count: parseInt(formData.get('maxPlayers') as string),
-    private: formData.get('isPrivate') === 'on',
+    private: formData.get('isPrivate'),
   };
 
   const { data: tournament, error } = await supabase
@@ -255,8 +255,7 @@ export async function getAllUserCurrentTournaments() {
     .from('tournaments')
     .select('*')
     .eq('creator_id', userObject.data.user.id)
-    .eq('finished', false)
-    .order('created_at', { ascending: false });
+    .eq('finished', false);
 
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
@@ -269,12 +268,26 @@ export async function getAllUserCurrentTournaments() {
   }
 
   const joinedTournaments = joined.flatMap((item) => item.tournaments);
+  const uniqueTournaments = new Map<string, Tournament>();
 
+  ownTournaments.forEach((tournament) => {
+    uniqueTournaments.set(tournament.id, tournament);
+  });
+
+  joinedTournaments.forEach((tournament) => {
+    if (!uniqueTournaments.has(tournament.id)) {
+      uniqueTournaments.set(tournament.id, tournament);
+    }
+  });
+
+  const tournaments = Array.from(uniqueTournaments.values());
+  tournaments.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
   return {
-    tournaments: [
-      ...(ownTournaments as Tournament[]),
-      ...(joinedTournaments as Tournament[]),
-    ],
+    tournaments: tournaments,
     error: null,
   };
 }
@@ -551,6 +564,9 @@ export async function UpdateUsername(newName: string, userid: string) {
 }
 
 export async function getUsername(userId: string | undefined) {
+  if (!userId) {
+    return { username: 'non-logged-in-user' };
+  }
   const supabase = createClient();
 
   const { data } = await supabase
@@ -562,14 +578,21 @@ export async function getUsername(userId: string | undefined) {
   return { username: data?.username as string };
 }
 
-//todo: this and getUsername gives a lot of unlogged errors when user is not logged in.
 export async function getPublicUserData(userid: string | undefined) {
+  if (!userid) {
+    // Return a default PublicUser object if userid is undefined
+    return { data: {} as PublicUser };
+  }
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .select('*')
     .eq('id', userid)
     .single();
+
+  if (error) {
+    console.error(error);
+  }
 
   return { data: data as PublicUser };
 }

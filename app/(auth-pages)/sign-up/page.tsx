@@ -40,6 +40,7 @@ export default function Signup({ searchParams }: { searchParams: Message }) {
                 name="username"
                 type="username"
                 minLength={3}
+                maxLength={20}
                 required
               />
             </div>

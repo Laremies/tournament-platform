@@ -15,12 +15,26 @@ const EditableUsername: React.FC<EditableUsernameProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(username);
   const [currentName, setCurrentName] = useState(username);
+  const [error, setError] = useState('');
 
   const handleSaveName = async () => {
+    if (tempName.length < 4) {
+      setError('Username must be more than 3 letters.');
+      return;
+    }
+    if (tempName === currentName) {
+      setIsEditing(false);
+      return;
+    }
+    if (tempName.length > 20) {
+      setError('Username must be less than 20 letters.');
+      return;
+    }
     try {
       await UpdateUsername(tempName, `${userid}`);
       setCurrentName(tempName);
       setIsEditing(false);
+      setError('');
     } catch (error) {
       console.error('Error updating username:', error);
       alert('Failed to update username.');
@@ -32,6 +46,7 @@ const EditableUsername: React.FC<EditableUsernameProps> = ({
   const handleCancel = () => {
     setIsEditing(false);
     setTempName(currentName);
+    setError('');
   };
 
   return (
@@ -43,8 +58,10 @@ const EditableUsername: React.FC<EditableUsernameProps> = ({
             value={tempName}
             onChange={(e) => setTempName(e.target.value)}
             className="text-2xl font-bold"
-            aria-label="Edit name"
+            aria-label="Edit username"
+            maxLength={20}
           />
+          {error && <p className="text-red-500">{error}</p>}
           <div className="space-x-2">
             <Button onClick={handleSaveName} size="sm">
               Save
@@ -56,9 +73,9 @@ const EditableUsername: React.FC<EditableUsernameProps> = ({
         </>
       ) : (
         <>
-          <h2 className="text-2xl font-bold">{currentName}</h2>
-          <Button onClick={handleEdit} variant="outline" size="sm">
-            Edit Name
+          <p className="text-2xl font-bold">{currentName}</p>
+          <Button onClick={handleEdit} size="sm">
+            Edit username
           </Button>
         </>
       )}
