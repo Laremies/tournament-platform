@@ -30,7 +30,7 @@ const MatchCard: React.FC<MatchCardProps> = async ({ match }) => {
     <Card className="flex flex-col justify-between">
       <CardHeader>
         <CardTitle className="line-clamp-1">
-          {opponentName.username ? (
+          {opponentId ? (
             <Link
               href={`/profile/${opponentId}`}
               className="text-primary hover:underline"
@@ -38,11 +38,13 @@ const MatchCard: React.FC<MatchCardProps> = async ({ match }) => {
               {opponentName.username}
             </Link>
           ) : (
-            <p className="text-muted-foreground">Opponent To Be Determinded</p>
+            <p className="text-muted-foreground pb-5">
+              Opponent To Be Determinded
+            </p>
           )}
         </CardTitle>
         <CardDescription className="flex items-center">
-          {opponentName.username && (
+          {opponentId && (
             <>
               <Swords className="h-4 w-4 mr-2" /> <span>Opponent</span>
             </>

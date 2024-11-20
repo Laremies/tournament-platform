@@ -58,9 +58,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
             'text-muted-foreground': !actualMatch.home_player_id,
           })}
         >
-          {actualMatch.homePlayerUsername
-            ? actualMatch.homePlayerUsername
-            : 'TBD'}
+          {actualMatch.home_player_id ? actualMatch.homePlayerUsername : 'TBD'}
         </p>
         <Separator />
         <p
@@ -74,9 +72,7 @@ export const MatchCard: React.FC<MatchCardClientProps> = ({
             'text-muted-foreground': !actualMatch.away_player_id,
           })}
         >
-          {actualMatch.awayPlayerUsername
-            ? actualMatch.awayPlayerUsername
-            : 'TBD'}
+          {actualMatch.away_player_id ? actualMatch.awayPlayerUsername : 'TBD'}
         </p>
       </CardContent>
       {(userIsPlayer || creatorIsOverriding) && (

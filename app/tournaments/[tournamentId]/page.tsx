@@ -5,8 +5,8 @@ import {
   getTournamentById,
   getTournamentPlayers,
   getUserAccessRequest,
-  getUsername,
   getTournamentMatches,
+  getPublicUserData,
 } from '@/lib/actions';
 import { Info, Users, Crown } from 'lucide-react';
 import ChatComponent from '@/components/tournament/chat-component';
@@ -17,6 +17,7 @@ import { ParticipantList } from '@/components/tournament/participant-list';
 import { NextMatch } from '@/components/tournament/next-match';
 import { Bracket } from '@/components/tournament/bracket';
 import { WinnerCard } from '@/components/tournament/winner-card';
+import { Creator } from '@/components/tournament/creator';
 
 interface Params {
   tournamentId: string;
@@ -45,7 +46,7 @@ const TournamentPage = async ({ params }: { params: Params }) => {
 
   const isUserCreator = user && user.id === tournament.creator_id;
 
-  const { username: creatorUsername } = await getUsername(
+  const { data: publicCreatorData } = await getPublicUserData(
     tournament.creator_id
   );
 
@@ -117,7 +118,9 @@ const TournamentPage = async ({ params }: { params: Params }) => {
               </div>
               <div className="flex items-center">
                 <Crown className="mr-2 h-4 w-4 text-primary" />
-                <span>Creator: {creatorUsername}</span>
+                <>
+                  <Creator publicCreatorData={publicCreatorData} user={user} />
+                </>
               </div>
               {!isUserParticipant && !tournament.started && (
                 <JoinButton user={user} tournamentId={id} />

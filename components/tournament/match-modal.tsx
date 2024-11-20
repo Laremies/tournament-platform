@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import {
   Dialog,
@@ -16,6 +17,7 @@ import { Participant } from './participant-component';
 import { useToast } from '@/hooks/use-toast';
 import clsx from 'clsx';
 import { overrideMatchResult, submitMatchResult } from '@/lib/actions';
+import { Loader2 } from 'lucide-react';
 
 interface MatchModalProps {
   match: SingleEliminationMatch;
@@ -33,15 +35,16 @@ export const MatchModal: React.FC<MatchModalProps> = ({
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [pendingWinner, setPendingWinner] = useState<string | null>(null);
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   const homePlayer = {
     userId: match.home_player_id || 'tbd',
-    username: match.homePlayerUsername || 'TBD',
+    username: match.home_player_id ? match.homePlayerUsername : 'TBD',
     avatar_url: match.homePlayerAvatarUrl,
   };
   const awayPlayer = {
     userId: match.away_player_id || 'tbd',
-    username: match.awayPlayerUsername || 'TBD',
+    username: match.away_player_id ? match.awayPlayerUsername : 'TBD',
     avatar_url: match.awayPlayerAvatarUrl,
   };
 
@@ -50,6 +53,7 @@ export const MatchModal: React.FC<MatchModalProps> = ({
 
   const handleSetWinner = async (winnerId: string) => {
     if (match.id) {
+      setLoading(true);
       try {
         if (creatorIsOverriding && winnerId !== match.winner_id) {
           await overrideMatchResult(match.tournament_id, match, winnerId);
@@ -70,6 +74,8 @@ export const MatchModal: React.FC<MatchModalProps> = ({
           title: 'Failed to set winner',
           description: `An error occurred while setting the winner: ${error}`,
         });
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -201,15 +207,25 @@ export const MatchModal: React.FC<MatchModalProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setConfirmDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button className="bg-primary" onClick={handleConfirmWinner}>
-              Confirm
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setConfirmDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-primary"
+                onClick={handleConfirmWinner}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size="sm" />
+                ) : (
+                  'Confirm'
+                )}
+              </Button>
+            </>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -27,12 +27,16 @@ export const NextMatch: React.FC<NextMatchProps> = ({ user, matches }) => {
       ? user.id === nextMatch.home_player_id
         ? {
             userId: nextMatch.away_player_id || 'tbd',
-            username: nextMatch.awayPlayerUsername || 'TBD',
+            username: nextMatch.away_player_id
+              ? nextMatch.awayPlayerUsername
+              : 'TBD',
             avatar: nextMatch.awayPlayerAvatarUrl || '',
           }
         : {
             userId: nextMatch.home_player_id || 'tbd',
-            username: nextMatch.homePlayerUsername || 'TBD',
+            username: nextMatch.home_player_id
+              ? nextMatch.homePlayerUsername
+              : 'TBD',
             avatar: nextMatch.homePlayerAvatarUrl || '',
           }
       : null;

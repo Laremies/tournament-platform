@@ -551,6 +551,9 @@ export async function UpdateUsername(newName: string, userid: string) {
 }
 
 export async function getUsername(userId: string | undefined) {
+  if (!userId) {
+    return { username: 'non-logged-in-user' };
+  }
   const supabase = createClient();
 
   const { data } = await supabase
@@ -562,14 +565,21 @@ export async function getUsername(userId: string | undefined) {
   return { username: data?.username as string };
 }
 
-//todo: this and getUsername gives a lot of unlogged errors when user is not logged in.
 export async function getPublicUserData(userid: string | undefined) {
+  if (!userid) {
+    // Return a default PublicUser object if userid is undefined
+    return { data: {} as PublicUser };
+  }
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .select('*')
     .eq('id', userid)
     .single();
+
+  if (error) {
+    console.error(error);
+  }
 
   return { data: data as PublicUser };
 }
