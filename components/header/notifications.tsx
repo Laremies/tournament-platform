@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   Bell,
   ChevronRight,
+  LockOpen,
   MessageSquare,
   Swords,
   Trophy,
@@ -50,7 +51,8 @@ export function Notifications({
       }
       if (
         newNotificationFromServer.type === 'tournament_start' ||
-        newNotificationFromServer.type === 'new_matchup'
+        newNotificationFromServer.type === 'new_matchup' ||
+        newNotificationFromServer.type === 'request_accepted'
       ) {
         setNotifications((prevNotifications) => [
           newNotificationFromServer,
@@ -118,6 +120,13 @@ export function Notifications({
                         '!'}
                     </p>
                   )}
+                  {newNotification.type === 'request_accepted' && (
+                    <p className="text-sm">
+                      {'Your request to join ' +
+                        newNotification.message +
+                        ' has been accepted!'}
+                    </p>
+                  )}
                 </div>
                 <button
                   onClick={() => setShowNewNotification(false)}
@@ -172,6 +181,9 @@ export function Notifications({
                   )}
                   {notification.type === 'new_matchup' && (
                     <NewMatchupNotification notification={notification} />
+                  )}
+                  {notification.type === 'request_accepted' && (
+                    <RequestAcceptedNotification notification={notification} />
                   )}
                 </div>
               ))
@@ -305,6 +317,46 @@ const NewMatchupNotification = ({ notification }: NotificationProps) => {
               <div className="flex items-center justify-between ">
                 <div className="flex items-center">
                   <Swords className="mr-2 h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTime(notification.created_at)}
+                  </span>
+                </div>
+                <Link href={`/tournaments/${notification.related_id}`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs hover:bg-transparent hover:text-foreground"
+                  >
+                    {'Show Tournament'}
+                    <ChevronRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+};
+
+const RequestAcceptedNotification = ({ notification }: NotificationProps) => {
+  return (
+    <>
+      <Card className="mb-0 dark:bg-gradient-to-r from-gray-900 to-black z-20">
+        <CardContent className="pt-1 pr-2 pb-0 pl-1">
+          <div className="flex items-start">
+            <div className="flex-1 ">
+              <p className="text-sm font-medium leading-none line-clamp-">
+                Your request to view {''}
+                <span className="font-bold text-destructive">
+                  {notification.message}
+                </span>{' '}
+                has been accepted{'!'}
+              </p>
+              <div className="flex items-center justify-between ">
+                <div className="flex items-center">
+                  <LockOpen className="mr-2 h-3 w-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">
                     {formatTime(notification.created_at)}
                   </span>

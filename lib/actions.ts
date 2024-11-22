@@ -14,6 +14,7 @@ import { generateSingleEliminationBracket } from './bracket-generators';
 import { PublicUser } from '@/app/types/types';
 import { Notification } from '@/components/header/notifications-server';
 import { RecentChat } from '@/components/header/recentChats';
+import { AccessRequest } from '@/components/tournament/access-request-list';
 
 interface UserJoinedTournaments {
   tournaments: { name: string; id: string }[];
@@ -766,18 +767,33 @@ export async function submitAccessRequest(tournamentId: string) {
   return { success: true };
 }
 
-export async function acceptAccessRequest(requestId: string) {
+export async function acceptAccessRequest(accessRequest: AccessRequest) {
   const supabase = createClient();
 
   const { error } = await supabase
     .from('accessRequests')
     .update({ status: 'accepted' })
-    .eq('id', requestId);
+    .eq('id', accessRequest.id);
 
   if (error) {
     console.error(error);
     return { error: 'Failed to accept access request' };
   }
+
+  const { data: tournament } = await supabase
+    .from('tournaments')
+    .select('name')
+    .eq('id', accessRequest.tournament_id)
+    .single();
+
+  await supabase.from('notifications').insert([
+    {
+      type: 'request_accepted',
+      user_id: accessRequest.user_id,
+      related_id: accessRequest.tournament_id,
+      message: tournament?.name,
+    },
+  ]);
 
   return { success: true };
 }

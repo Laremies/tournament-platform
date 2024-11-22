@@ -13,9 +13,6 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 
-//here will be the websocket connection
-//and message store
-
 interface PrivateChatboxProps {
   initialMessages: DirectMessage[];
   receiverId: string;
@@ -62,9 +59,6 @@ export function PrivateChatbox({
     };
   }, [receiverId, supabase, user.id]);
 
-  //todo: sending new message should probably send a notifcation of some kind to the receiver
-  //else they have no clue they have a new message
-  //TODO: get presense status of receiver and send notification if not present
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!input) return;
@@ -82,7 +76,7 @@ export function PrivateChatbox({
       }
     }
     if (error) {
-      //TODO: handle error
+      console.error(error);
     }
     setIsLoading(false);
   };

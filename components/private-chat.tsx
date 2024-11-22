@@ -24,15 +24,11 @@ interface UserStatus {
   online_at: string;
 }
 
-//also drag and drop wrapper?
-//also presense status
 export const PrivateChat = ({ user }: { user: User }) => {
   const supabase = createClient();
-  //todo: fix usechat type
   const { chatOpen, setChatOpen, receiverId } = useChat();
   const [username, setUsername] = useState('');
   const [messages, setMessages] = useState<DirectMessage[]>([]);
-  //presense logic mostly taken from participant list
   const [presentUserState, setPresentUserState] = useState({});
   const [presentUserIds, setPresentUserIds] = useState<string[]>([]);
 
