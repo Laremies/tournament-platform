@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { SingleEliminationMatch } from '@/app/types/types';
 
 //DISCLAIMER! THIS CODE WILL BE REFACTORED AND REDONE IN THE FUTURE
+//at the very least needs tests and better error handling
 export const generateSingleEliminationBracket = async (
   //generates the matchups for a single elimination bracket tournament
   tournamentId: string

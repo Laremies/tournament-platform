@@ -1,10 +1,12 @@
 'use client';
 import { SingleEliminationMatch } from '@/app/types/types';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { MatchCard } from './match-card';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Button } from '../ui/button';
 import { User } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/client';
+import { revalidateBracket } from '@/lib/actions';
 
 export interface MatchNode {
   match: SingleEliminationMatch;
@@ -149,6 +151,35 @@ const SingleEliminationBracket: React.FC<{
     () => generateSingleEliminationBracket(matches),
     [matches]
   );
+  const supabase = createClient();
+
+  const handleBracketUpdate = async (updatedMatch: SingleEliminationMatch) => {
+    if (updatedMatch.tournament_id === matches[0].tournament_id) {
+      revalidateBracket(updatedMatch.tournament_id);
+    }
+  };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'singleEliminationMatches',
+        },
+        (payload) => {
+          handleBracketUpdate(payload.new as SingleEliminationMatch);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches, supabase]);
 
   if (!bracketStructure) {
     return <div>Failed to generate tournament structure</div>;
@@ -226,7 +257,7 @@ const Matches: React.FC<{
         <div className="flex flex-col justify-center">
           {node.children.map((child, index) => (
             <div
-              key={child.match.id}
+              key={`${child.match.id}-${index}`}
               className="flex items-start justify-end my-[10px] relative"
             >
               <div className="flex flex-row-reverse">

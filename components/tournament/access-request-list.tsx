@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
-interface AccessRequest {
+export interface AccessRequest {
   created_at: string | number | Date;
   id: string;
   user_id: string;
@@ -37,8 +37,8 @@ export default function AccessRequestList({
     setRequests(requests);
   }, [requests]);
 
-  const handleAccept = async (requestId: string) => {
-    const { success, error } = await acceptAccessRequest(requestId);
+  const handleAccept = async (accessRequest: AccessRequest) => {
+    const { success, error } = await acceptAccessRequest(accessRequest);
     if (success) {
       toast({
         title: 'Success',
@@ -52,7 +52,7 @@ export default function AccessRequestList({
       });
     }
     setRequests((prevRequests) =>
-      prevRequests.filter((request) => request.id !== requestId)
+      prevRequests.filter((request) => request.id !== accessRequest.id)
     );
   };
 
@@ -120,7 +120,7 @@ export default function AccessRequestList({
                       size="icon"
                       variant="ghost"
                       className="w-8 h-8 text-green-500 hover:text-green-700 dark:hover:text-green-400 hover:bg-green-100"
-                      onClick={() => handleAccept(request.id)}
+                      onClick={() => handleAccept(request)}
                     >
                       <Check className="w-4 h-4" />
                       <span className="sr-only">Accept</span>
