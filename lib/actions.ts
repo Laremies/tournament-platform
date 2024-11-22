@@ -1454,3 +1454,7 @@ export async function getUserCurrentMatches() {
 
   return { matches };
 }
+
+export async function revalidateBracket(tournamentId: string) {
+  revalidatePath(`/tournaments/${tournamentId}`);
+}
