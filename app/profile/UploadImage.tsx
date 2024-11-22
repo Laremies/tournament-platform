@@ -113,7 +113,6 @@ export default function Component({
       }
       <Button
         size="icon"
-        variant="secondary"
         className="absolute bottom-0 right-0 rounded-full"
         onClick={handleImageClick}
         aria-label="Upload new image"

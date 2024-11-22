@@ -68,9 +68,7 @@ export function ChatBox({
           handleNewMessage(payload.new as PublicMessage);
         }
       )
-      .subscribe((state) => {
-        console.log('channel state', state);
-      });
+      .subscribe();
 
     //disable chat until websocket connection is established --from https://github.com/supabase/realtime/issues/282
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -138,7 +136,7 @@ export function ChatBox({
         {messages.map((message) => (
           <div key={message.id}>
             <p>
-              <span className="font-bold text-blue-500">
+              <span className="font-bold text-secondary">
                 {message.users.username}
               </span>
               : {message.message}

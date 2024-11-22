@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { acceptAccessRequest, rejectAccessRequest } from '@/lib/actions';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 interface AccessRequest {
   created_at: string | number | Date;
@@ -17,6 +18,7 @@ interface AccessRequest {
   status: 'pending' | 'accepted' | 'rejected';
   users: {
     username: string;
+    avatar_url: string;
   };
 }
 
@@ -95,7 +97,7 @@ export default function AccessRequestList({
                   <div className="flex items-center space-x-2">
                     <Avatar className="w-8 h-8">
                       <AvatarImage
-                        // src={request.user.avatarUrl}
+                        src={request.users.avatar_url}
                         alt={request.users.username}
                       />
                       <AvatarFallback>
@@ -103,9 +105,11 @@ export default function AccessRequestList({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">
-                        {request.users.username}
-                      </p>
+                      <Link href={`/profile/${request.user_id}`}>
+                        <p className="text-sm font-medium">
+                          {request.users.username}
+                        </p>
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {new Date(request.created_at).toLocaleDateString()}
                       </p>
@@ -115,7 +119,7 @@ export default function AccessRequestList({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-8 h-8 text-green-500 hover:text-green-700 hover:bg-green-100"
+                      className="w-8 h-8 text-green-500 hover:text-green-700 dark:hover:text-green-400 hover:bg-green-100"
                       onClick={() => handleAccept(request.id)}
                     >
                       <Check className="w-4 h-4" />
@@ -124,7 +128,7 @@ export default function AccessRequestList({
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="w-8 h-8 text-red-500 hover:text-red-700 hover:bg-red-100"
+                      className="w-8 h-8 text-red-500 hover:text-destructive hover:bg-red-100"
                       onClick={() => handleReject(request.id)}
                     >
                       <X className="w-4 h-4" />

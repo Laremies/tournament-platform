@@ -22,7 +22,7 @@ export const WinnerCard: React.FC<WinnerCardProps> = async ({ tournament }) => {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="p-0">
-        <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 h-24 flex items-center justify-center">
+        <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-secondary h-24 flex items-center justify-center">
           <Trophy className="text-white w-16 h-16 animate-bounce" />
         </div>
       </CardHeader>
@@ -35,7 +35,7 @@ export const WinnerCard: React.FC<WinnerCardProps> = async ({ tournament }) => {
             </AvatarFallback>
           </Avatar>
           <h2 className="text-black text-2xl mb-2">{winner.username}</h2>
-          <div className="w-16 h-1 bg-yellow-400 rounded mb-4"></div>
+          <div className="w-16 h-1 bg-secondary rounded mb-4"></div>
           <p className="text-sm text-gray-600 mb-1">Winner of</p>
           <h3 className="text-xl text-black">{tournament.name}</h3>
         </div>

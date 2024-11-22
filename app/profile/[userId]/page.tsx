@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import ProfileComments from '@/components/profile/comment-box';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import SendMessageButton from '@/components/profile/send-message-button';
 
 type Params = {
   userId: string;
@@ -56,9 +57,12 @@ const UserPage = async ({ params }: { params: Params }) => {
           </AvatarFallback>
         </Avatar>
         <div>
-          <Label className="text-2xl">{publicUser.username}</Label>
+          <Label className="text-2xl">
+            {publicUser.username}{' '}
+            {user && <SendMessageButton userId={publicUser.id} />}
+          </Label>
           <p className="text-gray-600">
-            {publicUser.description || 'No description provided.'}
+            {publicUser.bio || 'No bio provided.'}
           </p>
         </div>
       </div>
@@ -69,7 +73,7 @@ const UserPage = async ({ params }: { params: Params }) => {
               <TabsTrigger value="owned">Hosted Tournaments</TabsTrigger>
               <TabsTrigger value="results">Match Results</TabsTrigger>
             </TabsList>
-            <ScrollArea className="h-h-[800px]  rounded-md  mt-2">
+            <ScrollArea className="h-[800px]  rounded-md  mt-2">
               <TabsContent value="owned">
                 <div className="space-y-4">
                   {tournaments != null ? (
@@ -83,13 +87,19 @@ const UserPage = async ({ params }: { params: Params }) => {
                             <div>
                               <p>Players: {tournament.player_count}</p>
                               <span>
-                                {tournament.finished
-                                  ? 'Tournament ended'
-                                  : tournament.started
-                                    ? 'Ongoing'
-                                    : 'Waiting for players'}
+                                {tournament.finished ? (
+                                  <span className="text-destructive">
+                                    Tournament finished
+                                  </span>
+                                ) : tournament.started ? (
+                                  <span className="text-primary">Ongoing</span>
+                                ) : (
+                                  <span className="text-secondary">
+                                    Waiting for players
+                                  </span>
+                                )}
                               </span>
-                              <p className="text-muted-foreground">
+                              <p className="text-muted-foreground line-clamp-2">
                                 {tournament.description}
                               </p>
                             </div>
@@ -134,7 +144,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                               </p>
                               <p>
                                 Winner:{' '}
-                                <span className="font-bold text-blue-500">
+                                <span className="font-bold text-secondary">
                                   {match.winnerId === match.homePlayerId
                                     ? match.homePlayerUsername
                                     : match.awayPlayerUsername}
@@ -218,7 +228,7 @@ const UserPage = async ({ params }: { params: Params }) => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-500" />
+                      <Swords className="w-4 h-4 text-green-700 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}

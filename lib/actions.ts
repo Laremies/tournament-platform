@@ -172,7 +172,7 @@ export async function submitTournament(formData: FormData) {
     description: formData.get('description') as string,
     creator_id: userObject.data.user.id as string,
     max_player_count: parseInt(formData.get('maxPlayers') as string),
-    private: formData.get('isPrivate') === 'on',
+    private: formData.get('isPrivate'),
   };
 
   const { data: tournament, error } = await supabase
@@ -222,7 +222,8 @@ export async function getUserTournaments() {
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
     .select('tournaments(name, id)')
-    .eq('user_id', userObject.data.user.id);
+    .eq('user_id', userObject.data.user.id)
+    .order('created_at', { ascending: false });
 
   if (joinedError || error) {
     console.error(joinedError);
@@ -254,8 +255,7 @@ export async function getAllUserCurrentTournaments() {
     .from('tournaments')
     .select('*')
     .eq('creator_id', userObject.data.user.id)
-    .eq('finished', false)
-    .order('created_at', { ascending: false });
+    .eq('finished', false);
 
   const { data: joined, error: joinedError } = await supabase
     .from('tournamentUsers')
@@ -268,12 +268,26 @@ export async function getAllUserCurrentTournaments() {
   }
 
   const joinedTournaments = joined.flatMap((item) => item.tournaments);
+  const uniqueTournaments = new Map<string, Tournament>();
 
+  ownTournaments.forEach((tournament) => {
+    uniqueTournaments.set(tournament.id, tournament);
+  });
+
+  joinedTournaments.forEach((tournament) => {
+    if (!uniqueTournaments.has(tournament.id)) {
+      uniqueTournaments.set(tournament.id, tournament);
+    }
+  });
+
+  const tournaments = Array.from(uniqueTournaments.values());
+  tournaments.sort((a, b) => {
+    const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return dateB - dateA;
+  });
   return {
-    tournaments: [
-      ...(ownTournaments as Tournament[]),
-      ...(joinedTournaments as Tournament[]),
-    ],
+    tournaments: tournaments,
     error: null,
   };
 }
@@ -520,6 +534,22 @@ export async function getMostPopularTournaments() {
   return { popularTournaments: data as Tournament[] };
 }
 
+export async function getPublicTournaments() {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('tournaments')
+    .select('*, analytics(view_count)')
+    .eq('private', false);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to fetch public tournaments' };
+  }
+
+  return { tournaments: data as Tournament[] };
+}
+
 export async function UpdateUsername(newName: string, userid: string) {
   const supabase = createClient();
   const { error } = await supabase
@@ -534,6 +564,9 @@ export async function UpdateUsername(newName: string, userid: string) {
 }
 
 export async function getUsername(userId: string | undefined) {
+  if (!userId) {
+    return { username: 'non-logged-in-user' };
+  }
   const supabase = createClient();
 
   const { data } = await supabase
@@ -545,14 +578,21 @@ export async function getUsername(userId: string | undefined) {
   return { username: data?.username as string };
 }
 
-//todo: this and getUsername gives a lot of unlogged errors when user is not logged in.
 export async function getPublicUserData(userid: string | undefined) {
+  if (!userid) {
+    // Return a default PublicUser object if userid is undefined
+    return { data: {} as PublicUser };
+  }
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .select('*')
     .eq('id', userid)
     .single();
+
+  if (error) {
+    console.error(error);
+  }
 
   return { data: data as PublicUser };
 }
@@ -1266,4 +1306,135 @@ export async function getUserStatistics(userId: string) {
   };
 
   return { data: statistics };
+}
+
+export async function updateUserBio(bio: string) {
+  const supabase = createClient();
+  const userObject = await supabase.auth.getUser();
+
+  if (userObject.data.user === null) {
+    console.log('You must be logged in to update your bio');
+    return { error: 'You must be logged in to update your bio' };
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ bio: bio })
+    .eq('id', userObject.data.user.id);
+
+  if (error) {
+    console.error(error);
+    return { error: 'Failed to update bio' };
+  }
+  revalidatePath(`/profile`);
+
+  return { success: true };
+}
+
+export async function overrideMatchResult(
+  tournamentId: string,
+  match: SingleEliminationMatch,
+  winnerId: string
+) {
+  const errorMsg = 'Failed to override match';
+  if (!match.id) {
+    return { error: errorMsg };
+  }
+
+  const final = await getTournamentFinalMatch(tournamentId);
+  if (final.error || !final.finalMatch) {
+    return { error: errorMsg };
+  }
+
+  const overridenPlayerId =
+    winnerId === match.home_player_id
+      ? match.away_player_id
+      : match.home_player_id;
+  if (!overridenPlayerId) {
+    return { error: errorMsg };
+  }
+
+  const nextMatchesOfOverridenPlayer =
+    await getPlayerFollowingMatchesInTournament(
+      tournamentId,
+      overridenPlayerId,
+      match.round
+    );
+  if (!nextMatchesOfOverridenPlayer) {
+    return { error: errorMsg };
+  }
+
+  const supabase = createClient();
+  for (const match of nextMatchesOfOverridenPlayer) {
+    const updateColumn =
+      match.home_player_id === overridenPlayerId
+        ? 'home_player_id'
+        : 'away_player_id';
+
+    const { error } = await supabase
+      .from('singleEliminationMatches')
+      .update({ [updateColumn]: null, winner_id: null })
+      .eq('id', match.id);
+    if (error) {
+      return { error: errorMsg };
+    }
+
+    if (match.round === final.finalMatch.round) {
+      const { error } = await supabase
+        .from('tournaments')
+        .update({ finished: false })
+        .eq('id', tournamentId);
+      if (error) {
+        return { error: errorMsg };
+      }
+    }
+  }
+
+  const currentMatch = await submitMatchResult(
+    tournamentId,
+    match.id,
+    winnerId
+  );
+  if (currentMatch.error || !currentMatch.success) {
+    return { error: errorMsg };
+  }
+
+  revalidatePath(`/tournaments/${tournamentId}`);
+  return { success: true };
+}
+
+async function getPlayerFollowingMatchesInTournament(
+  tournamentId: string,
+  playerId: string,
+  currentMatchRound: number
+) {
+  const supabase = createClient();
+
+  const { data: matches } = await supabase
+    .from('singleEliminationMatches')
+    .select('*')
+    .eq('tournament_id', tournamentId)
+    .gt('round', currentMatchRound)
+    .or(`home_player_id.eq.${playerId},away_player_id.eq.${playerId}`);
+
+  return matches;
+}
+
+export async function getUserCurrentMatches() {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) {
+    return { error: 'You must be logged in to view your matches' };
+  }
+
+  const userId = data.user.id;
+
+  const { data: matches } = await supabase
+    .from('singleEliminationMatches')
+    .select('*, tournaments(name)')
+    .or(`home_player_id.eq.${userId},away_player_id.eq.${userId}`)
+    .is('winner_id', null)
+    .not('tournaments', 'is', null);
+
+  return { matches };
 }

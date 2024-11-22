@@ -17,6 +17,7 @@ import { getAllUserCurrentTournaments } from '@/lib/actions';
 import ProfileComments from '@/components/profile/comment-box';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { BioBox } from '@/components/profile/bio-box';
 export default async function Profile() {
   const user = await getAuthUser();
 
@@ -32,20 +33,25 @@ export default async function Profile() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex items-center space-x-4 mb-6">
-        <Avatar2
-          initialUrl={publicUser.avatar_url}
-          size={150}
-          username={publicUser.username}
-        />
-        <div>
-          <EditableUsername username={publicUser.username} userid={userid} />
-          <p className="text-gray-500">
-            {user ? user.email : 'guest@example.com'}
-          </p>
+      <div className="flex items-center mb-6">
+        <div className="flex items-center space-x-4 ">
+          <Avatar2
+            initialUrl={publicUser.avatar_url}
+            size={150}
+            username={publicUser.username}
+          />
+          <div>
+            <EditableUsername username={publicUser.username} userid={userid} />
+            <p className="text-gray-500">
+              {user ? user.email : 'guest@example.com'}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col space-y-2 flex-grow ml-4 max-w-[550px]">
+          <div className="flex justify-center"></div>
+          <BioBox user={publicUser} />
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
           <Tabs defaultValue="current">
@@ -68,13 +74,19 @@ export default async function Profile() {
                             <div>
                               <p>Players: {tournament.player_count}</p>
                               <span>
-                                {tournament.finished
-                                  ? 'Tournament ended'
-                                  : tournament.started
-                                    ? 'Ongoing'
-                                    : 'Waiting for players'}
+                                {tournament.finished ? (
+                                  <span className="text-destructive">
+                                    Tournament finished
+                                  </span>
+                                ) : tournament.started ? (
+                                  <span className="text-primary">Ongoing</span>
+                                ) : (
+                                  <span className="text-secondary">
+                                    Waiting for players
+                                  </span>
+                                )}
                               </span>
-                              <p className="text-muted-foreground">
+                              <p className="text-muted-foreground line-clamp-2">
                                 {tournament.description}
                               </p>
                             </div>
@@ -118,9 +130,11 @@ export default async function Profile() {
                               </p>
                               <p>
                                 Winner:{' '}
-                                {match.winnerId === match.homePlayerId
-                                  ? match.homePlayerUsername
-                                  : match.awayPlayerUsername}
+                                <span className="font-bold text-secondary">
+                                  {match.winnerId === match.homePlayerId
+                                    ? match.homePlayerUsername
+                                    : match.awayPlayerUsername}
+                                </span>
                               </p>
                             </div>
                             <Link href={`/tournaments/${match.tournament_id}`}>
@@ -191,7 +205,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      <Trophy className="w-4 h-4 text-secondary" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.wonCount}
@@ -200,7 +214,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-green-500" />
+                      <Swords className="w-4 h-4 text-green-700 dark:text-green-400" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesWon}
@@ -209,7 +223,7 @@ export default async function Profile() {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Swords className="w-4 h-4 text-red-500" />
+                      <Swords className="w-4 h-4 text-destructive" />
                       <div>
                         <p className="text-sm font-medium">
                           {statistics.matchesLost}

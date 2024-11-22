@@ -9,6 +9,7 @@ import {
 import SingleEliminationBracket from './single-elimination-bracket';
 import StartTournamentButton from './start-tournament-button';
 import { User } from '@supabase/supabase-js';
+import CopyToClipboardButton from './copy-to-clipboard-button';
 
 interface BracketProps {
   tournament: Tournament;
@@ -22,8 +23,12 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
   return (
     <Card className="lg:col-span-2 bg-gradient-to-b from-background to-muted flex flex-col">
       <CardHeader>
-        <CardTitle>{tournament.name}</CardTitle>
-        <CardDescription className="max-w-prose">
+        <CardTitle>
+          <span>{tournament.name}</span> <CopyToClipboardButton />
+        </CardTitle>
+
+        {/* the description should maybe be made collapsible */}
+        <CardDescription className="whitespace-pre-wrap max-w-[80%]">
           {tournament.description}
         </CardDescription>
       </CardHeader>
@@ -32,15 +37,19 @@ export const Bracket = async ({ tournament, user, matches }: BracketProps) => {
         {tournament?.started ? (
           <>
             {matches && matches.length > 0 ? (
-              <SingleEliminationBracket matches={matches} user={user} />
+              <SingleEliminationBracket
+                matches={matches}
+                user={user}
+                isCreator={isCreator}
+              />
             ) : (
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground pl-6 pb-4">
                 The bracket will be generated once the tournament starts.
               </p>
             )}
           </>
         ) : (
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground pl-6 pb-4">
             The bracket will be generated once the tournament starts.
           </p>
         )}

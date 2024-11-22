@@ -1,14 +1,15 @@
 import {
   BrowseTournamentsButton,
+  MatchesSection,
   TournamentsSection,
 } from '@/components/ui/landing-pages';
 import {
-  getAllUserCurrentTournaments,
   getMostPopularTournaments,
+  getUserCurrentMatches,
 } from '@/lib/actions';
 
 export default async function Page() {
-  const { tournaments } = await getAllUserCurrentTournaments();
+  const { matches } = await getUserCurrentMatches();
   const { popularTournaments } = await getMostPopularTournaments();
 
   return (
@@ -23,11 +24,7 @@ export default async function Page() {
         </div>
       </section>
 
-      <TournamentsSection
-        title="Current Own Tournaments"
-        tournaments={tournaments}
-        direction="t"
-      />
+      <MatchesSection title="Next Matches" matches={matches} direction="t" />
 
       <TournamentsSection
         title="Popular Tournaments"
