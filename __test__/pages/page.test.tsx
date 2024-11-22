@@ -1,7 +1,9 @@
-import { signUpAction } from '@/lib/actions'; // Adjust the import to your file's location
+import { signUpAction, forgotPasswordAction, signInAction, signOutAction, getAuthUser, submitTournament, getTournamentById, getUserTournaments, getAllUserCurrentTournaments } from '@/lib/actions';
 import { createClient } from '@/utils/supabase/server';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 // Mock the createClient and its auth.signUp method
 jest.mock('@/utils/supabase/server', () => ({
@@ -15,7 +17,11 @@ jest.mock('next/headers', () => ({
 jest.mock('@/utils/utils', () => ({
     encodedRedirect: jest.fn(),
 }));
+jest.mock('next/navigation', () => ({ redirect: jest.fn() }));
 
+jest.mock('next/cache', () => ({ revalidatePath: jest.fn() }));
+
+//SignUp test
 describe('signUpAction', () => {
     const mockSignUp = jest.fn(); // Mock function for signUp
     let supabase: any; // Type assertion for Supabase client
@@ -44,24 +50,6 @@ describe('signUpAction', () => {
 
         expect(result).toEqual({ error: 'Email and password are required' });
     });
-
-    // it('should call supabase.auth.signUp with correct parameters', async () => {
-    //     const formData = new FormData();
-    //     formData.append('username', 'testuser');
-    //     formData.append('email', 'test@example.com');
-    //     formData.append('password', 'password123');
-
-    //     await signUpAction(formData);
-
-    //     expect(mockSignUp).toHaveBeenCalledWith({
-    //         email: 'test@example.com',
-    //         password: 'password123',
-    //         options: {
-    //             data: { username: 'testuser' },
-    //             emailRedirectTo: 'http://localhost:3000/auth/callback',
-    //         },
-    //     });
-    // });
 
     it('should return encoded redirect on successful sign up', async () => {
         mockSignUp.mockResolvedValueOnce({ error: null }); // Successful sign-up mock response
@@ -93,5 +81,355 @@ describe('signUpAction', () => {
 
         expect(result).toEqual(encodedRedirect('error', '/sign-up', error.message));
     });
+
+
+}
+);
+//SignIn Test
+describe('signInAction', () => {
+    const mockSignInWithPassword = jest.fn();
+    let supabase: any;
+
+    beforeEach(() => {
+        supabase = {
+            auth: { signInWithPassword: mockSignInWithPassword },
+        };
+        (createClient as jest.Mock).mockReturnValue(supabase);
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('redirects to /home on successful sign-in', async () => {
+        mockSignInWithPassword.mockResolvedValue({ error: null });
+
+        const formData = new FormData();
+        formData.append('email', 'test@example.com');
+        formData.append('password', 'password123');
+
+        await signInAction(formData);
+
+        expect(mockSignInWithPassword).toHaveBeenCalledWith({
+            email: 'test@example.com',
+            password: 'password123',
+        });
+        expect(redirect).toHaveBeenCalledWith('/home');
+    });
+
+    it('redirects to /sign-in with an error on sign-in failure', async () => {
+        mockSignInWithPassword.mockResolvedValue({ error: { message: 'Invalid credentials' } });
+        const formData = new FormData();
+        formData.append('email', 'test@example.com');
+        formData.append('password', 'wrongpassword');
+
+        await signInAction(formData);
+
+        expect(mockSignInWithPassword).toHaveBeenCalled();
+        expect(encodedRedirect).toHaveBeenCalledWith('error', '/sign-in', 'Invalid credentials');
+    });
+});
+//Forgot Password test
+describe('forgotPasswordAction', () => {
+    const mockResetPasswordForEmail = jest.fn();
+    let supabase: any;
+
+    beforeEach(() => {
+        supabase = {
+            auth: { resetPasswordForEmail: mockResetPasswordForEmail },
+        };
+        (createClient as jest.Mock).mockReturnValue(supabase);
+        (headers as jest.Mock).mockReturnValue({ get: jest.fn().mockReturnValue('http://localhost:3000') });
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('redirects to success page on successful password reset', async () => {
+        mockResetPasswordForEmail.mockResolvedValue({ error: null });
+
+        const formData = new FormData();
+        formData.append('email', 'test@example.com');
+
+        await forgotPasswordAction(formData);
+
+        expect(mockResetPasswordForEmail).toHaveBeenCalledWith('test@example.com', {
+            redirectTo: 'http://localhost:3000/auth/callback?redirect_to=/protected/reset-password',
+        });
+        expect(encodedRedirect).toHaveBeenCalledWith(
+            'success',
+            '/forgot-password',
+            'Check your email for a link to reset your password.'
+        );
+    });
+
+    it('returns an error if email is not provided', async () => {
+        const formData = new FormData(); // No email appended
+
+        await forgotPasswordAction(formData);
+
+        expect(encodedRedirect).toHaveBeenCalledWith('error', '/forgot-password', 'Email is required');
+        expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+    });
+
+    it('handles resetPasswordForEmail error properly', async () => {
+        mockResetPasswordForEmail.mockResolvedValue({ error: { message: 'User not found' } });
+
+        const formData = new FormData();
+        formData.append('email', 'invalid@example.com');
+
+        await forgotPasswordAction(formData);
+
+        expect(mockResetPasswordForEmail).toHaveBeenCalled();
+        expect(encodedRedirect).toHaveBeenCalledWith('error', '/forgot-password', 'Could not reset password');
+    });
 });
 
+//Signintest
+describe('signOutAction', () => {
+    const mockSignOut = jest.fn();
+    let supabase: any;
+
+    beforeEach(() => {
+        supabase = {
+            auth: { signOut: mockSignOut },
+        };
+        (createClient as jest.Mock).mockReturnValue(supabase);
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('signs out and redirects to /sign-in', async () => {
+        mockSignOut.mockResolvedValue({ error: null });
+
+        await signOutAction();
+
+        expect(mockSignOut).toHaveBeenCalled();  // Ensure signOut is called
+        expect(redirect).toHaveBeenCalledWith('/sign-in');  // Ensure redirection
+    });
+
+    it('handles errors during sign-out gracefully', async () => {
+        mockSignOut.mockRejectedValue(new Error('Sign-out failed'));
+
+        await expect(signOutAction()).rejects.toThrow('Sign-out failed');
+
+        expect(mockSignOut).toHaveBeenCalled();  // Ensure signOut attempted
+        expect(redirect).not.toHaveBeenCalled();  // Should not redirect on failure
+    });
+});
+
+//SignoutTest
+describe('signOutAction', () => {
+    const mockSignOut = jest.fn();
+    let supabase: any;
+
+    beforeEach(() => {
+        supabase = {
+            auth: { signOut: mockSignOut },
+        };
+        (createClient as jest.Mock).mockReturnValue(supabase);
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('signs out and redirects to /sign-in', async () => {
+        mockSignOut.mockResolvedValue({ error: null });
+
+        await signOutAction();
+
+        expect(mockSignOut).toHaveBeenCalled();  // Ensure signOut is called
+        expect(redirect).toHaveBeenCalledWith('/sign-in');  // Ensure redirection
+    });
+
+    it('handles errors during sign-out gracefully', async () => {
+        mockSignOut.mockRejectedValue(new Error('Sign-out failed'));
+
+        await expect(signOutAction()).rejects.toThrow('Sign-out failed');
+
+        expect(mockSignOut).toHaveBeenCalled();  // Ensure signOut attempted
+        expect(redirect).not.toHaveBeenCalled();  // Should not redirect on failure
+    });
+});
+
+//GetauthUser test
+describe('getAuthUser', () => {
+    const mockGetUser = jest.fn();
+
+    beforeEach(() => {
+        (createClient as jest.Mock).mockReturnValue({ auth: { getUser: mockGetUser } });
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('returns the authenticated user', async () => {
+        const userData = { id: 'user123', email: 'test@example.com' };
+        mockGetUser.mockResolvedValue({ data: { user: userData }, error: null });
+
+        const result = await getAuthUser();
+        expect(mockGetUser).toHaveBeenCalled();
+        expect(result).toEqual(userData);
+    });
+
+    it('returns null if no user is authenticated', async () => {
+        mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
+
+        const result = await getAuthUser();
+        expect(result).toBeNull();
+    });
+});
+
+//Submit Tournament test
+describe('submitTournament', () => {
+    const mockInsert = jest.fn();
+    const mockGetUser = jest.fn();
+
+    beforeEach(() => {
+        (createClient as jest.Mock).mockReturnValue({
+            auth: { getUser: mockGetUser },
+            from: jest.fn().mockReturnValue({ insert: mockInsert }),
+        });
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('submits a tournament successfully', async () => {
+        const formData = new FormData();
+        formData.append('name', 'Test Tournament');
+        formData.append('description', 'Test Description');
+        formData.append('maxPlayers', '8');
+
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'user123' } } });
+        mockInsert.mockReturnValue({
+            select: jest.fn().mockResolvedValue({
+                data: [{ id: 'tourn123' }],
+                error: null,
+            }),
+        });
+
+        const result = await submitTournament(formData);
+
+        expect(mockInsert).toHaveBeenCalled();
+        expect(revalidatePath).toHaveBeenCalledWith('/home');
+        expect(result).toEqual({ success: true, tournamentId: 'tourn123' });
+    });
+
+    it('returns an error if the user is not logged in', async () => {
+        mockGetUser.mockResolvedValue({ data: { user: null } });
+
+        const formData = new FormData();
+        const result = await submitTournament(formData);
+
+        expect(result).toEqual({ error: 'You must be logged in to create a tournament' });
+        expect(revalidatePath).not.toHaveBeenCalled();
+    });
+});
+
+//Get TourbyId test
+describe('getTournamentById', () => {
+    const mockSelect = jest.fn();
+
+    beforeEach(() => {
+        (createClient as jest.Mock).mockReturnValue({
+            from: jest.fn().mockReturnValue({ select: mockSelect }),
+        });
+    });
+
+    afterEach(() => jest.clearAllMocks());
+
+    it('fetches tournament data by ID successfully', async () => {
+        const tournamentData = { id: 'tourn123', name: 'Test Tournament' };
+        mockSelect.mockReturnValue({ eq: jest.fn().mockReturnValue({ single: jest.fn().mockResolvedValue({ data: tournamentData, error: null }) }) });
+
+        const result = await getTournamentById('tourn123');
+        expect(mockSelect).toHaveBeenCalled();
+        expect(result).toEqual({ tournament: tournamentData });
+    });
+
+    it('handles tournament not found', async () => {
+        mockSelect.mockReturnValue({ eq: jest.fn().mockReturnValue({ single: jest.fn().mockResolvedValue({ data: null, error: 'Not found' }) }) });
+
+        const result = await getTournamentById('invalid_id');
+        expect(result).toEqual({ error: 'Tournament not found' });
+    });
+});
+
+//GetUserTour test
+describe('getUserTournaments', () => {
+    const mockFrom = jest.fn();
+    const mockSelect = jest.fn();
+    const mockEq = jest.fn();
+    const mockOrder = jest.fn();
+    const mockGetUser = jest.fn();
+
+    beforeEach(() => {
+        (createClient as jest.Mock).mockReturnValue({
+            auth: { getUser: mockGetUser },
+            from: mockFrom.mockReturnValue({
+                select: mockSelect.mockReturnValue({
+                    eq: mockEq.mockReturnValue({
+                        order: mockOrder.mockReturnValue({
+                            data: null, // Default data, override per test
+                            error: null, // Default no error, override per test
+                        }),
+                    }),
+                }),
+            }),
+        });
+        jest.clearAllMocks();
+    });
+
+    it('returns tournaments successfully', async () => {
+        // Mock the authenticated user
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'user123' } } });
+
+        // Mock "tournaments" data
+        mockOrder.mockResolvedValueOnce({
+            data: [{ id: 'tourn1', name: 'My Tournament' }],
+            error: null,
+        });
+
+        // Mock "tournamentUsers" data
+        mockOrder.mockResolvedValueOnce({
+            data: [
+                {
+                    tournaments: [{ id: 'tourn2', name: 'Joined Tournament' }],
+                },
+            ],
+            error: null,
+        });
+
+        const result = await getUserTournaments();
+
+        // Assertions for own tournaments
+        expect(mockFrom).toHaveBeenCalledWith('tournaments');
+        expect(mockSelect).toHaveBeenCalledWith('name, id');
+        expect(mockEq).toHaveBeenCalledWith('creator_id', 'user123');
+
+        // Assertions for joined tournaments
+        expect(mockFrom).toHaveBeenCalledWith('tournamentUsers');
+        expect(mockSelect).toHaveBeenCalledWith('tournaments(name, id)');
+        expect(mockEq).toHaveBeenCalledWith('user_id', 'user123');
+
+        // Final result assertion
+        expect(result).toEqual({
+            ownTournaments: [{ id: 'tourn1', name: 'My Tournament' }],
+            joinedTournaments: [{ id: 'tourn2', name: 'Joined Tournament' }],
+        });
+    });
+
+    it('handles errors during tournament retrieval', async () => {
+        mockGetUser.mockResolvedValue({ data: { user: { id: 'user123' } } });
+
+        mockOrder.mockResolvedValueOnce({ data: null, error: 'Database error' });
+
+        const result = await getUserTournaments();
+
+        expect(result).toEqual({ error: 'Failed to fetch all tournaments' });
+    });
+
+    it('returns an error if the user is not authenticated', async () => {
+        mockGetUser.mockResolvedValue({ data: { user: null } });
+
+        const result = await getUserTournaments();
+
+        expect(result).toEqual({ error: 'You must be logged in to view your tournaments' });
+        expect(mockFrom).not.toHaveBeenCalled(); // Ensure no DB queries are made
+    });
+});
