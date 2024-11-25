@@ -1,4 +1,4 @@
-import { signUpAction, forgotPasswordAction, signInAction, signOutAction, getAuthUser, submitTournament, getTournamentById, getUserTournaments, getAllUserCurrentTournaments } from '@/lib/actions';
+import { signUpAction, forgotPasswordAction, signInAction, signOutAction, getAuthUser, submitTournament, getTournamentById, getUserTournaments, getAllUserCurrentTournaments, kickPlayer } from '@/lib/actions';
 import { createClient } from '@/utils/supabase/server';
 import { encodedRedirect } from '@/utils/utils';
 import { headers } from 'next/headers';
@@ -431,5 +431,146 @@ describe('getUserTournaments', () => {
 
         expect(result).toEqual({ error: 'You must be logged in to view your tournaments' });
         expect(mockFrom).not.toHaveBeenCalled(); // Ensure no DB queries are made
+        //console.log(result)
+    });
+});
+
+//KickPlayer test
+describe("kickPlayer", () => {
+    let mockSupabase: any;
+
+    beforeEach(() => {
+        mockSupabase = {
+            from: jest.fn().mockReturnThis(),
+            delete: jest.fn(),
+            eq: jest.fn().mockReturnThis(),
+            eq1: jest.fn().mockReturnThis(),
+            select: jest.fn().mockReturnThis(),
+            single: jest.fn(),
+            update: jest.fn(),
+        };
+        (createClient as jest.Mock).mockReturnValue(mockSupabase);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+
+    it("should successfully kick a player and update the player count", async () => {
+        // Mock the database operations
+        mockSupabase.from.mockImplementation((table: any) => {
+            if (table === "tournamentUsers") {
+                return {
+                    delete: () => ({
+                        eq: () => ({
+                            eq: jest.fn().mockResolvedValueOnce({ error: null }),
+                        }),
+                    }),
+                };
+            }
+            if (table === "tournaments") {
+                return {
+                    select: () => ({
+                        eq: () => ({
+                            single: jest.fn().mockResolvedValueOnce({
+                                data: { player_count: 10 },
+                                error: null,
+                            }),
+                        }),
+                    }),
+                    update: () => ({
+                        eq: () => ({
+                            mockResolvedValueOnce: jest.fn().mockResolvedValueOnce({ error: null }),
+                        }),
+                    }),
+                };
+            }
+        });
+
+        const result = await kickPlayer("tournament-123", "user-456");
+
+        // Validate expected calls and result
+        expect(mockSupabase.from).toHaveBeenCalledWith("tournamentUsers");
+        expect(mockSupabase.from).toHaveBeenCalledWith("tournaments");
+        expect(revalidatePath).toHaveBeenCalledWith("/tournaments/tournament-123");
+        expect(result).toEqual({ success: true });
+    });
+
+
+    it("should handle errors when deleting a user", async () => {
+        mockSupabase.from.mockImplementation((table: any) => {
+            if (table === "tournamentUsers") {
+                return {
+                    delete: () => ({
+                        eq: () => ({
+                            eq: jest.fn().mockResolvedValueOnce({ error: "Delete error" }),
+                        }),
+                    }),
+                };
+            }
+            if (table === "tournaments") {
+                return {
+                    select: () => ({
+                        eq: () => ({
+                            single: jest.fn().mockResolvedValueOnce({
+                                data: { player_count: 10 },
+                                error: null,
+                            }),
+                        }),
+                    }),
+                    update: () => ({
+                        eq: () => ({
+                            mockResolvedValueOnce: jest.fn().mockResolvedValueOnce({ error: null }),
+                        }),
+                    }),
+                };
+            }
+        });
+
+        const result = await kickPlayer("tournament-123", "user-456");
+
+        expect(result).toEqual({ error: "Error kicking player" });
+        // expect(console.error).toHaveBeenCalledWith("Delete error");
+        console.log(result)
+    });
+
+    it("should handle errors when can't update user", async () => {
+        mockSupabase.from.mockImplementation((table: any) => {
+            if (table === "tournamentUsers") {
+                return {
+                    delete: jest.fn(() => ({
+                        eq: jest.fn(() => ({
+                            eq: jest.fn(() => Promise.resolve({ error: null })),
+                        })),
+                    })),
+                };
+            }
+            if (table === "tournaments") {
+                return {
+                    select: jest.fn(() => ({
+                        eq: jest.fn(() => ({
+                            single: jest.fn(() =>
+                                Promise.resolve({
+                                    data: { player_count: 10 },
+                                    error: null,
+                                })
+                            ),
+                        })),
+                    })),
+                    update: jest.fn(() => ({
+                        eq: jest.fn(() =>
+                            Promise.resolve({ error: "Error updating player count" })
+                        ),
+                    })),
+                };
+            }
+            return mockSupabase; // Default fallback for other tables if needed
+        });
+
+        const result = await kickPlayer("tournament-123", "user-456");
+
+        expect(result).toEqual({ error: "Error updating player count" });
+        console.log(result);
     });
 });
