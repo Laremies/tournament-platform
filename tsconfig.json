@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
+    "types": ["jest", "@testing-library/jest-dom"],
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -9,7 +10,11 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    // "moduleResolution": "node",
+    //test
+    "moduleResolution": "bundler",
+    "baseUrl": "./",
+    //
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
